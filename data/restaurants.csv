@@ -1,0 +1,43 @@
+restaurant_id,name,neighborhood,cuisine,city,restaurant_type,local_word
+r001,Joe's Pizza (Times Sq),Midtown,Pizza,NYC,tourist_trap,"If you’re starving near Times Sq, this is a safer slice than the neon nonsense."
+r002,Carmine’s (Times Sq),Midtown,Italian,NYC,tourist_trap,"Big portions, big crowds — fun once, not the city’s best Italian."
+r003,Ellen’s Stardust Diner,Midtown,Diner,NYC,tourist_trap,"Go for the singing, not the food — treat it like a show ticket."
+r004,The Halal Guys (53rd & 6th),Midtown,Halal,NYC,tourist_trap,"Iconic cart energy — great at 1am, less magical at peak lunch rush."
+r005,Junior’s (Times Sq),Midtown,Bakery,NYC,tourist_trap,Cheesecake is the move. Don’t overthink the rest.
+r006,Lombardi’s Pizza,Nolita,Pizza,NYC,tourist_trap,"Historic, solid, busy — go early or expect a wait."
+r007,Serendipity 3,Upper East Side,Dessert,NYC,tourist_trap,Order the frozen hot chocolate and commit to the bit.
+r008,The Smith (Lincoln Square),Upper West Side,American,NYC,tourist_trap,"Reliable crowd-pleaser near theaters — not a hidden gem, but it works."
+r009,Bubby’s (Tribeca),Tribeca,Brunch,NYC,tourist_trap,"Great pancakes, lots of visitors — weekday mornings are calmer."
+r010,Grimaldi’s Pizzeria,DUMBO,Pizza,NYC,tourist_trap,Classic Brooklyn tourist stop — go off-peak or it’s a line marathon.
+r011,Time Out Market (DUMBO),DUMBO,Food Hall,NYC,tourist_trap,Good variety with views — treat it like a tasting lap.
+r012,Los Tacos No. 1 (Times Sq),Midtown,Mexican,NYC,tourist_trap,Even locals admit it: this is legit. Just brace for the line.
+r013,Tom’s Restaurant,Morningside Heights,Diner,NYC,tourist_trap,Famous façade — decent diner fuel if you’re already nearby.
+r014,Magnolia Bakery (Bleecker),West Village,Bakery,NYC,tourist_trap,Banana pudding hits. Keep it moving after you grab it.
+r015,Levain Bakery (Upper West),Upper West Side,Bakery,NYC,tourist_trap,Warm cookie = happiness. Split one unless you like food comas.
+r016,Katz’s Delicatessen,Lower East Side,Deli,NYC,popular_good,Pricey but consistent — pastrami does the talking.
+r017,Shake Shack (Madison Sq Park),Flatiron,Burgers,NYC,popular_good,The original still hits — eat in the park if the weather’s nice.
+r018,Prince Street Pizza,Nolita,Pizza,NYC,popular_good,Spicy vodka slice is the order. Go early to dodge the crowd.
+r019,Russ & Daughters Cafe,Lower East Side,Jewish,NYC,popular_good,"Classic brunch flex — go for the fish, stay for the vibes."
+r020,L’Industrie Pizza,Williamsburg,Pizza,NYC,popular_good,One of the best slices in NYC. Worth the trip to Brooklyn.
+r021,Xi’an Famous Foods,East Village,Chinese,NYC,popular_good,"Hand-ripped noodles, loud flavors — order spicy and commit."
+r022,Ichiran Ramen,Midtown,Ramen,NYC,popular_good,"Touristy, yes — but a reliable solo ramen mission."
+r023,Tao Downtown,Chelsea,Asian,NYC,popular_good,"It’s a scene. Go for the spectacle, not a quiet dinner."
+r024,Carbone,Greenwich Village,Italian,NYC,popular_good,"Hard reservation, famous rigatoni — a splurge night classic."
+r025,Lucali,Carroll Gardens,Pizza,NYC,popular_good,The line is part of the ritual. Bring cash and patience.
+r026,Peter Luger Steak House,Williamsburg,Steakhouse,NYC,popular_good,Old-school steak institution — go with friends and split everything.
+r027,Los Tacos No. 1 (Chelsea Market),Chelsea,Mexican,NYC,popular_good,"Even with crowds, it’s one of the best quick bites in the city."
+r028,Gramercy Tavern,Flatiron,American,NYC,popular_good,"A NYC classic — bar room for vibes, dining room for the full moment."
+r029,Via Carota,West Village,Italian,NYC,popular_good,West Village staple — go off-hours or it’s a wait game.
+r030,Superiority Burger,East Village,Veggie,NYC,popular_good,"Tiny, weird, beloved — perfect quick stop before a walk."
+r031,Joe’s Shanghai,Chinatown,Chinese,NYC,popular_good,Soup dumplings are the headline. Go with a group and feast.
+r032,Llama San,West Village,Peruvian,NYC,popular_good,A date-night favorite — order family style and try something new.
+r033,Spicy Village,Chinatown,Chinese,NYC,hidden_gem,No-frills and elite — bring friends and order more than you think.
+r034,Mamoun’s Falafel,Greenwich Village,Middle Eastern,NYC,hidden_gem,"Cheap, fast, classic — perfect late-night pocket meal."
+r035,Tasty Hand-Pulled Noodles,Chinatown,Chinese,NYC,hidden_gem,Comfort carbs — order something soupy and you’ll be fine.
+r036,Los Mariscos,Chelsea,Seafood,NYC,hidden_gem,Under-the-radar seafood tacos inside the market chaos.
+r037,Tanoreen,Bay Ridge,Middle Eastern,NYC,hidden_gem,"Worth the train — big flavors, warm hospitality."
+r038,Fuskahouse,Jackson Heights,Bangladeshi,NYC,hidden_gem,Snack heaven — follow your nose and order boldly.
+r039,Adda Indian Canteen,Long Island City,Indian,NYC,hidden_gem,LIC detour that pays off — spice levels don’t play.
+r040,Arepa Lady,Jackson Heights,Colombian,NYC,hidden_gem,Arepas that feel like a secret — go hungry.
+r041,King of Falafel & Shawarma,Astoria,Middle Eastern,NYC,hidden_gem,Cart legend — shawarma platter is the move.
+r042,Little Neck Dumpling House,Flushing,Chinese,NYC,hidden_gem,Flushing dumpling mission — come with a plan and share.
