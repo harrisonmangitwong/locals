@@ -3,10 +3,48 @@ import pandas as pd
 from pipeline import (
     compute_reviewer_metrics,
     compute_restaurant_metrics,
-    make_training_labels,
     train_logistic_model,
-    score_with_model
+    score_with_model,
 )
+
+LABELS_PATH = "data/labels.csv"
+MIN_LABELS_PER_CLASS = 10
+
+
+def load_labels(restaurants_df: pd.DataFrame) -> pd.DataFrame | None:
+    """
+    Load supervised labels for training.
+
+    Priority:
+    1) data/labels.csv (restaurant_id + label_safe_pick)
+    2) restaurants_df["restaurant_type"] (for mock/demo data)
+    """
+    if os.path.exists(LABELS_PATH):
+        labels = pd.read_csv(LABELS_PATH)
+        if "restaurant_id" not in labels.columns:
+            if "name" in labels.columns:
+                labels = labels.merge(
+                    restaurants_df[["restaurant_id", "name"]],
+                    on="name",
+                    how="left",
+                )
+            else:
+                raise ValueError("labels.csv must include restaurant_id or name.")
+        if "label_safe_pick" not in labels.columns:
+            raise ValueError("labels.csv must include label_safe_pick (0 or 1).")
+        labels = labels.dropna(subset=["restaurant_id", "label_safe_pick"]).copy()
+        labels["label_safe_pick"] = labels["label_safe_pick"].astype(int)
+        return labels[["restaurant_id", "label_safe_pick"]]
+
+    if "restaurant_type" in restaurants_df.columns:
+        mapping = {"hidden_gem": 1, "popular_good": 1, "tourist_trap": 0}
+        labels = restaurants_df[["restaurant_id", "restaurant_type"]].copy()
+        labels["label_safe_pick"] = labels["restaurant_type"].map(mapping)
+        labels = labels.dropna(subset=["label_safe_pick"]).copy()
+        labels["label_safe_pick"] = labels["label_safe_pick"].astype(int)
+        return labels[["restaurant_id", "label_safe_pick"]]
+
+    return None
 
 def main():
     restaurants = pd.read_csv("data/restaurants.csv")
@@ -34,8 +72,23 @@ def main():
         "num_reviews",
     ]
 
-    # A) Make mock labels
-    labeled = make_training_labels(restaurant_scores)
+    # A) Load real labels (from data/labels.csv or mock restaurant_type)
+    labels = load_labels(restaurants)
+    if labels is None:
+        print("\n❌ No labels found for supervised training.")
+        print("   Create data/labels.csv with columns:")
+        print("   restaurant_id,label_safe_pick")
+        print("   Then re-run this pipeline.")
+        return
+
+    labeled = restaurant_scores.merge(labels, on="restaurant_id", how="inner")
+    counts = labeled["label_safe_pick"].value_counts()
+    if counts.min() < MIN_LABELS_PER_CLASS or counts.size < 2:
+        print("\n❌ Not enough labeled examples to train a real model.")
+        print(f"   Need at least {MIN_LABELS_PER_CLASS} per class.")
+        print("   Current label counts:")
+        print(counts.to_string())
+        return
 
     # B) Train model
     model, auc, report = train_logistic_model(labeled, feature_cols)
