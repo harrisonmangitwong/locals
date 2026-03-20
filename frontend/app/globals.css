@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #111111;
+  --color-accent: #ff385c;
+  --color-accent2: #fb7185;
+  --color-text-dark: #f1f5f9;
+  --color-text-muted: rgba(241, 245, 249, 0.55);
+  --color-card-bg: #ffffff;
+  --color-card-text: rgba(15, 23, 42, 0.96);
+  --color-card-muted: rgba(15, 23, 42, 0.70);
+  --color-card-border: rgba(15, 23, 42, 0.10);
+  --color-chip-bg: rgba(15, 23, 42, 0.04);
+}
+
+body {
+  background-color: #111111;
+  color: #f1f5f9;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+}
+
+/* Card hover */
+.restaurant-card {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.restaurant-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 48px rgba(15,23,42,0.18);
+}
+
+/* Card photo zoom on hover */
+.restaurant-card .card-photo {
+  transition: transform 400ms ease;
+}
+.restaurant-card:hover .card-photo {
+  transform: scale(1.04);
+}
+
+/* Hide neighborhood scrollbar */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Neighborhood pill hover */
+.neighborhood-pill:hover {
+  background-color: rgba(241,245,249,0.14) !important;
+  border-color: rgba(241,245,249,0.22) !important;
+}
+.neighborhood-pill-active:hover {
+  filter: brightness(1.08);
+}
+
+/* Pagination button hover */
+.page-btn:hover:not(:disabled) {
+  background-color: rgba(241,245,249,0.14) !important;
+  border-color: rgba(241,245,249,0.22) !important;
+  transform: translateY(-1px);
+}
+.page-btn {
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease, opacity 150ms ease;
+}
+
+/* Heart button hover */
+.heart-btn:hover {
+  background-color: rgba(255,56,92,0.12) !important;
+  transform: scale(1.15);
+}
+.heart-btn {
+  transition: background-color 150ms ease, transform 150ms ease;
+}

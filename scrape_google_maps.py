@@ -45,6 +45,7 @@ LOCATION = "New York City, USA"
 MAX_PLACES_PER_SEARCH = 30      # results per search term
 MAX_REVIEWS_PER_PLACE = 50      # reviews to pull per restaurant
 OUTPUT_DIR = "data"
+USE_LAST_RUN = True  # Set to False to trigger a fresh scrape
 
 # ---------------------------------------------------------------------------
 # STEP 1 — Run the Apify actor (or fetch the last run's data)
@@ -277,6 +278,8 @@ def build_reviews_df(items: list[dict]) -> pd.DataFrame:
                 "restaurant_city": "NYC",
                 "timestamp": ts,
                 "rating": round(float(stars), 1),
+                "reviewer_total_reviews": rev.get("reviewerNumberOfReviews") or 0,
+                "is_local_guide": bool(rev.get("isLocalGuide")),
             })
             review_id += 1
 
@@ -313,10 +316,6 @@ def main():
         print("   Create a .env file with:  APIFY_API_TOKEN=apify_api_XXXXX")
         print("   Get your token from: https://console.apify.com/account/integrations")
         return
-
-    # Set this to True if you already ran the scraper and just want to
-    # re-download the data from the last successful run (saves money/time)
-    USE_LAST_RUN = False
 
     items = run_scraper(token, use_last_run=USE_LAST_RUN)
 

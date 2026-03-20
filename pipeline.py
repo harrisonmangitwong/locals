@@ -18,11 +18,21 @@ def compute_reviewer_metrics(reviews_df: pd.DataFrame) -> pd.DataFrame:
         nyc_reviews_3yr=("restaurant_city", lambda x: (x == "NYC").sum()),
         first_review=("timestamp", "min"),
         last_review=("timestamp", "max"),
+        reviewer_total_reviews=("reviewer_total_reviews", "max"),
+        is_local_guide=("is_local_guide", "max"),
     ).reset_index()
 
-    reviewer_metrics["pct_reviews_in_city"] = (
-        reviewer_metrics["nyc_reviews_3yr"] / reviewer_metrics["total_reviews_3yr"]
+    # Use reviewer's global Google Maps review count as denominator when available.
+    # A tourist visiting NYC once may have 300 reviews globally but only 1-2 here →
+    # low pct_reviews_in_city → treated as tourist.
+    # Fall back to dataset-only count if the field is missing or zero.
+    global_total = reviewer_metrics["reviewer_total_reviews"].where(
+        reviewer_metrics["reviewer_total_reviews"] > 0,
+        reviewer_metrics["total_reviews_3yr"],
     )
+    reviewer_metrics["pct_reviews_in_city"] = (
+        reviewer_metrics["nyc_reviews_3yr"] / global_total
+    ).clip(upper=1.0)
 
     reviewer_metrics["review_span_days"] = (
         reviewer_metrics["last_review"] - reviewer_metrics["first_review"]
@@ -33,9 +43,10 @@ def compute_reviewer_metrics(reviews_df: pd.DataFrame) -> pd.DataFrame:
     ).clip(upper=1)
 
     reviewer_metrics["localness"] = (
-        0.7 * reviewer_metrics["pct_reviews_in_city"] +
-        0.3 * reviewer_metrics["stability"]
-    )
+        0.6 * reviewer_metrics["pct_reviews_in_city"] +
+        0.25 * reviewer_metrics["stability"] +
+        0.15 * reviewer_metrics["is_local_guide"].astype(float)
+    ).clip(upper=1.0)
 
     reviewer_metrics["tourist_score"] = 1 - reviewer_metrics["localness"]
 

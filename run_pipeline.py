@@ -75,10 +75,28 @@ def main():
     # A) Load real labels (from data/labels.csv or mock restaurant_type)
     labels = load_labels(restaurants)
     if labels is None:
-        print("\n❌ No labels found for supervised training.")
-        print("   Create data/labels.csv with columns:")
-        print("   restaurant_id,label_safe_pick")
-        print("   Then re-run this pipeline.")
+        print("\nNo labels found — using signal score ranking (no ML model)")
+        scored = restaurant_scores.copy()
+        min_s = scored["adjusted_score"].min()
+        max_s = scored["adjusted_score"].max()
+        if max_s > min_s:
+            scored["p_safe_pick"] = (scored["adjusted_score"] - min_s) / (max_s - min_s)
+        else:
+            scored["p_safe_pick"] = 0.5
+        P_THRESHOLD = 0.70
+        recs = scored[scored["p_safe_pick"] >= P_THRESHOLD].copy()
+        recs = recs.sort_values(["p_safe_pick", "adjusted_score"], ascending=False)
+        print(f"\nLocals recommendations (signal score >= {P_THRESHOLD}):")
+        print(
+            recs.head(15)[
+                ["name", "neighborhood", "cuisine", "num_reviews", "p_safe_pick", "adjusted_score"]
+            ].to_string(index=False)
+        )
+        os.makedirs("outputs", exist_ok=True)
+        scored.to_csv("outputs/locals_restaurant_scores_with_probs.csv", index=False)
+        recs.to_csv("outputs/locals_recommendations.csv", index=False)
+        print("\n✅ Saved outputs/locals_restaurant_scores_with_probs.csv")
+        print("✅ Saved outputs/locals_recommendations.csv")
         return
 
     labeled = restaurant_scores.merge(labels, on="restaurant_id", how="inner")
