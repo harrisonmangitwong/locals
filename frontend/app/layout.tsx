@@ -8,8 +8,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Locals",
-  description: "Eat like a local. Not a tourist. Discover the best neighborhood restaurants in New York City.",
+  title: "Locals | NYC Restaurant Recommendations",
+  description:
+    "Eat like a local. Not a tourist. We rank NYC restaurants by how much locals love them, not by tourist hype.",
+  openGraph: {
+    title: "Locals | Eat like a local. Not a tourist.",
+    description:
+      "We rank NYC restaurants by how much locals love them — not by how many tourists stumble in. Find your next neighborhood gem.",
+    siteName: "Locals",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Locals | Eat like a local. Not a tourist.",
+    description:
+      "We rank NYC restaurants by how much locals love them — not by how many tourists stumble in.",
+  },
 };
 
 export default function RootLayout({

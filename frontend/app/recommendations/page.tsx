@@ -38,11 +38,13 @@ function RecommendationsContent() {
 
   const neighborhood = searchParams.get("neighborhood") ?? "";
   const cuisine = searchParams.get("cuisine") ?? "";
+  const search = searchParams.get("search") ?? "";
   const page = parseInt(searchParams.get("page") ?? "1", 10);
 
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState(search);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -51,6 +53,7 @@ function RecommendationsContent() {
       const params = new URLSearchParams();
       if (neighborhood) params.set("neighborhood", neighborhood);
       if (cuisine) params.set("cuisine", cuisine);
+      if (search) params.set("search", search);
       params.set("page", String(page));
       params.set("page_size", "20");
 
@@ -63,7 +66,7 @@ function RecommendationsContent() {
     } finally {
       setLoading(false);
     }
-  }, [neighborhood, cuisine, page]);
+  }, [neighborhood, cuisine, search, page]);
 
   useEffect(() => {
     fetchData();
@@ -123,6 +126,13 @@ function RecommendationsContent() {
           >
             Recommendations
           </Link>
+          <Link
+            href="/about"
+            className="text-sm transition-colors hover:opacity-75"
+            style={{ color: "rgba(241,245,249,0.55)" }}
+          >
+            About
+          </Link>
         </nav>
       </header>
 
@@ -142,6 +152,40 @@ function RecommendationsContent() {
           )}
         </div>
 
+        {/* Search bar */}
+        <div className="mb-4">
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                updateParams({ search: searchInput });
+              }
+            }}
+            placeholder="Search restaurants..."
+            className="w-full sm:w-80 rounded-xl px-4 py-2.5 text-sm"
+            style={{
+              backgroundColor: "rgba(241,245,249,0.08)",
+              color: "#f1f5f9",
+              border: "1px solid rgba(241,245,249,0.12)",
+              outline: "none",
+            }}
+          />
+          {search && (
+            <button
+              onClick={() => {
+                setSearchInput("");
+                updateParams({ search: "" });
+              }}
+              className="ml-2 text-xs underline"
+              style={{ color: "rgba(241,245,249,0.55)" }}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
         {/* Filters row */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           {/* Neighborhood pills — horizontal scroll */}
@@ -149,7 +193,7 @@ function RecommendationsContent() {
             <div className="flex gap-2 min-w-max">
               <button
                 onClick={() => updateParams({ neighborhood: "", cuisine })}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap ${!neighborhood ? "neighborhood-pill-active" : "neighborhood-pill"}`}
+                className={`px-3.5 py-2 sm:px-3 sm:py-1.5 rounded-full text-sm font-medium whitespace-nowrap ${!neighborhood ? "neighborhood-pill-active" : "neighborhood-pill"}`}
                 style={
                   !neighborhood
                     ? { backgroundColor: "#ff385c", color: "#ffffff" }
@@ -166,7 +210,7 @@ function RecommendationsContent() {
                 <button
                   key={n}
                   onClick={() => updateParams({ neighborhood: n })}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap ${neighborhood === n ? "neighborhood-pill-active" : "neighborhood-pill"}`}
+                  className={`px-3.5 py-2 sm:px-3 sm:py-1.5 rounded-full text-sm font-medium whitespace-nowrap ${neighborhood === n ? "neighborhood-pill-active" : "neighborhood-pill"}`}
                   style={
                     neighborhood === n
                       ? { backgroundColor: "#ff385c", color: "#ffffff" }
@@ -188,7 +232,7 @@ function RecommendationsContent() {
             <select
               value={cuisine}
               onChange={(e) => updateParams({ cuisine: e.target.value })}
-              className="rounded-xl px-3 py-2 text-sm font-medium cursor-pointer"
+              className="rounded-xl px-3 py-2.5 sm:py-2 text-sm font-medium cursor-pointer"
               style={{
                 backgroundColor: "rgba(241,245,249,0.08)",
                 color: "#f1f5f9",
@@ -248,6 +292,7 @@ function RecommendationsContent() {
             {restaurants.map((r) => (
               <RestaurantCard
                 key={r.restaurant_id}
+                restaurantId={r.restaurant_id}
                 rank={r.rank}
                 name={r.name}
                 neighborhood={r.neighborhood}
@@ -279,7 +324,7 @@ function RecommendationsContent() {
             <button
               onClick={() => updateParams({ page: String(page - 1) })}
               disabled={page <= 1}
-              className="page-btn px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-30"
+              className="page-btn px-5 py-2.5 sm:px-4 sm:py-2 rounded-xl text-sm font-medium disabled:opacity-30"
               style={{
                 backgroundColor: "rgba(241,245,249,0.08)",
                 color: "#f1f5f9",
@@ -297,7 +342,7 @@ function RecommendationsContent() {
             <button
               onClick={() => updateParams({ page: String(page + 1) })}
               disabled={page >= totalPages}
-              className="page-btn px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-30"
+              className="page-btn px-5 py-2.5 sm:px-4 sm:py-2 rounded-xl text-sm font-medium disabled:opacity-30"
               style={{
                 backgroundColor: "rgba(241,245,249,0.08)",
                 color: "#f1f5f9",

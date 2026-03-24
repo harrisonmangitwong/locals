@@ -58,10 +58,22 @@ def get_filters():
     return {"neighborhoods": neighborhoods, "cuisines": cuisines}
 
 
+@app.get("/api/restaurant/{restaurant_id}")
+def get_restaurant(restaurant_id: str):
+    df = get_df()
+    match = df[df["restaurant_id"] == restaurant_id]
+    if match.empty:
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=404, content={"detail": "Restaurant not found"})
+    row = match.iloc[0].where(pd.notnull(match.iloc[0]), None).to_dict()
+    return row
+
+
 @app.get("/api/recommendations")
 def get_recommendations(
     neighborhood: Optional[str] = Query(default=None),
     cuisine: Optional[str] = Query(default=None),
+    search: Optional[str] = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
 ):
@@ -73,6 +85,8 @@ def get_recommendations(
 
     # Apply filters
     filtered = df.copy()
+    if search:
+        filtered = filtered[filtered["name"].str.contains(search, case=False, na=False)]
     if neighborhood:
         filtered = filtered[filtered["neighborhood"] == neighborhood]
     if cuisine:

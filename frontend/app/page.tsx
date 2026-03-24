@@ -6,6 +6,32 @@ export default function Home() {
       className="min-h-screen flex flex-col"
       style={{ backgroundColor: "#111111", color: "#f1f5f9" }}
     >
+      {/* Topbar */}
+      <header
+        className="flex items-center justify-between px-6 py-4"
+        style={{ borderBottom: "1px solid rgba(241,245,249,0.08)" }}
+      >
+        <Link href="/" className="font-bold text-lg" style={{ color: "#f1f5f9" }}>
+          🍜 Locals
+        </Link>
+        <nav className="flex items-center gap-6">
+          <Link
+            href="/recommendations"
+            className="text-sm transition-colors hover:opacity-75"
+            style={{ color: "rgba(241,245,249,0.55)" }}
+          >
+            Recommendations
+          </Link>
+          <Link
+            href="/about"
+            className="text-sm transition-colors hover:opacity-75"
+            style={{ color: "rgba(241,245,249,0.55)" }}
+          >
+            About
+          </Link>
+        </nav>
+      </header>
+
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center flex-1 px-6 py-24 text-center">
         {/* Eyebrow pill */}

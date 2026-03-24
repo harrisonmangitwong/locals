@@ -1,6 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
+function getFavorites(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem("locals_favorites");
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function toggleFavorite(id: string): boolean {
+  const favs = getFavorites();
+  if (favs.has(id)) {
+    favs.delete(id);
+  } else {
+    favs.add(id);
+  }
+  localStorage.setItem("locals_favorites", JSON.stringify([...favs]));
+  return favs.has(id);
+}
 
 const CUISINE_PHOTO_MAP: Record<string, string> = {
   Ramen: "photo-1569050467447-ce54b3bbc37d",
@@ -30,6 +52,7 @@ function getPhotoUrl(cuisine: string): string {
 }
 
 export interface RestaurantCardProps {
+  restaurantId: string;
   rank: number;
   name: string;
   neighborhood: string;
@@ -41,6 +64,7 @@ export interface RestaurantCardProps {
 }
 
 export default function RestaurantCard({
+  restaurantId,
   rank,
   name,
   neighborhood,
@@ -50,6 +74,10 @@ export default function RestaurantCard({
   mapsUrl,
 }: RestaurantCardProps) {
   const [hearted, setHearted] = useState(false);
+
+  useEffect(() => {
+    setHearted(getFavorites().has(restaurantId));
+  }, [restaurantId]);
   const photoUrl = getPhotoUrl(cuisine);
 
   const stars = Math.round(rating * 2) / 2;
@@ -92,7 +120,7 @@ export default function RestaurantCard({
       }}
     >
       {/* Photo */}
-      <div className="relative overflow-hidden" style={{ height: "170px", flexShrink: 0 }}>
+      <Link href={`/restaurant/${restaurantId}`} className="relative overflow-hidden h-48 sm:h-[170px] block" style={{ flexShrink: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photoUrl}
@@ -110,17 +138,19 @@ export default function RestaurantCard({
         >
           #{rank}
         </span>
-      </div>
+      </Link>
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-4">
         {/* Name */}
-        <h3
-          className="font-semibold text-sm leading-snug mb-2 line-clamp-2"
-          style={{ color: "rgba(15,23,42,0.96)" }}
-        >
-          {name}
-        </h3>
+        <Link href={`/restaurant/${restaurantId}`}>
+          <h3
+            className="font-semibold text-sm leading-snug mb-2 line-clamp-2 hover:underline cursor-pointer"
+            style={{ color: "rgba(15,23,42,0.96)" }}
+          >
+            {name}
+          </h3>
+        </Link>
 
         {/* Chips row */}
         <div className="flex flex-wrap gap-1.5 mb-3">
@@ -180,8 +210,8 @@ export default function RestaurantCard({
         <div className="flex items-center justify-between">
           {/* Heart button */}
           <button
-            onClick={() => setHearted(!hearted)}
-            className="heart-btn flex items-center justify-center w-8 h-8 rounded-full"
+            onClick={() => setHearted(toggleFavorite(restaurantId))}
+            className="heart-btn flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-full"
             style={{
               backgroundColor: hearted
                 ? "rgba(255,56,92,0.10)"
