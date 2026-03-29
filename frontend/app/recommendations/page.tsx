@@ -154,6 +154,7 @@ interface Restaurant {
   rank: number;
   signal_score: number;
   image_url: string;
+  price_midpoint?: number;
   [key: string]: unknown;
 }
 
