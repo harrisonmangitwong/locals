@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
+import numpy as np
 import math
 import os
 from typing import Optional
@@ -23,6 +24,8 @@ CSV_PATH = os.path.join(os.path.dirname(__file__), "data.csv")
 
 def load_data() -> pd.DataFrame:
     df = pd.read_csv(CSV_PATH)
+    # Replace inf/-inf with NaN so JSON serialization works
+    df = df.replace([np.inf, -np.inf], np.nan)
     # Sort by p_safe_pick descending, assign 1-indexed rank
     df = df.sort_values("p_safe_pick", ascending=False).reset_index(drop=True)
     df["rank"] = df.index + 1
@@ -58,6 +61,20 @@ def get_filters():
     return {"neighborhoods": neighborhoods, "cuisines": cuisines}
 
 
+@app.get("/api/restaurants/batch")
+def get_restaurants_batch(ids: str = Query(..., description="Comma-separated restaurant IDs")):
+    df = get_df()
+    id_list = [i.strip() for i in ids.split(",") if i.strip()]
+    matched = df[df["restaurant_id"].isin(id_list)]
+    clean = matched.replace([np.inf, -np.inf], np.nan).where(pd.notnull(matched), None)
+    results = clean.to_dict(orient="records")
+    for row in results:
+        for k, v in row.items():
+            if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+                row[k] = None
+    return {"results": results}
+
+
 @app.get("/api/restaurant/{restaurant_id}")
 def get_restaurant(restaurant_id: str):
     df = get_df()
@@ -66,6 +83,9 @@ def get_restaurant(restaurant_id: str):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=404, content={"detail": "Restaurant not found"})
     row = match.iloc[0].where(pd.notnull(match.iloc[0]), None).to_dict()
+    for k, v in row.items():
+        if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+            row[k] = None
     return row
 
 
@@ -74,6 +94,7 @@ def get_recommendations(
     neighborhood: Optional[str] = Query(default=None),
     cuisine: Optional[str] = Query(default=None),
     search: Optional[str] = Query(default=None),
+    price: Optional[str] = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
 ):
@@ -91,6 +112,15 @@ def get_recommendations(
         filtered = filtered[filtered["neighborhood"] == neighborhood]
     if cuisine:
         filtered = filtered[filtered["cuisine"] == cuisine]
+    if price:
+        price_ranges = {"$": (0, 15), "$$": (15, 30), "$$$": (30, 60), "$$$$": (60, 500)}
+        if price in price_ranges:
+            lo, hi = price_ranges[price]
+            filtered = filtered[
+                (filtered["price_midpoint"].notna()) &
+                (filtered["price_midpoint"] > lo) &
+                (filtered["price_midpoint"] <= hi)
+            ]
 
     total = len(filtered)
     total_pages = max(1, math.ceil(total / page_size))
@@ -100,8 +130,14 @@ def get_recommendations(
     end = start + page_size
     page_df = filtered.iloc[start:end]
 
-    # Convert to records; replace NaN with None for JSON serialization
-    results = page_df.where(pd.notnull(page_df), None).to_dict(orient="records")
+    # Convert to records; replace NaN/inf with None for JSON serialization
+    clean = page_df.replace([np.inf, -np.inf], np.nan).where(pd.notnull(page_df), None)
+    results = clean.to_dict(orient="records")
+    # Ensure no float NaN slips through (pandas can leave them in object columns)
+    for row in results:
+        for k, v in row.items():
+            if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+                row[k] = None
 
     return {
         "total": total,

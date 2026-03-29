@@ -1,42 +1,76 @@
 @import "tailwindcss";
 
-@theme {
-  --color-bg: #111111;
-  --color-accent: #ff385c;
-  --color-accent2: #fb7185;
-  --color-text-dark: #f1f5f9;
-  --color-text-muted: rgba(241, 245, 249, 0.55);
-  --color-card-bg: #ffffff;
-  --color-card-text: rgba(15, 23, 42, 0.96);
-  --color-card-muted: rgba(15, 23, 42, 0.70);
-  --color-card-border: rgba(15, 23, 42, 0.10);
-  --color-chip-bg: rgba(15, 23, 42, 0.04);
+/* ── Light mode (primary) ── */
+:root {
+  --bg: #faf8f5;
+  --bg-card: #ffffff;
+  --bg-subtle: #f0ece7;
+  --bg-inset: #e8e4de;
+  --text: #1a1814;
+  --text-secondary: #6b6560;
+  --text-muted: #9a958f;
+  --accent: #d95030;
+  --accent-hover: #c44528;
+  --accent-soft: rgba(217,80,48,0.08);
+  --accent-text: #d95030;
+  --border: rgba(26,24,20,0.08);
+  --border-strong: rgba(26,24,20,0.15);
+  --shadow-sm: 0 1px 2px rgba(26,24,20,0.05);
+  --shadow: 0 2px 8px rgba(26,24,20,0.07);
+  --shadow-lg: 0 8px 30px rgba(26,24,20,0.10);
+  --star-fill: #c44d2c;
+  --star-empty: rgba(26,24,20,0.15);
+  color-scheme: light dark;
+}
+
+/* ── Dark mode ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1814;
+    --bg-card: #252220;
+    --bg-subtle: #2e2b28;
+    --bg-inset: #353230;
+    --text: #f5f0eb;
+    --text-secondary: #9a9590;
+    --text-muted: #6b6560;
+    --accent: #e06b4d;
+    --accent-hover: #c44d2c;
+    --accent-soft: rgba(224,107,77,0.10);
+    --accent-text: #e8845f;
+    --border: rgba(245,240,235,0.08);
+    --border-strong: rgba(245,240,235,0.15);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.15);
+    --shadow: 0 2px 8px rgba(0,0,0,0.20);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.30);
+    --star-fill: #e06b4d;
+    --star-empty: rgba(245,240,235,0.15);
+  }
 }
 
 body {
-  background-color: #111111;
-  color: #f1f5f9;
-  font-family: Inter, Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter, Inter), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Card hover */
+/* ── Card ── */
 .restaurant-card {
   transition: transform 200ms ease, box-shadow 200ms ease;
 }
 .restaurant-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 48px rgba(15,23,42,0.18);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Card photo zoom on hover */
 .restaurant-card .card-photo {
   transition: transform 400ms ease;
 }
 .restaurant-card:hover .card-photo {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
-/* Hide neighborhood scrollbar */
+/* ── Scrollbar ── */
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -45,30 +79,32 @@ body {
   display: none;
 }
 
-/* Neighborhood pill hover */
-.neighborhood-pill:hover {
-  background-color: rgba(241,245,249,0.14) !important;
-  border-color: rgba(241,245,249,0.22) !important;
-}
-.neighborhood-pill-active:hover {
-  filter: brightness(1.08);
+/* ── Filter controls ── */
+.filter-control:hover {
+  border-color: var(--border-strong) !important;
+  background-color: var(--bg-subtle) !important;
 }
 
-/* Pagination button hover */
+/* ── Pagination ── */
+.page-btn {
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
 .page-btn:hover:not(:disabled) {
-  background-color: rgba(241,245,249,0.14) !important;
-  border-color: rgba(241,245,249,0.22) !important;
+  background-color: var(--bg-subtle) !important;
+  border-color: var(--border-strong) !important;
   transform: translateY(-1px);
 }
-.page-btn {
-  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease, opacity 150ms ease;
-}
 
-/* Heart button hover */
-.heart-btn:hover {
-  background-color: rgba(255,56,92,0.12) !important;
-  transform: scale(1.15);
-}
+/* ── Heart ── */
 .heart-btn {
   transition: background-color 150ms ease, transform 150ms ease;
+}
+.heart-btn:hover {
+  background-color: var(--accent-soft) !important;
+  transform: scale(1.12);
+}
+
+/* ── Serif display font ── */
+.font-display {
+  font-family: var(--font-dm-serif, "DM Serif Display"), Georgia, serif;
 }

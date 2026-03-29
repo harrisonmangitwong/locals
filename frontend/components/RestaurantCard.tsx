@@ -61,6 +61,8 @@ export interface RestaurantCardProps {
   rating: number;
   mapsUrl: string;
   photoUrl?: string;
+  price?: string;
+  onUnfavorite?: (id: string) => void;
 }
 
 export default function RestaurantCard({
@@ -72,13 +74,17 @@ export default function RestaurantCard({
   reviews,
   rating,
   mapsUrl,
+  photoUrl: photoUrlProp,
+  price,
+  onUnfavorite,
 }: RestaurantCardProps) {
   const [hearted, setHearted] = useState(false);
 
   useEffect(() => {
     setHearted(getFavorites().has(restaurantId));
   }, [restaurantId]);
-  const photoUrl = getPhotoUrl(cuisine);
+
+  const photoUrl = photoUrlProp || getPhotoUrl(cuisine);
 
   const stars = Math.round(rating * 2) / 2;
   const fullStars = Math.floor(stars);
@@ -89,21 +95,23 @@ export default function RestaurantCard({
     for (let i = 1; i <= 5; i++) {
       if (i <= fullStars) {
         starEls.push(
-          <span key={i} style={{ color: "#ff385c" }}>
-            ★
-          </span>
+          <span key={i} style={{ color: "var(--star-fill)" }}>&#9733;</span>
         );
       } else if (i === fullStars + 1 && hasHalf) {
         starEls.push(
-          <span key={i} style={{ color: "#ff385c" }}>
-            ½
+          <span key={i} className="relative inline-block" style={{ color: "var(--star-empty)" }}>
+            &#9733;
+            <span
+              className="absolute inset-0 overflow-hidden"
+              style={{ width: "50%", color: "var(--star-fill)" }}
+            >
+              &#9733;
+            </span>
           </span>
         );
       } else {
         starEls.push(
-          <span key={i} style={{ color: "rgba(15,23,42,0.20)" }}>
-            ★
-          </span>
+          <span key={i} style={{ color: "var(--star-empty)" }}>&#9733;</span>
         );
       }
     }
@@ -114,30 +122,59 @@ export default function RestaurantCard({
     <div
       className="restaurant-card flex flex-col overflow-hidden"
       style={{
-        backgroundColor: "#ffffff",
-        borderRadius: "20px",
-        boxShadow: "0 2px 16px rgba(15,23,42,0.08)",
+        backgroundColor: "var(--bg-card)",
+        borderRadius: "16px",
+        boxShadow: "var(--shadow)",
+        border: "1px solid var(--border)",
       }}
     >
-      {/* Photo */}
-      <Link href={`/restaurant/${restaurantId}`} className="relative overflow-hidden h-48 sm:h-[170px] block" style={{ flexShrink: 0 }}>
+      {/* Photo — tall, photography-first */}
+      <Link href={`/restaurant/${restaurantId}`} className="relative overflow-hidden h-52 sm:h-48 block" style={{ flexShrink: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photoUrl}
           alt={`${cuisine} food`}
           className="card-photo w-full h-full"
           style={{ objectFit: "cover" }}
+          referrerPolicy="no-referrer"
         />
-        {/* Rank pill */}
+        {/* Rank */}
         <span
           className="absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full"
-          style={{
-            backgroundColor: "#ff385c",
-            color: "#ffffff",
-          }}
+          style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
         >
           #{rank}
         </span>
+        {/* Heart — overlaid on photo */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const nowFavorited = toggleFavorite(restaurantId);
+            setHearted(nowFavorited);
+            if (!nowFavorited && onUnfavorite) onUnfavorite(restaurantId);
+          }}
+          className="heart-btn absolute top-3 right-3 flex items-center justify-center w-9 h-9 rounded-full"
+          style={{
+            backgroundColor: hearted ? "var(--accent)" : "rgba(0,0,0,0.45)",
+            backdropFilter: "blur(4px)",
+          }}
+          aria-label={hearted ? "Remove from favorites" : "Add to favorites"}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="15"
+            height="15"
+            fill={hearted ? "#ffffff" : "none"}
+            stroke="#ffffff"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
       </Link>
 
       {/* Content */}
@@ -145,104 +182,41 @@ export default function RestaurantCard({
         {/* Name */}
         <Link href={`/restaurant/${restaurantId}`}>
           <h3
-            className="font-semibold text-sm leading-snug mb-2 line-clamp-2 hover:underline cursor-pointer"
-            style={{ color: "rgba(15,23,42,0.96)" }}
+            className="font-semibold text-[15px] leading-snug mb-2 line-clamp-2 hover:underline cursor-pointer"
+            style={{ color: "var(--text)" }}
           >
             {name}
           </h3>
         </Link>
 
-        {/* Chips row */}
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          <span
-            className="text-xs px-2 py-0.5 rounded-full font-medium"
-            style={{
-              backgroundColor: "rgba(255,56,92,0.08)",
-              color: "#ff385c",
-            }}
-          >
-            {neighborhood}
-          </span>
-          <span
-            className="text-xs px-2 py-0.5 rounded-full font-medium"
-            style={{
-              backgroundColor: "rgba(15,23,42,0.04)",
-              color: "rgba(15,23,42,0.70)",
-            }}
-          >
-            {cuisine}
-          </span>
-          <span
-            className="text-xs px-2 py-0.5 rounded-full font-medium"
-            style={{
-              backgroundColor: "rgba(15,23,42,0.04)",
-              color: "rgba(15,23,42,0.70)",
-            }}
-          >
-            {reviews.toLocaleString()} reviews
-          </span>
-        </div>
+        {/* Meta line — compact, not chip-heavy */}
+        <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
+          {neighborhood} · {cuisine}{price ? ` · ${price}` : ""}
+        </p>
 
-        {/* Rating stars */}
-        <div className="flex items-center gap-1 mb-3 text-sm">
+        {/* Rating + reviews */}
+        <div className="flex items-center gap-1.5 text-sm">
           {renderStars()}
-          <span
-            className="text-xs ml-1 font-medium"
-            style={{ color: "rgba(15,23,42,0.70)" }}
-          >
+          <span className="text-xs font-medium ml-0.5" style={{ color: "var(--text-secondary)" }}>
             {rating.toFixed(1)}
           </span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+            ({reviews.toLocaleString()})
+          </span>
         </div>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Divider */}
-        <div
-          className="w-full mb-3"
-          style={{
-            height: "1px",
-            backgroundColor: "rgba(15,23,42,0.10)",
-          }}
-        />
-
-        {/* Actions row */}
-        <div className="flex items-center justify-between">
-          {/* Heart button */}
-          <button
-            onClick={() => setHearted(toggleFavorite(restaurantId))}
-            className="heart-btn flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-full"
-            style={{
-              backgroundColor: hearted
-                ? "rgba(255,56,92,0.10)"
-                : "rgba(15,23,42,0.04)",
-            }}
-            aria-label={hearted ? "Remove from favorites" : "Add to favorites"}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              fill={hearted ? "#ff385c" : "none"}
-              stroke={hearted ? "#ff385c" : "rgba(15,23,42,0.50)"}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          </button>
-
-          {/* Maps link */}
+        {/* Maps link */}
+        <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--border)" }}>
           <a
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-semibold transition-opacity hover:opacity-75"
-            style={{ color: "#ff385c" }}
+            className="text-xs font-medium transition-opacity hover:opacity-75"
+            style={{ color: "var(--accent-text)" }}
           >
-            Open in Maps →
+            Open in Maps &rarr;
           </a>
         </div>
       </div>

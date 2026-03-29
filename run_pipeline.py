@@ -5,6 +5,7 @@ from pipeline import (
     compute_restaurant_metrics,
     train_logistic_model,
     score_with_model,
+    cluster_restaurants,
 )
 
 LABELS_PATH = "data/labels.csv"
@@ -61,7 +62,7 @@ def main():
     restaurant_scores = compute_restaurant_metrics(reviews_enriched, restaurants)
     restaurant_scores = restaurant_scores[restaurant_scores["num_reviews"] >= 20].copy()
 
-    # --- Logistic Regression setup ---
+    # --- Model feature setup ---
     feature_cols = [
         "local_weighted_rating",
         "tourist_weighted_rating",
@@ -70,13 +71,29 @@ def main():
         "pct_local_reviews",
         "pct_tourist_reviews",
         "num_reviews",
+        # Enriched features from Apify
+        "price_midpoint",
+        "distance_to_times_sq_km",
+        "polarization",
+        "rating_skew",
+        "one_star_pct",
+        "five_star_pct",
+        "google_review_count",
+        "images_count",
+        # NLP features from review text
+        "local_keyword_density",
+        "tourist_keyword_density",
+        "quality_keyword_density",
+        "meh_keyword_density",
+        "local_vs_tourist_ratio",
+        "avg_review_length",
     ]
 
     # A) Load real labels (from data/labels.csv or mock restaurant_type)
     labels = load_labels(restaurants)
     if labels is None:
         print("\nNo labels found — using signal score ranking (no ML model)")
-        scored = restaurant_scores.copy()
+        scored = cluster_restaurants(restaurant_scores)
         min_s = scored["adjusted_score"].min()
         max_s = scored["adjusted_score"].max()
         if max_s > min_s:
@@ -115,9 +132,10 @@ def main():
 
     # C) Score each restaurant
     scored = score_with_model(restaurant_scores, model, feature_cols)
+    scored = cluster_restaurants(scored)
 
     # D) Recommend by probability threshold
-    P_THRESHOLD = 0.70
+    P_THRESHOLD = 0.50
     recs = scored[scored["p_safe_pick"] >= P_THRESHOLD].copy()
     recs = recs.sort_values(["p_safe_pick", "adjusted_score"], ascending=False)
 

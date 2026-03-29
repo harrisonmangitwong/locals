@@ -2,134 +2,169 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main
-      className="min-h-screen flex flex-col"
-      style={{ backgroundColor: "#111111", color: "#f1f5f9" }}
-    >
+    <main className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       {/* Topbar */}
       <header
-        className="flex items-center justify-between px-6 py-4"
-        style={{ borderBottom: "1px solid rgba(241,245,249,0.08)" }}
+        className="flex items-center justify-between px-6 py-5"
+        style={{ borderBottom: "1px solid var(--border)" }}
       >
-        <Link href="/" className="font-bold text-lg" style={{ color: "#f1f5f9" }}>
-          🍜 Locals
+        <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>
+          Locals
         </Link>
         <nav className="flex items-center gap-6">
           <Link
             href="/recommendations"
             className="text-sm transition-colors hover:opacity-75"
-            style={{ color: "rgba(241,245,249,0.55)" }}
+            style={{ color: "var(--text-secondary)" }}
           >
             Recommendations
           </Link>
           <Link
+            href="/favorites"
+            className="text-sm transition-colors hover:opacity-75"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Favorites
+          </Link>
+          <Link
             href="/about"
             className="text-sm transition-colors hover:opacity-75"
-            style={{ color: "rgba(241,245,249,0.55)" }}
+            style={{ color: "var(--text-secondary)" }}
           >
             About
           </Link>
         </nav>
       </header>
 
-      {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center flex-1 px-6 py-24 text-center">
-        {/* Eyebrow pill */}
+      {/* Hero */}
+      <section className="flex flex-col items-center justify-center flex-1 px-6 py-20 sm:py-28 text-center">
+        {/* Eyebrow */}
         <span
-          className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-8"
-          style={{
-            backgroundColor: "rgba(255, 56, 92, 0.15)",
-            color: "#ff385c",
-            border: "1px solid rgba(255, 56, 92, 0.3)",
-          }}
+          className="inline-block text-xs font-medium tracking-widest uppercase mb-8 px-3 py-1.5 rounded-full"
+          style={{ color: "var(--accent-text)", backgroundColor: "var(--accent-soft)", letterSpacing: "0.12em" }}
         >
-          🗽 New York City
+          New York City
         </span>
 
-        {/* Headline */}
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight max-w-3xl">
-          Eat like a{" "}
-          <span
-            style={{
-              background: "linear-gradient(90deg, #ff385c, #fb7185)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            local
-          </span>
-          .<br />Not a tourist.
+        {/* Headline — serif, no gradient */}
+        <h1
+          className="font-display text-5xl sm:text-6xl md:text-7xl leading-[1.1] mb-6 max-w-2xl"
+          style={{ color: "var(--text)" }}
+        >
+          Eat like a local.
+          <br />
+          <span style={{ color: "var(--accent)" }}>Not a tourist.</span>
         </h1>
 
         {/* Subtext */}
         <p
-          className="text-lg md:text-xl max-w-xl mb-12 leading-relaxed"
-          style={{ color: "rgba(241, 245, 249, 0.55)" }}
+          className="text-lg md:text-xl max-w-lg mb-14 leading-relaxed"
+          style={{ color: "var(--text-secondary)" }}
         >
-          We rank NYC restaurants by how much locals love them — not by how many
-          tourists stumble in. Find your next neighborhood gem.
+          We analyze thousands of NYC restaurant reviews to find the places
+          real New Yorkers love — not the ones tourists stumble into.
         </p>
 
-        {/* Feature cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-14 w-full max-w-3xl">
-          <div
-            className="rounded-2xl p-6 text-left"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(241,245,249,0.12)",
-            }}
-          >
-            <div className="text-2xl mb-3">📡</div>
-            <h3 className="font-semibold text-base mb-2" style={{ color: "#f1f5f9" }}>
-              Local signal scoring
-            </h3>
-            <p className="text-sm" style={{ color: "rgba(241,245,249,0.55)" }}>
-              Our algorithm weighs reviewer localness to surface spots that real New Yorkers return to.
-            </p>
+        {/* Stats row — replaces emoji feature cards */}
+        <div
+          className="flex flex-col sm:flex-row items-center gap-8 sm:gap-12 mb-14"
+          style={{ color: "var(--text-muted)" }}
+        >
+          <div className="text-center">
+            <div className="font-display text-3xl sm:text-4xl mb-1" style={{ color: "var(--text)" }}>415</div>
+            <div className="text-xs uppercase tracking-wider">Restaurants</div>
           </div>
-
           <div
-            className="rounded-2xl p-6 text-left"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(241,245,249,0.12)",
-            }}
-          >
-            <div className="text-2xl mb-3">🚫</div>
-            <h3 className="font-semibold text-base mb-2" style={{ color: "#f1f5f9" }}>
-              Tourist trap detection
-            </h3>
-            <p className="text-sm" style={{ color: "rgba(241,245,249,0.55)" }}>
-              High tourist review ratio? Flagged. We penalize places that coast on out-of-towner hype.
-            </p>
+            className="hidden sm:block w-px h-10"
+            style={{ backgroundColor: "var(--border-strong)" }}
+          />
+          <div className="text-center">
+            <div className="font-display text-3xl sm:text-4xl mb-1" style={{ color: "var(--text)" }}>48k+</div>
+            <div className="text-xs uppercase tracking-wider">Reviews analyzed</div>
           </div>
-
           <div
-            className="rounded-2xl p-6 text-left"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(241,245,249,0.12)",
-            }}
-          >
-            <div className="text-2xl mb-3">🗺️</div>
-            <h3 className="font-semibold text-base mb-2" style={{ color: "#f1f5f9" }}>
-              Neighborhood discovery
-            </h3>
-            <p className="text-sm" style={{ color: "rgba(241,245,249,0.55)" }}>
-              Filter by neighborhood and cuisine to find the best local picks wherever you are in NYC.
-            </p>
+            className="hidden sm:block w-px h-10"
+            style={{ backgroundColor: "var(--border-strong)" }}
+          />
+          <div className="text-center">
+            <div className="font-display text-3xl sm:text-4xl mb-1" style={{ color: "var(--text)" }}>5</div>
+            <div className="text-xs uppercase tracking-wider">Boroughs</div>
           </div>
         </div>
 
-        {/* CTA button */}
+        {/* CTA */}
         <Link
           href="/recommendations"
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#ff385c", color: "#ffffff" }}
+          className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold transition-all hover:opacity-90"
+          style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
         >
-          See recommendations →
+          See recommendations
         </Link>
+
+        {/* How it works — editorial text, not cards */}
+        <div className="mt-24 max-w-2xl w-full text-left">
+          <h2
+            className="font-display text-2xl mb-8"
+            style={{ color: "var(--text)" }}
+          >
+            How it works
+          </h2>
+          <div className="space-y-6">
+            <div className="flex gap-5">
+              <span
+                className="font-display text-3xl leading-none shrink-0 w-8"
+                style={{ color: "var(--accent-text)" }}
+              >
+                1
+              </span>
+              <div>
+                <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--text)" }}>
+                  Score every reviewer
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  Our algorithm analyzes each reviewer&apos;s history to determine if
+                  they&apos;re a local or a tourist passing through.
+                </p>
+              </div>
+            </div>
+            <div style={{ borderTop: "1px solid var(--border)" }} />
+            <div className="flex gap-5">
+              <span
+                className="font-display text-3xl leading-none shrink-0 w-8"
+                style={{ color: "var(--accent-text)" }}
+              >
+                2
+              </span>
+              <div>
+                <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--text)" }}>
+                  Weight the ratings
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  Local reviewers&apos; opinions count more. Restaurants that coast on
+                  out-of-towner hype get penalized.
+                </p>
+              </div>
+            </div>
+            <div style={{ borderTop: "1px solid var(--border)" }} />
+            <div className="flex gap-5">
+              <span
+                className="font-display text-3xl leading-none shrink-0 w-8"
+                style={{ color: "var(--accent-text)" }}
+              >
+                3
+              </span>
+              <div>
+                <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--text)" }}>
+                  Rank by local love
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  A trained ML model classifies each restaurant using review signals,
+                  NLP, and location data. The best local picks rise to the top.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   );

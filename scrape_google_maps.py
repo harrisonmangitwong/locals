@@ -30,7 +30,10 @@ load_dotenv()
 # CONFIG — tweak these to control what gets scraped
 # ---------------------------------------------------------------------------
 SEARCH_TERMS = [
-    "restaurant",
+    # General
+    "best restaurant",
+    "local restaurant",
+    # Cuisine-specific
     "pizza",
     "tacos",
     "noodles",
@@ -39,10 +42,32 @@ SEARCH_TERMS = [
     "ramen",
     "deli",
     "bakery",
+    "sushi",
+    "korean food",
+    "thai food",
+    "caribbean food",
+    # Brooklyn neighborhoods
+    "restaurant Williamsburg Brooklyn",
+    "restaurant Bushwick Brooklyn",
+    "restaurant Park Slope Brooklyn",
+    "restaurant Bed-Stuy Brooklyn",
+    "restaurant Crown Heights Brooklyn",
+    "restaurant Greenpoint Brooklyn",
+    "restaurant Sunset Park Brooklyn",
+    # Manhattan gaps
+    "restaurant Lower East Side Manhattan",
+    "restaurant East Village Manhattan",
+    "restaurant West Village Manhattan",
+    "restaurant Chinatown Manhattan",
+    # Staten Island
+    "restaurant Staten Island",
+    # More Bronx
+    "restaurant Fordham Bronx",
+    "restaurant Arthur Avenue Bronx",
 ]
 
 LOCATION = "New York City, USA"
-MAX_PLACES_PER_SEARCH = 30      # results per search term
+MAX_PLACES_PER_SEARCH = 40      # results per search term
 MAX_REVIEWS_PER_PLACE = 50      # reviews to pull per restaurant
 OUTPUT_DIR = "data"
 USE_LAST_RUN = True  # Set to False to trigger a fresh scrape
