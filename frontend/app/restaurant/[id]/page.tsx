@@ -34,6 +34,7 @@ interface RestaurantDetail {
   cuisine: string;
   address: string;
   url: string;
+  image_url: string;
   total_score: number;
   review_count: number;
   num_reviews: number;
@@ -123,8 +124,18 @@ export default function RestaurantPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--bg)", color: "var(--text-muted)" }}>
-        Loading...
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)" }}>
+        <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4" style={{ backgroundColor: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
+          <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>Locals</Link>
+        </header>
+        <div className="w-full h-56 sm:h-72 animate-pulse" style={{ backgroundColor: "var(--bg-subtle)" }} />
+        <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
+          <div className="space-y-3 pt-4">
+            <div className="h-8 w-2/3 rounded animate-pulse" style={{ backgroundColor: "var(--bg-subtle)" }} />
+            <div className="h-4 w-1/2 rounded animate-pulse" style={{ backgroundColor: "var(--bg-subtle)" }} />
+            <div className="h-4 w-1/3 rounded animate-pulse" style={{ backgroundColor: "var(--bg-subtle)" }} />
+          </div>
+        </div>
       </div>
     );
   }
@@ -142,7 +153,7 @@ export default function RestaurantPage() {
 
   const r = restaurant;
   const fallbackId = CUISINE_PHOTO_MAP[r.cuisine] ?? DEFAULT_PHOTO;
-  const photoUrl = (r.image_url as string) || `https://images.unsplash.com/${fallbackId}?w=800&q=75&auto=format&fit=crop`;
+  const photoUrl = r.image_url || `https://images.unsplash.com/${fallbackId}?w=800&q=75&auto=format&fit=crop`;
 
   const stars = Math.round(r.total_score * 2) / 2;
   const fullStars = Math.floor(stars);
@@ -184,6 +195,9 @@ export default function RestaurantPage() {
           <Link href="/recommendations" className="text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
             Recommendations
           </Link>
+          <Link href="/favorites" className="text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
+            Favorites
+          </Link>
           <Link href="/about" className="text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
             About
           </Link>
@@ -193,7 +207,7 @@ export default function RestaurantPage() {
       {/* Hero image */}
       <div className="relative w-full h-56 sm:h-72 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photoUrl} alt={`${r.cuisine} food`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+        <img src={photoUrl} alt={r.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, var(--bg), transparent 60%)" }} />
         <span
           className="absolute top-4 left-4 text-sm font-bold px-3 py-1 rounded-full"

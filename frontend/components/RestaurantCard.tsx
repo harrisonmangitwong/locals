@@ -133,7 +133,7 @@ export default function RestaurantCard({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photoUrl}
-          alt={`${cuisine} food`}
+          alt={name}
           className="card-photo w-full h-full"
           style={{ objectFit: "cover" }}
           referrerPolicy="no-referrer"

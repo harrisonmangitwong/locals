@@ -5,8 +5,8 @@ export default function Home() {
     <main className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       {/* Topbar */}
       <header
-        className="flex items-center justify-between px-6 py-5"
-        style={{ borderBottom: "1px solid var(--border)" }}
+        className="sticky top-0 z-50 flex items-center justify-between px-6 py-4"
+        style={{ backgroundColor: "var(--bg)", borderBottom: "1px solid var(--border)" }}
       >
         <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>
           Locals

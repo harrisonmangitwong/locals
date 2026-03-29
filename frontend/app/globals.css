@@ -80,6 +80,9 @@ body {
 }
 
 /* ── Filter controls ── */
+.filter-control {
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
 .filter-control:hover {
   border-color: var(--border-strong) !important;
   background-color: var(--bg-subtle) !important;
@@ -97,11 +100,24 @@ body {
 
 /* ── Heart ── */
 .heart-btn {
-  transition: background-color 150ms ease, transform 150ms ease;
+  transition: background-color 150ms ease, transform 150ms ease, opacity 150ms ease;
 }
 .heart-btn:hover {
-  background-color: var(--accent-soft) !important;
+  opacity: 0.85;
   transform: scale(1.12);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .restaurant-card,
+  .restaurant-card .card-photo,
+  .heart-btn,
+  .filter-control,
+  .page-btn {
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+  }
 }
 
 /* ── Serif display font ── */
