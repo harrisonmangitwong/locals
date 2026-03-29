@@ -267,17 +267,14 @@ function RecommendationsContent() {
         <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>
           Locals
         </Link>
-        <nav className="flex items-center gap-6">
-          <Link href="/" className="text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            Home
+        <nav className="flex items-center gap-3 sm:gap-6">
+          <Link href="/recommendations" className="text-xs sm:text-sm font-medium" style={{ color: "var(--text)" }}>
+            Recs
           </Link>
-          <Link href="/recommendations" className="text-sm font-medium" style={{ color: "var(--text)" }}>
-            Recommendations
+          <Link href="/favorites" className="text-xs sm:text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
+            Saved
           </Link>
-          <Link href="/favorites" className="text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            Favorites
-          </Link>
-          <Link href="/about" className="text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
+          <Link href="/about" className="hidden sm:inline text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
             About
           </Link>
         </nav>
@@ -336,11 +333,11 @@ function RecommendationsContent() {
 
         {/* Filters row */}
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <select
               value={neighborhood}
               onChange={(e) => updateParams({ neighborhood: e.target.value })}
-              className="filter-control rounded-lg px-3 py-2.5 sm:py-2 text-sm font-medium cursor-pointer"
+              className="filter-control flex-1 sm:flex-none rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
               style={{
                 backgroundColor: "var(--bg-subtle)",
                 color: "var(--text)",
@@ -368,7 +365,7 @@ function RecommendationsContent() {
             <button
               onClick={handleNearMe}
               disabled={locating}
-              className="filter-control px-3.5 py-2.5 sm:py-2 rounded-lg text-sm font-medium whitespace-nowrap"
+              className="filter-control px-3.5 py-3 sm:py-2 rounded-lg text-sm font-medium whitespace-nowrap"
               style={{
                 backgroundColor: "var(--bg-subtle)",
                 color: "var(--text-secondary)",
@@ -382,7 +379,7 @@ function RecommendationsContent() {
           <select
             value={cuisine}
             onChange={(e) => updateParams({ cuisine: e.target.value })}
-            className="filter-control rounded-lg px-3 py-2.5 sm:py-2 text-sm font-medium cursor-pointer"
+            className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
             style={{
               backgroundColor: "var(--bg-subtle)",
               color: "var(--text)",
@@ -402,7 +399,7 @@ function RecommendationsContent() {
           <select
             value={price}
             onChange={(e) => updateParams({ price: e.target.value })}
-            className="filter-control rounded-lg px-3 py-2.5 sm:py-2 text-sm font-medium cursor-pointer"
+            className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
             style={{
               backgroundColor: "var(--bg-subtle)",
               color: "var(--text)",
@@ -509,7 +506,7 @@ function RecommendationsContent() {
             <button
               onClick={() => updateParams({ page: String(page - 1) })}
               disabled={page <= 1}
-              className="page-btn px-5 py-2.5 sm:px-4 sm:py-2 rounded-lg text-sm font-medium disabled:opacity-30"
+              className="page-btn px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium disabled:opacity-30 min-w-[44px] min-h-[44px]"
               style={{
                 backgroundColor: "var(--bg-subtle)",
                 color: "var(--text)",
@@ -526,7 +523,7 @@ function RecommendationsContent() {
             <button
               onClick={() => updateParams({ page: String(page + 1) })}
               disabled={page >= totalPages}
-              className="page-btn px-5 py-2.5 sm:px-4 sm:py-2 rounded-lg text-sm font-medium disabled:opacity-30"
+              className="page-btn px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium disabled:opacity-30 min-w-[44px] min-h-[44px]"
               style={{
                 backgroundColor: "var(--bg-subtle)",
                 color: "var(--text)",

@@ -14,17 +14,14 @@ export default function AboutPage() {
         <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>
           Locals
         </Link>
-        <nav className="flex items-center gap-6">
-          <Link href="/" className="text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            Home
+        <nav className="flex items-center gap-3 sm:gap-6">
+          <Link href="/recommendations" className="text-xs sm:text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
+            Recs
           </Link>
-          <Link href="/recommendations" className="text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            Recommendations
+          <Link href="/favorites" className="text-xs sm:text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
+            Saved
           </Link>
-          <Link href="/favorites" className="text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            Favorites
-          </Link>
-          <Link href="/about" className="text-sm font-medium" style={{ color: "var(--text)" }}>
+          <Link href="/about" className="text-xs sm:text-sm font-medium" style={{ color: "var(--text)" }}>
             About
           </Link>
         </nav>

@@ -11,24 +11,24 @@ export default function Home() {
         <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>
           Locals
         </Link>
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-3 sm:gap-6">
           <Link
             href="/recommendations"
-            className="text-sm transition-colors hover:opacity-75"
+            className="text-xs sm:text-sm transition-colors hover:opacity-75"
             style={{ color: "var(--text-secondary)" }}
           >
-            Recommendations
+            Recs
           </Link>
           <Link
             href="/favorites"
-            className="text-sm transition-colors hover:opacity-75"
+            className="text-xs sm:text-sm transition-colors hover:opacity-75"
             style={{ color: "var(--text-secondary)" }}
           >
-            Favorites
+            Saved
           </Link>
           <Link
             href="/about"
-            className="text-sm transition-colors hover:opacity-75"
+            className="hidden sm:inline text-sm transition-colors hover:opacity-75"
             style={{ color: "var(--text-secondary)" }}
           >
             About

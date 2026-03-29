@@ -80,24 +80,24 @@ export default function FavoritesPage() {
         >
           Locals
         </Link>
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-3 sm:gap-6">
           <Link
             href="/recommendations"
-            className="text-sm transition-colors hover:opacity-75"
+            className="text-xs sm:text-sm transition-colors hover:opacity-75"
             style={{ color: "var(--text-secondary)" }}
           >
-            Recommendations
+            Recs
           </Link>
           <Link
             href="/favorites"
-            className="text-sm font-medium"
+            className="text-xs sm:text-sm font-medium"
             style={{ color: "var(--text)" }}
           >
-            Favorites
+            Saved
           </Link>
           <Link
             href="/about"
-            className="text-sm transition-colors hover:opacity-75"
+            className="hidden sm:inline text-sm transition-colors hover:opacity-75"
             style={{ color: "var(--text-secondary)" }}
           >
             About
