@@ -122,7 +122,7 @@ export default function FavoritesPage() {
 
         {/* Loading */}
         {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
@@ -158,17 +158,17 @@ export default function FavoritesPage() {
               className="font-display text-xl mb-2"
               style={{ color: "var(--text)" }}
             >
-              No favorites yet
+              Your list is empty
             </p>
             <p
               className="text-sm mb-6 max-w-md"
               style={{ color: "var(--text-muted)" }}
             >
-              Tap the heart on any restaurant to save it here.
+              Found a spot that looks good? Tap the heart to save it here for later.
             </p>
             <Link
               href="/recommendations"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-opacity hover:opacity-90"
+              className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
               style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
             >
               Browse restaurants
@@ -178,7 +178,7 @@ export default function FavoritesPage() {
 
         {/* Favorites grid */}
         {!loading && !empty && restaurants.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {restaurants.map((r) => (
               <RestaurantCard
                 key={r.restaurant_id}

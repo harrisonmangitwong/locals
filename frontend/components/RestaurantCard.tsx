@@ -81,6 +81,7 @@ export default function RestaurantCard({
   onUnfavorite,
 }: RestaurantCardProps) {
   const [hearted, setHearted] = useState(false);
+  const [heartPop, setHeartPop] = useState(false);
 
   useEffect(() => {
     setHearted(getFavorites().has(restaurantId));
@@ -153,7 +154,7 @@ export default function RestaurantCard({
           <span
             className="absolute bottom-3 left-3 text-xs font-semibold px-2 py-0.5 rounded-full"
             style={{
-              backgroundColor: isOpenNow ? "rgba(45,138,86,0.9)" : "rgba(0,0,0,0.55)",
+              backgroundColor: isOpenNow ? "var(--success)" : "rgba(0,0,0,0.55)",
               color: "#ffffff",
               backdropFilter: "blur(4px)",
             }}
@@ -168,9 +169,13 @@ export default function RestaurantCard({
             e.stopPropagation();
             const nowFavorited = toggleFavorite(restaurantId);
             setHearted(nowFavorited);
+            if (nowFavorited) {
+              setHeartPop(true);
+              setTimeout(() => setHeartPop(false), 400);
+            }
             if (!nowFavorited && onUnfavorite) onUnfavorite(restaurantId);
           }}
-          className="heart-btn absolute top-3 right-3 flex items-center justify-center w-9 h-9 rounded-full"
+          className={`heart-btn absolute top-3 right-3 flex items-center justify-center w-9 h-9 rounded-full${heartPop ? " heart-pop" : ""}`}
           style={{
             backgroundColor: hearted ? "var(--accent)" : "rgba(0,0,0,0.45)",
             backdropFilter: "blur(4px)",
@@ -198,7 +203,7 @@ export default function RestaurantCard({
         {/* Name */}
         <Link href={`/restaurant/${restaurantId}`}>
           <h3
-            className="font-semibold text-[15px] leading-snug mb-2 line-clamp-2 hover:underline cursor-pointer"
+            className="font-semibold text-base leading-snug mb-2 line-clamp-2 hover:underline cursor-pointer"
             style={{ color: "var(--text)" }}
           >
             {name}

@@ -48,7 +48,7 @@ export default function Home() {
 
         {/* Headline — serif, no gradient */}
         <h1
-          className="font-display text-5xl sm:text-6xl md:text-7xl leading-[1.1] mb-6 max-w-2xl"
+          className="font-display text-5xl sm:text-6xl md:text-7xl mb-6 max-w-2xl"
           style={{ color: "var(--text)" }}
         >
           Eat like a local.
@@ -67,8 +67,8 @@ export default function Home() {
 
         {/* Stats row — replaces emoji feature cards */}
         <div
-          className="flex flex-col sm:flex-row items-center gap-8 sm:gap-12 mb-14"
-          style={{ color: "var(--text-muted)" }}
+          className="flex flex-col sm:flex-row items-center gap-8 sm:gap-12 mb-14 px-8 py-6 rounded-2xl"
+          style={{ color: "var(--text-muted)", backgroundColor: "var(--warm-soft)" }}
         >
           <div className="text-center">
             <div className="font-display text-3xl sm:text-4xl mb-1" style={{ color: "var(--text)" }}>415</div>
@@ -95,25 +95,25 @@ export default function Home() {
         {/* CTA */}
         <Link
           href="/recommendations"
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold transition-all hover:opacity-90"
+          className="cta-btn inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold"
           style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
         >
           See recommendations
         </Link>
 
         {/* How it works — editorial text, not cards */}
-        <div className="mt-24 max-w-2xl w-full text-left">
+        <div className="mt-28 max-w-2xl w-full text-left">
           <h2
             className="font-display text-2xl mb-8"
             style={{ color: "var(--text)" }}
           >
             How it works
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div className="flex gap-5">
               <span
                 className="font-display text-3xl leading-none shrink-0 w-8"
-                style={{ color: "var(--accent-text)" }}
+                style={{ color: "var(--warm)" }}
               >
                 1
               </span>
@@ -131,7 +131,7 @@ export default function Home() {
             <div className="flex gap-5">
               <span
                 className="font-display text-3xl leading-none shrink-0 w-8"
-                style={{ color: "var(--accent-text)" }}
+                style={{ color: "var(--warm)" }}
               >
                 2
               </span>
@@ -149,7 +149,7 @@ export default function Home() {
             <div className="flex gap-5">
               <span
                 className="font-display text-3xl leading-none shrink-0 w-8"
-                style={{ color: "var(--accent-text)" }}
+                style={{ color: "var(--warm)" }}
               >
                 3
               </span>

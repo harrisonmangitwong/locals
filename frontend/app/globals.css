@@ -20,6 +20,10 @@
   --shadow-lg: 0 8px 30px rgba(26,24,20,0.10);
   --star-fill: #c44d2c;
   --star-empty: rgba(26,24,20,0.15);
+  --success: #2d8a56;
+  --success-soft: rgba(45,138,86,0.08);
+  --warm: #b8860b;
+  --warm-soft: rgba(184,134,11,0.08);
   color-scheme: light dark;
 }
 
@@ -44,6 +48,10 @@
     --shadow-lg: 0 8px 30px rgba(0,0,0,0.30);
     --star-fill: #e06b4d;
     --star-empty: rgba(245,240,235,0.15);
+    --success: #3da868;
+    --success-soft: rgba(61,168,104,0.10);
+    --warm: #d4a017;
+    --warm-soft: rgba(212,160,23,0.10);
   }
 }
 
@@ -106,14 +114,57 @@ body {
   opacity: 0.85;
   transform: scale(1.12);
 }
+.heart-btn:active {
+  transform: scale(0.9);
+}
+
+/* Heart pop on favorite */
+@keyframes heart-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.35); }
+  60% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.heart-pop {
+  animation: heart-pop 400ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* ── CTA press ── */
+.cta-btn {
+  transition: transform 100ms ease, opacity 150ms ease;
+}
+.cta-btn:hover {
+  opacity: 0.92;
+}
+.cta-btn:active {
+  transform: translateY(1px);
+}
+
+/* ── Card stagger entrance ── */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.card-enter {
+  animation: card-in 350ms ease-out both;
+}
+
+/* ── Search focus ── */
+.search-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .restaurant-card,
   .restaurant-card .card-photo,
   .heart-btn,
+  .heart-pop,
   .filter-control,
-  .page-btn {
+  .page-btn,
+  .cta-btn,
+  .card-enter {
     transition: none !important;
     transform: none !important;
     animation: none !important;
@@ -123,4 +174,5 @@ body {
 /* ── Serif display font ── */
 .font-display {
   font-family: var(--font-dm-serif, "DM Serif Display"), Georgia, serif;
+  line-height: 1.15;
 }

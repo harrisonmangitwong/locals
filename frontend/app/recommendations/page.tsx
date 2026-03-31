@@ -283,9 +283,9 @@ function RecommendationsContent() {
         </nav>
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-10">
         {/* Page title */}
-        <div className="mb-6">
+        <div className="mb-8">
           <h1 className="font-display text-3xl mb-1" style={{ color: "var(--text)" }}>
             Recommendations
           </h1>
@@ -299,7 +299,7 @@ function RecommendationsContent() {
         </div>
 
         {/* Search bar */}
-        <div className="mb-4">
+        <div className="mb-3">
           <div className="flex items-center gap-2">
             <label htmlFor="search-restaurants" className="sr-only">Search restaurants</label>
             <input
@@ -313,7 +313,7 @@ function RecommendationsContent() {
                 }
               }}
               placeholder="Search restaurants..."
-              className="w-full sm:w-80 rounded-lg px-4 py-2.5 text-sm"
+              className="search-input w-full sm:w-80 rounded-lg px-4 py-2.5 text-sm"
               style={{
                 backgroundColor: "var(--bg-subtle)",
                 color: "var(--text)",
@@ -337,7 +337,7 @@ function RecommendationsContent() {
         </div>
 
         {/* Filters row */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 mb-10">
           <div className="flex gap-2 w-full sm:w-auto">
             <label htmlFor="filter-neighborhood" className="sr-only">Filter by neighborhood</label>
             <select
@@ -429,9 +429,9 @@ function RecommendationsContent() {
             aria-pressed={openNow}
             className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium whitespace-nowrap transition-colors"
             style={{
-              backgroundColor: openNow ? "#2d8a56" : "var(--bg-subtle)",
+              backgroundColor: openNow ? "var(--success)" : "var(--bg-subtle)",
               color: openNow ? "#ffffff" : "var(--text-secondary)",
-              border: `1px solid ${openNow ? "#2d8a56" : "var(--border)"}`,
+              border: `1px solid ${openNow ? "var(--success)" : "var(--border)"}`,
             }}
           >
             Open Now
@@ -482,10 +482,10 @@ function RecommendationsContent() {
 
         {/* Restaurant grid */}
         {!loading && !error && restaurants.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-            {restaurants.map((r) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            {restaurants.map((r, i) => (
+              <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
               <RestaurantCard
-                key={r.restaurant_id}
                 restaurantId={r.restaurant_id}
                 rank={r.rank}
                 name={r.name}
@@ -498,6 +498,7 @@ function RecommendationsContent() {
                 price={r.price_midpoint ? (r.price_midpoint <= 15 ? "$" : r.price_midpoint <= 30 ? "$$" : r.price_midpoint <= 60 ? "$$$" : "$$$$") : undefined}
                 isOpenNow={r.is_open_now}
               />
+              </div>
             ))}
           </div>
         )}
@@ -506,10 +507,10 @@ function RecommendationsContent() {
         {!loading && !error && restaurants.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
-              No restaurants found
+              Nothing here yet
             </p>
             <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
-              Try a different neighborhood or cuisine
+              Try a different neighborhood, cuisine, or search term
             </p>
             <button
               onClick={() => {

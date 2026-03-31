@@ -64,13 +64,13 @@ interface RestaurantDetail {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function RatingBar({ label, value, maxValue = 5 }: { label: string; value: number; maxValue?: number }) {
+function RatingBar({ label, value, maxValue = 5, color }: { label: string; value: number; maxValue?: number; color?: string }) {
   const pct = Math.min((value / maxValue) * 100, 100);
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs w-20 shrink-0" style={{ color: "var(--text-muted)" }}>{label}</span>
       <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--bg-inset)" }}>
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: "var(--accent)" }} />
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color ?? "var(--accent)" }} />
       </div>
       <span className="text-sm font-semibold w-8 text-right" style={{ color: "var(--text)" }}>{value.toFixed(1)}</span>
     </div>
@@ -79,7 +79,7 @@ function RatingBar({ label, value, maxValue = 5 }: { label: string; value: numbe
 
 function getVerdict(localRating: number, touristRating: number): { text: string; color: string } {
   const gap = localRating - touristRating;
-  if (gap > 0.3) return { text: "Locals rate this higher than tourists — a hidden gem.", color: "#2d8a56" };
+  if (gap > 0.3) return { text: "Locals rate this higher than tourists — a hidden gem.", color: "var(--success)" };
   if (gap < -0.3) return { text: "Tourists rate this higher than locals — but locals still approve.", color: "var(--accent-text)" };
   return { text: "Locals and tourists agree — this place is universally loved.", color: "var(--text-secondary)" };
 }
@@ -87,7 +87,7 @@ function getVerdict(localRating: number, touristRating: number): { text: string;
 function SignalMeter({ value }: { value: number }) {
   const pct = Math.min(value * 100, 100);
   let strength: string, color: string;
-  if (pct >= 40) { strength = "Strong"; color = "#2d8a56"; }
+  if (pct >= 40) { strength = "Strong"; color = "var(--success)"; }
   else if (pct >= 25) { strength = "Moderate"; color = "var(--accent-text)"; }
   else { strength = "Limited"; color = "var(--text-muted)"; }
   return (
@@ -148,7 +148,7 @@ function HoursTable({ hoursJson, isOpenNow }: { hoursJson: string; isOpenNow?: b
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-muted)", flexShrink: 0 }}>
           <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
         </svg>
-        <span style={{ color: isOpenNow === true ? "#2d8a56" : isOpenNow === false ? "var(--accent)" : "var(--text-secondary)" }}>
+        <span style={{ color: isOpenNow === true ? "var(--success)" : isOpenNow === false ? "var(--accent)" : "var(--text-secondary)" }}>
           {isOpenNow === true ? "Open now" : isOpenNow === false ? "Closed now" : "Hours"}
         </span>
         {todayEntry && (
@@ -222,7 +222,7 @@ function ReviewCard({ review }: { review: ReviewEntry }) {
         <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>{review.author}</span>
         <MiniStars rating={review.rating ?? 5} />
       </div>
-      <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>{review.text}</p>
+      <p className="text-[0.9375rem] leading-relaxed" style={{ color: "var(--text)" }}>{review.text}</p>
       {review.published && <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>{review.published}</p>}
     </div>
   );
@@ -258,6 +258,7 @@ export default function RestaurantPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hearted, setHearted] = useState(false);
+  const [heartPop, setHeartPop] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -359,8 +360,12 @@ export default function RestaurantPage() {
           #{r.rank}
         </span>
         <button
-          onClick={() => { const now = toggleFavorite(r.restaurant_id); setHearted(now); }}
-          className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full"
+          onClick={() => {
+            const now = toggleFavorite(r.restaurant_id);
+            setHearted(now);
+            if (now) { setHeartPop(true); setTimeout(() => setHeartPop(false), 400); }
+          }}
+          className={`heart-btn absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full${heartPop ? " heart-pop" : ""}`}
           style={{ backgroundColor: hearted ? "var(--accent)" : "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
           aria-label={hearted ? "Remove from favorites" : "Save to favorites"}
         >
@@ -373,9 +378,9 @@ export default function RestaurantPage() {
 
       <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
         {/* Name + basics */}
-        <div className="mb-5">
-          <h1 className="font-display text-2xl sm:text-3xl mb-2">{r.name}</h1>
-          <p className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
+        <div className="mb-8">
+          <h1 className="font-display text-2xl sm:text-3xl mb-2.5">{r.name}</h1>
+          <p className="text-sm mb-2.5" style={{ color: "var(--text-secondary)" }}>
             {r.neighborhood} · {r.cuisine} · {(r.review_count ?? r.num_reviews ?? 0).toLocaleString()} reviews
           </p>
           <div className="flex items-center gap-2 mb-3">
@@ -419,10 +424,10 @@ export default function RestaurantPage() {
         )}
 
         {/* Why it's local-approved */}
-        <section className="mb-8">
-          <h2 className="font-display text-xl mb-4" style={{ color: "var(--accent-text)" }}>Why it&apos;s local-approved</h2>
-          <div className="rounded-xl p-5 mb-4 space-y-3" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
-            <RatingBar label="Locals" value={r.local_weighted_rating ?? 0} />
+        <section className="mb-10">
+          <h2 className="font-display text-xl mb-4" style={{ color: "var(--success)" }}>Why it&apos;s local-approved</h2>
+          <div className="rounded-xl p-5 mb-4 space-y-3" style={{ backgroundColor: "var(--success-soft)", border: "1px solid var(--border)" }}>
+            <RatingBar label="Locals" value={r.local_weighted_rating ?? 0} color="var(--success)" />
             <RatingBar label="Tourists" value={r.tourist_weighted_rating ?? 0} />
           </div>
           <p className="text-sm font-medium mb-5" style={{ color: verdict.color }}>{verdict.text}</p>
@@ -433,7 +438,7 @@ export default function RestaurantPage() {
 
         {/* What locals are saying */}
         {reviews.length > 0 && (
-          <section className="mb-8">
+          <section className="mb-12">
             <h2 className="font-display text-xl mb-4" style={{ color: "var(--accent-text)" }}>What locals are saying</h2>
             <div className="space-y-3">
               {reviews.map((rev, i) => <ReviewCard key={i} review={rev} />)}
@@ -443,7 +448,7 @@ export default function RestaurantPage() {
 
         {/* Actions */}
         <div className="flex gap-3 pb-12">
-          <a href={r.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
+          <a href={r.url} target="_blank" rel="noopener noreferrer" className="cta-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
             Open in Google Maps
           </a>
           <Link href="/recommendations" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-opacity hover:opacity-75" style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)" }}>

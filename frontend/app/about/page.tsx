@@ -28,17 +28,17 @@ export default function AboutPage() {
       </header>
 
       <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-12">
-        <h1 className="font-display text-3xl sm:text-4xl mb-2">How Locals Works</h1>
+        <h1 className="font-display text-3xl sm:text-4xl leading-tight mb-2">How Locals Works</h1>
         <p className="text-sm mb-12" style={{ color: "var(--text-muted)" }}>
           The methodology behind our restaurant rankings
         </p>
 
         {/* The Problem */}
-        <section className="mb-10">
+        <section className="mb-12">
           <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>
             The Problem
           </h2>
-          <p className="leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          <p className="leading-relaxed max-w-prose" style={{ color: "var(--text-secondary)" }}>
             Google Maps rankings are skewed by tourist reviews. A restaurant near Times Square
             with thousands of one-time visitor reviews can outrank an authentic neighborhood spot
             that locals return to every week. Star ratings alone don&apos;t tell you who&apos;s
@@ -51,7 +51,7 @@ export default function AboutPage() {
           <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>
             The Data
           </h2>
-          <p className="leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>
+          <p className="leading-relaxed mb-4 max-w-prose" style={{ color: "var(--text-secondary)" }}>
             We scraped 48,000+ reviews across 1,000+ NYC restaurants using Apify&apos;s Google Maps
             crawler. For each review, we capture the star rating plus reviewer metadata:
           </p>
@@ -64,16 +64,16 @@ export default function AboutPage() {
         </section>
 
         {/* Localness Score */}
-        <section className="mb-10">
+        <section className="mb-14">
           <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>
             Localness Score
           </h2>
-          <p className="leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>
+          <p className="leading-relaxed mb-4 max-w-prose" style={{ color: "var(--text-secondary)" }}>
             Each reviewer gets a localness score from 0 to 1 based on three weighted signals:
           </p>
-          <div className="space-y-4">
+          <div className="space-y-4 rounded-xl p-5" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
             <div className="flex items-start gap-4">
-              <span className="font-display text-2xl leading-none shrink-0" style={{ color: "var(--accent-text)" }}>60%</span>
+              <span className="font-display text-2xl leading-none shrink-0" style={{ color: "var(--warm)" }}>60%</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Geographic concentration</div>
                 <div className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -83,7 +83,7 @@ export default function AboutPage() {
             </div>
             <div style={{ borderTop: "1px solid var(--border)" }} />
             <div className="flex items-start gap-4">
-              <span className="font-display text-2xl leading-none shrink-0" style={{ color: "var(--accent-text)" }}>25%</span>
+              <span className="font-display text-2xl leading-none shrink-0" style={{ color: "var(--warm)" }}>25%</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Review stability</div>
                 <div className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -93,7 +93,7 @@ export default function AboutPage() {
             </div>
             <div style={{ borderTop: "1px solid var(--border)" }} />
             <div className="flex items-start gap-4">
-              <span className="font-display text-2xl leading-none shrink-0" style={{ color: "var(--accent-text)" }}>15%</span>
+              <span className="font-display text-2xl leading-none shrink-0" style={{ color: "var(--warm)" }}>15%</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Local Guide badge</div>
                 <div className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -105,11 +105,11 @@ export default function AboutPage() {
         </section>
 
         {/* Restaurant Ranking */}
-        <section className="mb-10">
+        <section className="mb-14">
           <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>
             Restaurant Ranking
           </h2>
-          <p className="leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>
+          <p className="leading-relaxed mb-4 max-w-prose" style={{ color: "var(--text-secondary)" }}>
             Each restaurant&apos;s final score blends multiple perspectives:
           </p>
           <ol className="list-decimal list-inside space-y-2" style={{ color: "var(--text-secondary)" }}>
@@ -118,7 +118,7 @@ export default function AboutPage() {
             <li><strong style={{ color: "var(--text)" }}>NLP signals</strong> — keyword analysis of review text (quality language, local language, tourist complaints)</li>
             <li><strong style={{ color: "var(--text)" }}>Location and price data</strong> — distance from tourist centers, price range, rating distribution</li>
           </ol>
-          <p className="mt-4 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          <p className="mt-4 leading-relaxed max-w-prose" style={{ color: "var(--text-secondary)" }}>
             A Random Forest model trained on 200+ hand-labeled restaurants classifies each spot
             as &quot;local-approved&quot; or not. The model uses 21 features spanning review statistics,
             NLP signals, and location data. Restaurants that pass are ranked by confidence score
@@ -131,7 +131,7 @@ export default function AboutPage() {
           <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>
             What&apos;s Next
           </h2>
-          <p className="leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          <p className="leading-relaxed max-w-prose" style={{ color: "var(--text-secondary)" }}>
             Locals started with NYC, but the vision is bigger: help you find the right
             (non-touristy) restaurants wherever you are and wherever you travel. We&apos;re
             expanding to more cities soon.
@@ -142,7 +142,7 @@ export default function AboutPage() {
         <div className="pt-4">
           <Link
             href="/recommendations"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-opacity hover:opacity-90"
+            className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
             style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
           >
             Browse recommendations
