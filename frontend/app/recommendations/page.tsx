@@ -155,6 +155,7 @@ interface Restaurant {
   signal_score: number;
   image_url: string;
   price_midpoint?: number;
+  is_open_now?: boolean | null;
   [key: string]: unknown;
 }
 
@@ -176,6 +177,7 @@ function RecommendationsContent() {
   const cuisine = searchParams.get("cuisine") ?? "";
   const price = searchParams.get("price") ?? "";
   const search = searchParams.get("search") ?? "";
+  const openNow = searchParams.get("open_now") === "1";
   const page = parseInt(searchParams.get("page") ?? "1", 10);
 
   const [data, setData] = useState<ApiResponse | null>(null);
@@ -215,6 +217,7 @@ function RecommendationsContent() {
       if (cuisine) params.set("cuisine", cuisine);
       if (price) params.set("price", price);
       if (search) params.set("search", search);
+      if (openNow) params.set("open_now", "true");
       params.set("page", String(page));
       params.set("page_size", "20");
 
@@ -227,7 +230,7 @@ function RecommendationsContent() {
     } finally {
       setLoading(false);
     }
-  }, [neighborhood, cuisine, price, search, page]);
+  }, [neighborhood, cuisine, price, search, openNow, page]);
 
   useEffect(() => {
     fetchData();
@@ -298,7 +301,9 @@ function RecommendationsContent() {
         {/* Search bar */}
         <div className="mb-4">
           <div className="flex items-center gap-2">
+            <label htmlFor="search-restaurants" className="sr-only">Search restaurants</label>
             <input
+              id="search-restaurants"
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
@@ -334,7 +339,9 @@ function RecommendationsContent() {
         {/* Filters row */}
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <div className="flex gap-2 w-full sm:w-auto">
+            <label htmlFor="filter-neighborhood" className="sr-only">Filter by neighborhood</label>
             <select
+              id="filter-neighborhood"
               value={neighborhood}
               onChange={(e) => updateParams({ neighborhood: e.target.value })}
               className="filter-control flex-1 sm:flex-none rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
@@ -376,7 +383,9 @@ function RecommendationsContent() {
             </button>
           </div>
 
+          <label htmlFor="filter-cuisine" className="sr-only">Filter by cuisine</label>
           <select
+            id="filter-cuisine"
             value={cuisine}
             onChange={(e) => updateParams({ cuisine: e.target.value })}
             className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
@@ -396,7 +405,9 @@ function RecommendationsContent() {
               </option>
             ))}
           </select>
+          <label htmlFor="filter-price" className="sr-only">Filter by price</label>
           <select
+            id="filter-price"
             value={price}
             onChange={(e) => updateParams({ price: e.target.value })}
             className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
@@ -413,6 +424,18 @@ function RecommendationsContent() {
             <option value="$$$" style={{ backgroundColor: "var(--bg-card)" }}>$$$ ($30-60)</option>
             <option value="$$$$" style={{ backgroundColor: "var(--bg-card)" }}>$$$$ ($60+)</option>
           </select>
+          <button
+            onClick={() => updateParams({ open_now: openNow ? "" : "1" })}
+            aria-pressed={openNow}
+            className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium whitespace-nowrap transition-colors"
+            style={{
+              backgroundColor: openNow ? "#2d8a56" : "var(--bg-subtle)",
+              color: openNow ? "#ffffff" : "var(--text-secondary)",
+              border: `1px solid ${openNow ? "#2d8a56" : "var(--border)"}`,
+            }}
+          >
+            Open Now
+          </button>
         </div>
 
         {/* Loading — skeleton cards */}
@@ -473,6 +496,7 @@ function RecommendationsContent() {
                 mapsUrl={r.url}
                 photoUrl={r.image_url}
                 price={r.price_midpoint ? (r.price_midpoint <= 15 ? "$" : r.price_midpoint <= 30 ? "$$" : r.price_midpoint <= 60 ? "$$$" : "$$$$") : undefined}
+                isOpenNow={r.is_open_now}
               />
             ))}
           </div>

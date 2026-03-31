@@ -62,6 +62,7 @@ export interface RestaurantCardProps {
   mapsUrl: string;
   photoUrl?: string;
   price?: string;
+  isOpenNow?: boolean | null;
   onUnfavorite?: (id: string) => void;
 }
 
@@ -76,6 +77,7 @@ export default function RestaurantCard({
   mapsUrl,
   photoUrl: photoUrlProp,
   price,
+  isOpenNow,
   onUnfavorite,
 }: RestaurantCardProps) {
   const [hearted, setHearted] = useState(false);
@@ -136,6 +138,7 @@ export default function RestaurantCard({
           alt={name}
           className="card-photo w-full h-full"
           style={{ objectFit: "cover" }}
+          loading="lazy"
           referrerPolicy="no-referrer"
         />
         {/* Rank */}
@@ -145,6 +148,19 @@ export default function RestaurantCard({
         >
           #{rank}
         </span>
+        {/* Open/Closed badge */}
+        {isOpenNow !== null && isOpenNow !== undefined && (
+          <span
+            className="absolute bottom-3 left-3 text-xs font-semibold px-2 py-0.5 rounded-full"
+            style={{
+              backgroundColor: isOpenNow ? "rgba(45,138,86,0.9)" : "rgba(0,0,0,0.55)",
+              color: "#ffffff",
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            {isOpenNow ? "Open" : "Closed"}
+          </span>
+        )}
         {/* Heart — overlaid on photo */}
         <button
           onClick={(e) => {
@@ -195,7 +211,7 @@ export default function RestaurantCard({
         </p>
 
         {/* Rating + reviews */}
-        <div className="flex items-center gap-1.5 text-sm">
+        <div className="flex items-center gap-1.5 text-sm" role="img" aria-label={`Rating: ${rating.toFixed(1)} out of 5 stars`}>
           {renderStars()}
           <span className="text-xs font-medium ml-0.5" style={{ color: "var(--text-secondary)" }}>
             {rating.toFixed(1)}

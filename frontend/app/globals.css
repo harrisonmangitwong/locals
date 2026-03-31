@@ -8,7 +8,7 @@
   --bg-inset: #e8e4de;
   --text: #1a1814;
   --text-secondary: #6b6560;
-  --text-muted: #9a958f;
+  --text-muted: #7a756f;
   --accent: #d95030;
   --accent-hover: #c44528;
   --accent-soft: rgba(217,80,48,0.08);
@@ -32,7 +32,7 @@
     --bg-inset: #353230;
     --text: #f5f0eb;
     --text-secondary: #9a9590;
-    --text-muted: #6b6560;
+    --text-muted: #8a857f;
     --accent: #e06b4d;
     --accent-hover: #c44d2c;
     --accent-soft: rgba(224,107,77,0.10);

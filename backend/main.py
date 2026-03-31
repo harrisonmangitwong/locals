@@ -4,7 +4,16 @@ import pandas as pd
 import numpy as np
 import math
 import os
+import json
+import re
+from datetime import datetime
 from typing import Optional
+
+try:
+    import pytz
+    _NYC_TZ = pytz.timezone("America/New_York")
+except ImportError:
+    _NYC_TZ = None
 
 app = FastAPI(title="Locals API")
 
@@ -18,19 +27,76 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# data.csv is bundled in the backend directory for deployment
 CSV_PATH = os.path.join(os.path.dirname(__file__), "data.csv")
 
 
+# ---------------------------------------------------------------------------
+# Hours parsing
+# ---------------------------------------------------------------------------
+
+def _parse_time_str(s: str) -> Optional[int]:
+    s = s.strip().replace("\u202f", " ").replace("\u2009", " ")
+    low = s.lower()
+    if low == "midnight":
+        return 0
+    if low == "noon":
+        return 720
+    m = re.match(r"(\d{1,2})(?::(\d{2}))?\s*(am|pm)", low)
+    if not m:
+        return None
+    hour, minute, period = int(m.group(1)), int(m.group(2) or 0), m.group(3)
+    if period == "pm" and hour != 12:
+        hour += 12
+    elif period == "am" and hour == 12:
+        hour = 0
+    return hour * 60 + minute
+
+
+def _is_open_now(opening_hours_json: Optional[str]) -> Optional[bool]:
+    if not opening_hours_json:
+        return None
+    try:
+        hours = json.loads(opening_hours_json)
+    except Exception:
+        return None
+
+    now = datetime.now(_NYC_TZ) if _NYC_TZ else datetime.utcnow()
+    day_name = now.strftime("%A")
+    current_min = now.hour * 60 + now.minute
+
+    for entry in hours:
+        if entry.get("day", "").lower() != day_name.lower():
+            continue
+        h = entry.get("hours", "").strip()
+        if not h:
+            return None
+        low = h.lower()
+        if "closed" in low:
+            return False
+        if "24 hours" in low:
+            return True
+        parts = re.split(r"\s+to\s+|\u2013|\u2014|-", h, maxsplit=1)
+        if len(parts) == 2:
+            open_min = _parse_time_str(parts[0])
+            close_min = _parse_time_str(parts[1])
+            if open_min is not None and close_min is not None:
+                if close_min <= open_min:
+                    return current_min >= open_min or current_min < close_min
+                return open_min <= current_min < close_min
+        return None
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+
 def load_data() -> pd.DataFrame:
     df = pd.read_csv(CSV_PATH)
-    # Replace inf/-inf with NaN so JSON serialization works
     df = df.replace([np.inf, -np.inf], np.nan)
-    # Sort by p_safe_pick descending, assign 1-indexed rank
     df = df.sort_values("p_safe_pick", ascending=False).reset_index(drop=True)
     df["rank"] = df.index + 1
 
-    # Min-max scale p_safe_pick to 80-100 range, top item = 100
     p_min = df["p_safe_pick"].min()
     p_max = df["p_safe_pick"].max()
     if p_max == p_min:
@@ -39,10 +105,13 @@ def load_data() -> pd.DataFrame:
         df["signal_score"] = 80.0 + (df["p_safe_pick"] - p_min) / (p_max - p_min) * 20.0
     df["signal_score"] = df["signal_score"].round(2)
 
+    df["is_open_now"] = df["opening_hours"].apply(
+        lambda h: _is_open_now(h) if pd.notna(h) else None
+    )
+
     return df
 
 
-# Load once at startup
 _df: pd.DataFrame = None
 
 
@@ -52,6 +121,17 @@ def get_df() -> pd.DataFrame:
         _df = load_data()
     return _df
 
+
+def _clean_row(row: dict) -> dict:
+    for k, v in row.items():
+        if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+            row[k] = None
+    return row
+
+
+# ---------------------------------------------------------------------------
+# Endpoints
+# ---------------------------------------------------------------------------
 
 @app.get("/api/filters")
 def get_filters():
@@ -67,11 +147,7 @@ def get_restaurants_batch(ids: str = Query(..., description="Comma-separated res
     id_list = [i.strip() for i in ids.split(",") if i.strip()]
     matched = df[df["restaurant_id"].isin(id_list)]
     clean = matched.replace([np.inf, -np.inf], np.nan).where(pd.notnull(matched), None)
-    results = clean.to_dict(orient="records")
-    for row in results:
-        for k, v in row.items():
-            if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
-                row[k] = None
+    results = [_clean_row(r) for r in clean.to_dict(orient="records")]
     return {"results": results}
 
 
@@ -83,10 +159,7 @@ def get_restaurant(restaurant_id: str):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=404, content={"detail": "Restaurant not found"})
     row = match.iloc[0].where(pd.notnull(match.iloc[0]), None).to_dict()
-    for k, v in row.items():
-        if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
-            row[k] = None
-    return row
+    return _clean_row(row)
 
 
 @app.get("/api/recommendations")
@@ -95,16 +168,15 @@ def get_recommendations(
     cuisine: Optional[str] = Query(default=None),
     search: Optional[str] = Query(default=None),
     price: Optional[str] = Query(default=None),
+    open_now: Optional[bool] = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
 ):
     df = get_df()
 
-    # Get full filter lists before filtering
     neighborhoods = sorted(df["neighborhood"].dropna().unique().tolist())
     cuisines = sorted(df["cuisine"].dropna().unique().tolist())
 
-    # Apply filters
     filtered = df.copy()
     if search:
         filtered = filtered[filtered["name"].str.contains(search, case=False, na=False)]
@@ -121,6 +193,8 @@ def get_recommendations(
                 (filtered["price_midpoint"] > lo) &
                 (filtered["price_midpoint"] <= hi)
             ]
+    if open_now is True:
+        filtered = filtered[filtered["is_open_now"] == True]  # noqa: E712
 
     total = len(filtered)
     total_pages = max(1, math.ceil(total / page_size))
@@ -130,14 +204,8 @@ def get_recommendations(
     end = start + page_size
     page_df = filtered.iloc[start:end]
 
-    # Convert to records; replace NaN/inf with None for JSON serialization
     clean = page_df.replace([np.inf, -np.inf], np.nan).where(pd.notnull(page_df), None)
-    results = clean.to_dict(orient="records")
-    # Ensure no float NaN slips through (pandas can leave them in object columns)
-    for row in results:
-        for k, v in row.items():
-            if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
-                row[k] = None
+    results = [_clean_row(r) for r in clean.to_dict(orient="records")]
 
     return {
         "total": total,
