@@ -65,9 +65,18 @@ export default function Home() {
           real New Yorkers love — not the ones tourists stumble into.
         </p>
 
-        {/* Stats row — replaces emoji feature cards */}
+        {/* CTA */}
+        <Link
+          href="/recommendations"
+          className="cta-btn inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold mb-14"
+          style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
+        >
+          See recommendations
+        </Link>
+
+        {/* Stats row */}
         <div
-          className="flex flex-col sm:flex-row items-center gap-8 sm:gap-12 mb-14 px-8 py-6 rounded-2xl"
+          className="flex flex-col sm:flex-row items-center gap-8 sm:gap-12 px-8 py-6 rounded-2xl"
           style={{ color: "var(--text-muted)", backgroundColor: "var(--warm-soft)" }}
         >
           <div className="text-center">
@@ -91,15 +100,6 @@ export default function Home() {
             <div className="text-xs uppercase tracking-wider">Boroughs</div>
           </div>
         </div>
-
-        {/* CTA */}
-        <Link
-          href="/recommendations"
-          className="cta-btn inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold"
-          style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
-        >
-          See recommendations
-        </Link>
 
         {/* How it works — editorial text, not cards */}
         <div className="mt-28 max-w-2xl w-full text-left">

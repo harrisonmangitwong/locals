@@ -444,14 +444,14 @@ function RecommendationsContent() {
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-2xl overflow-hidden animate-pulse"
+                className="rounded-2xl overflow-hidden"
                 style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}
               >
-                <div className="h-52 sm:h-48" style={{ backgroundColor: "var(--bg-inset)" }} />
+                <div className="skeleton h-52 sm:h-48" />
                 <div className="p-4 space-y-3">
-                  <div className="h-4 w-3/4 rounded" style={{ backgroundColor: "var(--bg-inset)" }} />
-                  <div className="h-3 w-1/2 rounded" style={{ backgroundColor: "var(--bg-inset)" }} />
-                  <div className="h-3 w-1/3 rounded" style={{ backgroundColor: "var(--bg-inset)" }} />
+                  <div className="skeleton h-4 w-3/4 rounded" />
+                  <div className="skeleton h-3 w-1/2 rounded" />
+                  <div className="skeleton h-3 w-1/3 rounded" />
                 </div>
               </div>
             ))}

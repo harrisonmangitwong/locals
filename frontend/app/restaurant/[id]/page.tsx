@@ -70,7 +70,7 @@ function RatingBar({ label, value, maxValue = 5, color }: { label: string; value
     <div className="flex items-center gap-3">
       <span className="text-xs w-20 shrink-0" style={{ color: "var(--text-muted)" }}>{label}</span>
       <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--bg-inset)" }}>
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color ?? "var(--accent)" }} />
+        <div className="bar-fill h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color ?? "var(--accent)" }} />
       </div>
       <span className="text-sm font-semibold w-8 text-right" style={{ color: "var(--text)" }}>{value.toFixed(1)}</span>
     </div>
@@ -97,7 +97,7 @@ function SignalMeter({ value }: { value: number }) {
         <span className="text-xs font-medium" style={{ color }}>{strength}</span>
       </div>
       <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--bg-inset)" }}>
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+        <div className="bar-fill h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
       <p className="text-xs mt-1.5" style={{ color: "var(--text-muted)" }}>
         Based on {pct.toFixed(0)}% average reviewer localness
@@ -165,21 +165,23 @@ function HoursTable({ hoursJson, isOpenNow }: { hoursJson: string; isOpenNow?: b
         </svg>
       </button>
 
-      {expanded && (
-        <div className="mt-2 space-y-1">
-          {DAYS_ORDER.map(day => {
-            const entry = entries.find(e => e.day === day);
-            if (!entry) return null;
-            const isToday = day === today;
-            return (
-              <div key={day} className="flex justify-between text-xs" style={{ fontWeight: isToday ? 600 : 400, color: isToday ? "var(--text)" : "var(--text-muted)" }}>
-                <span style={{ width: 100 }}>{day}</span>
-                <span>{entry.hours}</span>
-              </div>
-            );
-          })}
+      <div className={`hours-body${expanded ? " open" : ""}`}>
+        <div className="hours-body-inner">
+          <div className="mt-2 space-y-1">
+            {DAYS_ORDER.map(day => {
+              const entry = entries.find(e => e.day === day);
+              if (!entry) return null;
+              const isToday = day === today;
+              return (
+                <div key={day} className="flex justify-between text-xs" style={{ fontWeight: isToday ? 600 : 400, color: isToday ? "var(--text)" : "var(--text-muted)" }}>
+                  <span style={{ width: 100 }}>{day}</span>
+                  <span>{entry.hours}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -283,12 +285,12 @@ export default function RestaurantPage() {
         <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4" style={{ backgroundColor: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
           <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>Locals</Link>
         </header>
-        <div className="w-full h-56 sm:h-72 animate-pulse" style={{ backgroundColor: "var(--bg-subtle)" }} />
+        <div className="skeleton w-full h-56 sm:h-72" />
         <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
           <div className="space-y-3 pt-4">
-            <div className="h-8 w-2/3 rounded animate-pulse" style={{ backgroundColor: "var(--bg-subtle)" }} />
-            <div className="h-4 w-1/2 rounded animate-pulse" style={{ backgroundColor: "var(--bg-subtle)" }} />
-            <div className="h-4 w-1/3 rounded animate-pulse" style={{ backgroundColor: "var(--bg-subtle)" }} />
+            <div className="skeleton h-8 w-2/3 rounded" />
+            <div className="skeleton h-4 w-1/2 rounded" />
+            <div className="skeleton h-4 w-1/3 rounded" />
           </div>
         </div>
       </div>
@@ -425,13 +427,14 @@ export default function RestaurantPage() {
 
         {/* Why it's local-approved */}
         <section className="mb-10">
-          <h2 className="font-display text-xl mb-4" style={{ color: "var(--success)" }}>Why it&apos;s local-approved</h2>
-          <div className="rounded-xl p-5 mb-4 space-y-3" style={{ backgroundColor: "var(--success-soft)", border: "1px solid var(--border)" }}>
-            <RatingBar label="Locals" value={r.local_weighted_rating ?? 0} color="var(--success)" />
-            <RatingBar label="Tourists" value={r.tourist_weighted_rating ?? 0} />
-          </div>
-          <p className="text-sm font-medium mb-5" style={{ color: verdict.color }}>{verdict.text}</p>
-          <div className="rounded-xl p-5" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
+          <h2 className="font-display text-xl mb-3" style={{ color: "var(--success)" }}>Why it&apos;s local-approved</h2>
+          <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: "var(--success-soft)", border: "1px solid var(--border)" }}>
+            <div className="space-y-3">
+              <RatingBar label="Locals" value={r.local_weighted_rating ?? 0} color="var(--success)" />
+              <RatingBar label="Tourists" value={r.tourist_weighted_rating ?? 0} />
+            </div>
+            <p className="text-sm font-medium" style={{ color: verdict.color }}>{verdict.text}</p>
+            <div style={{ borderTop: "1px solid var(--border)" }} />
             <SignalMeter value={r.avg_localness ?? 0} />
           </div>
         </section>
