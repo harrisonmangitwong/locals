@@ -6,7 +6,9 @@ A data-driven restaurant recommendation app that surfaces places real New Yorker
 
 ## The Problem
 
-Visiting NYC and don't want to eat at a tourist trap? Google Maps won't help — its ratings are dominated by one-time visitors who rate the experience, not the food. A mediocre restaurant near Times Square with thousands of tourist reviews outranks the authentic neighborhood spot that locals return to every week. There's no way to filter by *who* is doing the rating.
+When you're visiting NYC, finding a great restaurant is harder than it looks. Most review platforms aggregate ratings without considering *who* is leaving them — a spot near a major attraction can rack up thousands of reviews from one-time visitors, while the neighborhood gem that locals return to every week flies under the radar.
+
+Locals solves this by weighing reviews based on reviewer behavior. If someone reviews consistently in one area over time, their opinion carries more weight. The result: recommendations that reflect where New Yorkers actually eat, not just what tourists happen to rate.
 
 ## How It Works
 
