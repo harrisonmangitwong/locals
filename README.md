@@ -6,7 +6,7 @@ A data-driven restaurant recommendation app that surfaces places real New Yorker
 
 ## The Problem
 
-Google Maps ratings are skewed by tourist reviews. A restaurant near Times Square with thousands of one-time visitor reviews can outrank an authentic neighborhood spot that locals return to every week. Star ratings alone don't tell you *who* is doing the rating.
+Visiting NYC and don't want to eat at a tourist trap? Google Maps won't help — its ratings are dominated by one-time visitors who rate the experience, not the food. A mediocre restaurant near Times Square with thousands of tourist reviews outranks the authentic neighborhood spot that locals return to every week. There's no way to filter by *who* is doing the rating.
 
 ## How It Works
 
