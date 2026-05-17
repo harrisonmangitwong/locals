@@ -196,7 +196,7 @@ function PhotoGallery({ imageUrls, name }: { imageUrls: string[]; name: string }
       <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>Photos</h2>
       <div className="relative rounded-xl overflow-hidden" style={{ height: 220 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrls[idx]} alt={`${name} photo ${idx + 1}`} className="w-full h-full" style={{ objectFit: "cover" }} loading="lazy" referrerPolicy="no-referrer" />
+        <img src={imageUrls[idx]} alt={`${name} photo ${idx + 1}`} className="w-full h-full" style={{ objectFit: "cover" }} loading="lazy" />
         {imageUrls.length > 1 && (
           <>
             <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-full" style={{ backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)", color: "#fff" }} aria-label="Previous photo">
@@ -356,7 +356,7 @@ export default function RestaurantPage() {
       {/* Hero image */}
       <div className="relative w-full h-56 sm:h-72 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={heroUrl} alt={r.name} className="w-full h-full object-cover" loading="eager" referrerPolicy="no-referrer" />
+        <img src={heroUrl} alt={r.name} className="w-full h-full object-cover" loading="eager" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, var(--bg), transparent 60%)" }} />
         <span className="absolute top-4 left-4 text-sm font-bold px-3 py-1 rounded-full" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
           #{r.rank}
