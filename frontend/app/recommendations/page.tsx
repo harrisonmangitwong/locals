@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
 
@@ -169,6 +170,38 @@ interface ApiResponse {
   results: Restaurant[];
 }
 
+function UserMenu() {
+  const { data: session } = useSession();
+  const [open, setOpen] = useState(false);
+  if (!session?.user) return null;
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 focus:outline-none">
+        {session.user.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={session.user.image} alt={session.user.name ?? ""} className="w-7 h-7 rounded-full" referrerPolicy="no-referrer" />
+        ) : (
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold" style={{ backgroundColor: "var(--accent)", color: "#fff" }}>
+            {(session.user.name ?? "?")[0]}
+          </div>
+        )}
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-44 rounded-xl py-1 z-50 shadow-lg" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)" }}>
+          <p className="px-4 py-2 text-xs truncate" style={{ color: "var(--text-secondary)" }}>{session.user.email}</p>
+          <button
+            onClick={() => signOut({ redirectTo: "/sign-in" })}
+            className="w-full text-left px-4 py-2 text-sm transition-opacity hover:opacity-75"
+            style={{ color: "var(--text)" }}
+          >
+            Sign out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RecommendationsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -280,6 +313,7 @@ function RecommendationsContent() {
           <Link href="/about" className="hidden sm:inline text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
             About
           </Link>
+          <UserMenu />
         </nav>
       </header>
 

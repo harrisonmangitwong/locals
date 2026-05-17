@@ -3,25 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-function getFavorites(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = localStorage.getItem("locals_favorites");
-    return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch {
-    return new Set();
-  }
-}
-
-function toggleFavorite(id: string): boolean {
-  const favs = getFavorites();
-  if (favs.has(id)) {
-    favs.delete(id);
-  } else {
-    favs.add(id);
-  }
-  localStorage.setItem("locals_favorites", JSON.stringify([...favs]));
-  return favs.has(id);
+async function toggleFavorite(id: string, currentlyFavorited: boolean): Promise<boolean> {
+  const method = currentlyFavorited ? "DELETE" : "POST";
+  await fetch("/api/favorites", {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ restaurant_id: id }),
+  });
+  return !currentlyFavorited;
 }
 
 const CUISINE_PHOTO_MAP: Record<string, string> = {
@@ -84,7 +73,10 @@ export default function RestaurantCard({
   const [heartPop, setHeartPop] = useState(false);
 
   useEffect(() => {
-    setHearted(getFavorites().has(restaurantId));
+    fetch("/api/favorites")
+      .then((r) => r.json())
+      .then((data) => setHearted((data.ids ?? []).includes(restaurantId)))
+      .catch(() => {});
   }, [restaurantId]);
 
   const photoUrl = photoUrlProp || getPhotoUrl(cuisine);
@@ -140,7 +132,7 @@ export default function RestaurantCard({
           className="card-photo w-full h-full"
           style={{ objectFit: "cover" }}
           loading="lazy"
-          referrerPolicy="no-referrer"
+          onError={(e) => { e.currentTarget.src = getPhotoUrl(cuisine); }}
         />
         {/* Rank */}
         <span
@@ -164,10 +156,10 @@ export default function RestaurantCard({
         )}
         {/* Heart — overlaid on photo */}
         <button
-          onClick={(e) => {
+          onClick={async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const nowFavorited = toggleFavorite(restaurantId);
+            const nowFavorited = await toggleFavorite(restaurantId, hearted);
             setHearted(nowFavorited);
             if (nowFavorited) {
               setHeartPop(true);
