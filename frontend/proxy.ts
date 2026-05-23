@@ -1,24 +1,42 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
 
 export async function proxy(req: NextRequest) {
+  let response = NextResponse.next({ request: req });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value));
+          response = NextResponse.next({ request: req });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { pathname } = req.nextUrl;
-  if (
-    pathname.startsWith("/api/auth") ||
+  const isPublic =
+    pathname === "/" ||
+    pathname === "/about" ||
     pathname.startsWith("/sign-in") ||
-    pathname === "/"
-  ) {
-    return NextResponse.next();
-  }
-  const token = await getToken({
-    req,
-    secret: process.env.AUTH_SECRET,
-    cookieName: "__Secure-authjs.session-token",
-  });
-  if (!token) {
+    pathname.startsWith("/auth/");
+
+  if (!user && !isPublic) {
     return NextResponse.redirect(new URL("/sign-in", req.url));
   }
-  return NextResponse.next();
+
+  return response;
 }
 
 export const config = {
