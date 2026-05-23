@@ -23,7 +23,7 @@ export async function proxy(req: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
 
   const { pathname } = req.nextUrl;
   const isPublic =
@@ -32,7 +32,7 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/auth/");
 
-  if (!user && !isPublic) {
+  if (!session && !isPublic) {
     return NextResponse.redirect(new URL("/sign-in", req.url));
   }
 
