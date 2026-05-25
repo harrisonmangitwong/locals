@@ -163,10 +163,11 @@ export default function RestaurantCard({
             if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); }
             if (!nowSaved && onUnsave) onUnsave(restaurantId);
           }}
-          className={`absolute top-3 right-3 flex items-center justify-center w-9 h-9 rounded-full${savePop ? " heart-pop" : ""}`}
+          className={`absolute top-3 right-3 flex items-center justify-center w-9 h-9 rounded-full transition-all duration-150 hover:scale-110 active:scale-95${savePop ? " heart-pop" : ""}`}
           style={{
             backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)",
             backdropFilter: "blur(4px)",
+            cursor: "pointer",
           }}
           aria-label={saved ? "Remove from saved" : "Save restaurant"}
         >
@@ -226,8 +227,8 @@ export default function RestaurantCard({
               setLiked(nowLiked);
               if (nowLiked) { setLikePop(true); setTimeout(() => setLikePop(false), 400); }
             }}
-            className={`flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-75${likePop ? " heart-pop" : ""}`}
-            style={{ color: liked ? "var(--accent)" : "var(--text-muted)" }}
+            className={`flex items-center gap-1 text-xs font-medium transition-all duration-150 hover:opacity-80 active:scale-95${likePop ? " heart-pop" : ""}`}
+            style={{ color: liked ? "var(--accent)" : "var(--text-muted)", cursor: "pointer" }}
             aria-label={liked ? "Remove from liked" : "Mark as been here"}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13"
