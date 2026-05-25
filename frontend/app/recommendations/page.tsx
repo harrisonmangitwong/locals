@@ -340,7 +340,7 @@ function RecommendationsContent() {
             Saved
           </Link>
           <Link href="/visited" className="text-xs sm:text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            Been Here
+            Visited
           </Link>
           <Link href="/about" className="hidden sm:inline text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
             About

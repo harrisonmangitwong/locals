@@ -150,7 +150,7 @@ export default function VisitedPage() {
             className="text-xs sm:text-sm font-medium"
             style={{ color: "var(--text)" }}
           >
-            Been Here
+            Visited
           </Link>
           <Link
             href="/about"
@@ -169,7 +169,7 @@ export default function VisitedPage() {
             className="font-display text-3xl mb-1"
             style={{ color: "var(--text)" }}
           >
-            Been Here
+            Visited
           </h1>
           {!loading && !empty && (
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>

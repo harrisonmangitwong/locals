@@ -150,7 +150,7 @@ export default function FavoritesPage() {
             className="text-xs sm:text-sm transition-colors hover:opacity-75"
             style={{ color: "var(--text-secondary)" }}
           >
-            Been Here
+            Visited
           </Link>
           <Link
             href="/about"

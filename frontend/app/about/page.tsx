@@ -22,7 +22,7 @@ export default function AboutPage() {
             Saved
           </Link>
           <Link href="/visited" className="text-xs sm:text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            Been Here
+            Visited
           </Link>
           <Link href="/about" className="text-xs sm:text-sm font-medium" style={{ color: "var(--text)" }}>
             About
