@@ -63,6 +63,7 @@ export interface RestaurantCardProps {
   initialSaved?: boolean;
   initialLiked?: boolean;
   onUnsave?: (id: string) => void;
+  onUnlike?: (id: string) => void;
 }
 
 export default function RestaurantCard({
@@ -80,6 +81,7 @@ export default function RestaurantCard({
   initialSaved = false,
   initialLiked = false,
   onUnsave,
+  onUnlike,
 }: RestaurantCardProps) {
   const [saved, setSaved] = useState(initialSaved);
   const [liked, setLiked] = useState(initialLiked);
@@ -230,6 +232,7 @@ export default function RestaurantCard({
               const nowLiked = !liked;
               setLiked(nowLiked);
               if (nowLiked) { setLikePop(true); setTimeout(() => setLikePop(false), 400); }
+              if (!nowLiked && onUnlike) onUnlike(restaurantId);
               toggleLiked(restaurantId, liked).catch(() => setLiked(liked));
             }}
             className={`flex items-center gap-1 text-xs font-medium transition-all duration-150 hover:opacity-80 active:scale-95${likePop ? " heart-pop" : ""}`}

@@ -8,9 +8,9 @@ import RestaurantCard from "@/components/RestaurantCard";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-async function getSaved(): Promise<string[]> {
+async function getLiked(): Promise<string[]> {
   try {
-    const res = await fetch("/api/saved");
+    const res = await fetch("/api/liked");
     const data = await res.json();
     return data.ids ?? [];
   } catch {
@@ -81,14 +81,14 @@ function UserMenu() {
   );
 }
 
-export default function FavoritesPage() {
+export default function VisitedPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [empty, setEmpty] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const ids = await getSaved();
+      const ids = await getLiked();
       if (ids.length === 0) {
         setEmpty(true);
         setLoading(false);
@@ -140,15 +140,15 @@ export default function FavoritesPage() {
           </Link>
           <Link
             href="/favorites"
-            className="text-xs sm:text-sm font-medium"
-            style={{ color: "var(--text)" }}
+            className="text-xs sm:text-sm transition-colors hover:opacity-75"
+            style={{ color: "var(--text-secondary)" }}
           >
             Saved
           </Link>
           <Link
             href="/visited"
-            className="text-xs sm:text-sm transition-colors hover:opacity-75"
-            style={{ color: "var(--text-secondary)" }}
+            className="text-xs sm:text-sm font-medium"
+            style={{ color: "var(--text)" }}
           >
             Been Here
           </Link>
@@ -169,11 +169,11 @@ export default function FavoritesPage() {
             className="font-display text-3xl mb-1"
             style={{ color: "var(--text)" }}
           >
-            Favorites
+            Been Here
           </h1>
           {!loading && !empty && (
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              {restaurants.length} saved spot{restaurants.length !== 1 ? "s" : ""}
+              {restaurants.length} place{restaurants.length !== 1 ? "s" : ""} you&apos;ve visited
             </p>
           )}
         </div>
@@ -207,13 +207,13 @@ export default function FavoritesPage() {
               className="font-display text-xl mb-2"
               style={{ color: "var(--text)" }}
             >
-              Your list is empty
+              No visits logged yet
             </p>
             <p
               className="text-sm mb-6 max-w-md"
               style={{ color: "var(--text-muted)" }}
             >
-              Found a spot that looks good? Tap the heart to save it here for later.
+              Tap the heart on any restaurant after you&apos;ve been there to track it here.
             </p>
             <Link
               href="/recommendations"
@@ -225,7 +225,7 @@ export default function FavoritesPage() {
           </div>
         )}
 
-        {/* Favorites grid */}
+        {/* Visited grid */}
         {!loading && !empty && restaurants.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {restaurants.map((r) => (
@@ -251,8 +251,8 @@ export default function FavoritesPage() {
                           : "$$$$"
                     : undefined
                 }
-                initialSaved={true}
-                onUnsave={(id) =>
+                initialLiked={true}
+                onUnlike={(id) =>
                   setRestaurants((prev) => prev.filter((x) => x.restaurant_id !== id))
                 }
               />
