@@ -1,16 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
-async function toggleFavorite(id: string, currentlyFavorited: boolean): Promise<boolean> {
-  const method = currentlyFavorited ? "DELETE" : "POST";
-  await fetch("/api/favorites", {
-    method,
+async function toggleSaved(id: string, currently: boolean): Promise<boolean> {
+  await fetch("/api/saved", {
+    method: currently ? "DELETE" : "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ restaurant_id: id }),
   });
-  return !currentlyFavorited;
+  return !currently;
+}
+
+async function toggleLiked(id: string, currently: boolean): Promise<boolean> {
+  await fetch("/api/liked", {
+    method: currently ? "DELETE" : "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ restaurant_id: id }),
+  });
+  return !currently;
 }
 
 const CUISINE_PHOTO_MAP: Record<string, string> = {
@@ -52,7 +60,9 @@ export interface RestaurantCardProps {
   photoUrl?: string;
   price?: string;
   isOpenNow?: boolean | null;
-  onUnfavorite?: (id: string) => void;
+  initialSaved?: boolean;
+  initialLiked?: boolean;
+  onUnsave?: (id: string) => void;
 }
 
 export default function RestaurantCard({
@@ -67,20 +77,16 @@ export default function RestaurantCard({
   photoUrl: photoUrlProp,
   price,
   isOpenNow,
-  onUnfavorite,
+  initialSaved = false,
+  initialLiked = false,
+  onUnsave,
 }: RestaurantCardProps) {
-  const [hearted, setHearted] = useState(false);
-  const [heartPop, setHeartPop] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/favorites")
-      .then((r) => r.json())
-      .then((data) => setHearted((data.ids ?? []).includes(restaurantId)))
-      .catch(() => {});
-  }, [restaurantId]);
+  const [saved, setSaved] = useState(initialSaved);
+  const [liked, setLiked] = useState(initialLiked);
+  const [savePop, setSavePop] = useState(false);
+  const [likePop, setLikePop] = useState(false);
 
   const photoUrl = photoUrlProp || getPhotoUrl(cuisine);
-
   const stars = Math.round(rating * 2) / 2;
   const fullStars = Math.floor(stars);
   const hasHalf = stars - fullStars >= 0.5;
@@ -89,25 +95,18 @@ export default function RestaurantCard({
     const starEls: React.ReactNode[] = [];
     for (let i = 1; i <= 5; i++) {
       if (i <= fullStars) {
-        starEls.push(
-          <span key={i} style={{ color: "var(--star-fill)" }}>&#9733;</span>
-        );
+        starEls.push(<span key={i} style={{ color: "var(--star-fill)" }}>&#9733;</span>);
       } else if (i === fullStars + 1 && hasHalf) {
         starEls.push(
           <span key={i} className="relative inline-block" style={{ color: "var(--star-empty)" }}>
             &#9733;
-            <span
-              className="absolute inset-0 overflow-hidden"
-              style={{ width: "50%", color: "var(--star-fill)" }}
-            >
+            <span className="absolute inset-0 overflow-hidden" style={{ width: "50%", color: "var(--star-fill)" }}>
               &#9733;
             </span>
           </span>
         );
       } else {
-        starEls.push(
-          <span key={i} style={{ color: "var(--star-empty)" }}>&#9733;</span>
-        );
+        starEls.push(<span key={i} style={{ color: "var(--star-empty)" }}>&#9733;</span>);
       }
     }
     return starEls;
@@ -123,7 +122,7 @@ export default function RestaurantCard({
         border: "1px solid var(--border)",
       }}
     >
-      {/* Photo — tall, photography-first */}
+      {/* Photo */}
       <Link href={`/restaurant/${restaurantId}`} className="relative overflow-hidden h-52 sm:h-48 block" style={{ flexShrink: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -154,45 +153,33 @@ export default function RestaurantCard({
             {isOpenNow ? "Open" : "Closed"}
           </span>
         )}
-        {/* Heart — overlaid on photo */}
+        {/* Bookmark (save) button */}
         <button
           onClick={async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const nowFavorited = await toggleFavorite(restaurantId, hearted);
-            setHearted(nowFavorited);
-            if (nowFavorited) {
-              setHeartPop(true);
-              setTimeout(() => setHeartPop(false), 400);
-            }
-            if (!nowFavorited && onUnfavorite) onUnfavorite(restaurantId);
+            const nowSaved = await toggleSaved(restaurantId, saved);
+            setSaved(nowSaved);
+            if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); }
+            if (!nowSaved && onUnsave) onUnsave(restaurantId);
           }}
-          className={`heart-btn absolute top-3 right-3 flex items-center justify-center w-9 h-9 rounded-full${heartPop ? " heart-pop" : ""}`}
+          className={`absolute top-3 right-3 flex items-center justify-center w-9 h-9 rounded-full${savePop ? " heart-pop" : ""}`}
           style={{
-            backgroundColor: hearted ? "var(--accent)" : "rgba(0,0,0,0.45)",
+            backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)",
             backdropFilter: "blur(4px)",
           }}
-          aria-label={hearted ? "Remove from favorites" : "Add to favorites"}
+          aria-label={saved ? "Remove from saved" : "Save restaurant"}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="15"
-            height="15"
-            fill={hearted ? "#ffffff" : "none"}
-            stroke="#ffffff"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          {/* Bookmark icon */}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
+            fill={saved ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
           </svg>
         </button>
       </Link>
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-4">
-        {/* Name */}
         <Link href={`/restaurant/${restaurantId}`}>
           <h3
             className="font-semibold text-base leading-snug mb-2 line-clamp-2 hover:underline cursor-pointer"
@@ -202,12 +189,10 @@ export default function RestaurantCard({
           </h3>
         </Link>
 
-        {/* Meta line — compact, not chip-heavy */}
         <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
           {neighborhood} · {cuisine}{price ? ` · ${price}` : ""}
         </p>
 
-        {/* Rating + reviews */}
         <div className="flex items-center gap-1.5 text-sm" role="img" aria-label={`Rating: ${rating.toFixed(1)} out of 5 stars`}>
           {renderStars()}
           <span className="text-xs font-medium ml-0.5" style={{ color: "var(--text-secondary)" }}>
@@ -220,8 +205,8 @@ export default function RestaurantCard({
 
         <div className="flex-1" />
 
-        {/* Maps link */}
-        <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--border)" }}>
+        {/* Footer */}
+        <div className="mt-3 pt-3 flex items-center justify-between" style={{ borderTop: "1px solid var(--border)" }}>
           <a
             href={mapsUrl}
             target="_blank"
@@ -231,6 +216,26 @@ export default function RestaurantCard({
           >
             Open in Maps &rarr;
           </a>
+
+          {/* Heart (liked — been there) */}
+          <button
+            onClick={async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const nowLiked = await toggleLiked(restaurantId, liked);
+              setLiked(nowLiked);
+              if (nowLiked) { setLikePop(true); setTimeout(() => setLikePop(false), 400); }
+            }}
+            className={`flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-75${likePop ? " heart-pop" : ""}`}
+            style={{ color: liked ? "var(--accent)" : "var(--text-muted)" }}
+            aria-label={liked ? "Remove from liked" : "Mark as been here"}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13"
+              fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            Been here
+          </button>
         </div>
       </div>
     </div>

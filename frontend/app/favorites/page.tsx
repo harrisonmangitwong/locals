@@ -8,9 +8,9 @@ import RestaurantCard from "@/components/RestaurantCard";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-async function getFavorites(): Promise<string[]> {
+async function getSaved(): Promise<string[]> {
   try {
-    const res = await fetch("/api/favorites");
+    const res = await fetch("/api/saved");
     const data = await res.json();
     return data.ids ?? [];
   } catch {
@@ -88,7 +88,7 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     async function load() {
-      const ids = await getFavorites();
+      const ids = await getSaved();
       if (ids.length === 0) {
         setEmpty(true);
         setLoading(false);
@@ -244,7 +244,8 @@ export default function FavoritesPage() {
                           : "$$$$"
                     : undefined
                 }
-                onUnfavorite={(id) =>
+                initialSaved={true}
+                onUnsave={(id) =>
                   setRestaurants((prev) => prev.filter((x) => x.restaurant_id !== id))
                 }
               />

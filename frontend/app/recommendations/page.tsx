@@ -235,6 +235,18 @@ function RecommendationsContent() {
   const [error, setError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState(search);
   const [locating, setLocating] = useState(false);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/saved").then((r) => r.json()).catch(() => ({ ids: [] })),
+      fetch("/api/liked").then((r) => r.json()).catch(() => ({ ids: [] })),
+    ]).then(([saved, liked]) => {
+      setSavedIds(new Set(saved.ids ?? []));
+      setLikedIds(new Set(liked.ids ?? []));
+    });
+  }, []);
 
   function handleNearMe() {
     if (!navigator.geolocation) return;
@@ -548,6 +560,8 @@ function RecommendationsContent() {
                 photoUrl={r.image_url}
                 price={r.price_midpoint ? (r.price_midpoint <= 15 ? "$" : r.price_midpoint <= 30 ? "$$" : r.price_midpoint <= 60 ? "$$$" : "$$$$") : undefined}
                 isOpenNow={r.is_open_now}
+                initialSaved={savedIds.has(r.restaurant_id)}
+                initialLiked={likedIds.has(r.restaurant_id)}
               />
               </div>
             ))}
