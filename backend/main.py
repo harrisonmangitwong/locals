@@ -77,8 +77,14 @@ def _is_open_now(opening_hours_json: Optional[str]) -> Optional[bool]:
             return True
         parts = re.split(r"\s+to\s+|\u2013|\u2014|-", h, maxsplit=1)
         if len(parts) == 2:
-            open_min = _parse_time_str(parts[0])
-            close_min = _parse_time_str(parts[1])
+            open_str, close_str = parts[0].strip(), parts[1].strip()
+            # Inherit AM/PM from close time if open time lacks it (e.g. "5 to 11:30 PM")
+            if not re.search(r"am|pm", open_str, re.IGNORECASE):
+                period_m = re.search(r"(am|pm)", close_str, re.IGNORECASE)
+                if period_m:
+                    open_str = f"{open_str} {period_m.group(1)}"
+            open_min = _parse_time_str(open_str)
+            close_min = _parse_time_str(close_str)
             if open_min is not None and close_min is not None:
                 if close_min <= open_min:
                     return current_min >= open_min or current_min < close_min
@@ -104,10 +110,6 @@ def load_data() -> pd.DataFrame:
     else:
         df["signal_score"] = 80.0 + (df["p_safe_pick"] - p_min) / (p_max - p_min) * 20.0
     df["signal_score"] = df["signal_score"].round(2)
-
-    df["is_open_now"] = df["opening_hours"].apply(
-        lambda h: _is_open_now(h) if pd.notna(h) else None
-    )
 
     return df
 
@@ -145,7 +147,10 @@ def get_filters():
 def get_restaurants_batch(ids: str = Query(..., description="Comma-separated restaurant IDs")):
     df = get_df()
     id_list = [i.strip() for i in ids.split(",") if i.strip()]
-    matched = df[df["restaurant_id"].isin(id_list)]
+    matched = df[df["restaurant_id"].isin(id_list)].copy()
+    matched["is_open_now"] = matched["opening_hours"].apply(
+        lambda h: _is_open_now(h) if pd.notna(h) else None
+    )
     clean = matched.replace([np.inf, -np.inf], np.nan).where(pd.notnull(matched), None)
     results = [_clean_row(r) for r in clean.to_dict(orient="records")]
     return {"results": results}
@@ -159,6 +164,7 @@ def get_restaurant(restaurant_id: str):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=404, content={"detail": "Restaurant not found"})
     row = match.iloc[0].where(pd.notnull(match.iloc[0]), None).to_dict()
+    row["is_open_now"] = _is_open_now(row.get("opening_hours"))
     return _clean_row(row)
 
 
@@ -193,6 +199,10 @@ def get_recommendations(
                 (filtered["price_midpoint"] > lo) &
                 (filtered["price_midpoint"] <= hi)
             ]
+    filtered["is_open_now"] = filtered["opening_hours"].apply(
+        lambda h: _is_open_now(h) if pd.notna(h) else None
+    )
+
     if open_now is True:
         filtered = filtered[filtered["is_open_now"] == True]  # noqa: E712
 

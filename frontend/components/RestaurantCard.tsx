@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 async function toggleSaved(id: string, currently: boolean): Promise<boolean> {
@@ -86,6 +86,9 @@ export default function RestaurantCard({
   const [savePop, setSavePop] = useState(false);
   const [likePop, setLikePop] = useState(false);
 
+  useEffect(() => { setSaved(initialSaved); }, [initialSaved]);
+  useEffect(() => { setLiked(initialLiked); }, [initialLiked]);
+
   const photoUrl = photoUrlProp || getPhotoUrl(cuisine);
   const stars = Math.round(rating * 2) / 2;
   const fullStars = Math.floor(stars);
@@ -155,13 +158,14 @@ export default function RestaurantCard({
         )}
         {/* Bookmark (save) button */}
         <button
-          onClick={async (e) => {
+          onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            const nowSaved = await toggleSaved(restaurantId, saved);
+            const nowSaved = !saved;
             setSaved(nowSaved);
             if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); }
             if (!nowSaved && onUnsave) onUnsave(restaurantId);
+            toggleSaved(restaurantId, saved).catch(() => setSaved(saved));
           }}
           className={`absolute top-3 right-3 flex items-center justify-center w-9 h-9 rounded-full transition-all duration-150 hover:scale-110 active:scale-95${savePop ? " heart-pop" : ""}`}
           style={{
@@ -220,12 +224,13 @@ export default function RestaurantCard({
 
           {/* Heart (liked — been there) */}
           <button
-            onClick={async (e) => {
+            onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              const nowLiked = await toggleLiked(restaurantId, liked);
+              const nowLiked = !liked;
               setLiked(nowLiked);
               if (nowLiked) { setLikePop(true); setTimeout(() => setLikePop(false), 400); }
+              toggleLiked(restaurantId, liked).catch(() => setLiked(liked));
             }}
             className={`flex items-center gap-1 text-xs font-medium transition-all duration-150 hover:opacity-80 active:scale-95${likePop ? " heart-pop" : ""}`}
             style={{ color: liked ? "var(--accent)" : "var(--text-muted)", cursor: "pointer" }}
