@@ -596,35 +596,49 @@ function RecommendationsContent() {
         {/* Pagination */}
         {!loading && !error && totalPages > 1 && (
           <div className="flex items-center justify-center gap-4 py-4">
-            <button
-              onClick={() => updateParams({ page: String(page - 1) })}
-              disabled={page <= 1}
-              className="page-btn px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium disabled:opacity-30 min-w-[44px] min-h-[44px]"
-              style={{
-                backgroundColor: "var(--bg-subtle)",
-                color: "var(--text)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              Prev
-            </button>
+            {(() => {
+              const prevParams = new URLSearchParams(searchParams.toString());
+              prevParams.set("page", String(page - 1));
+              const nextParams = new URLSearchParams(searchParams.toString());
+              nextParams.set("page", String(page + 1));
+              return (
+                <>
+                  <Link
+                    href={page <= 1 ? "#" : `/recommendations?${prevParams.toString()}`}
+                    aria-disabled={page <= 1}
+                    className="page-btn px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium min-w-[44px] min-h-[44px]"
+                    style={{
+                      backgroundColor: "var(--bg-subtle)",
+                      color: "var(--text)",
+                      border: "1px solid var(--border)",
+                      opacity: page <= 1 ? 0.3 : 1,
+                      pointerEvents: page <= 1 ? "none" : "auto",
+                    }}
+                  >
+                    Prev
+                  </Link>
 
-            <span className="text-sm" style={{ color: "var(--text-muted)" }}>
-              {page} of {totalPages}
-            </span>
+                  <span className="text-sm" style={{ color: "var(--text-muted)" }}>
+                    {page} of {totalPages}
+                  </span>
 
-            <button
-              onClick={() => updateParams({ page: String(page + 1) })}
-              disabled={page >= totalPages}
-              className="page-btn px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium disabled:opacity-30 min-w-[44px] min-h-[44px]"
-              style={{
-                backgroundColor: "var(--bg-subtle)",
-                color: "var(--text)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              Next
-            </button>
+                  <Link
+                    href={page >= totalPages ? "#" : `/recommendations?${nextParams.toString()}`}
+                    aria-disabled={page >= totalPages}
+                    className="page-btn px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium min-w-[44px] min-h-[44px]"
+                    style={{
+                      backgroundColor: "var(--bg-subtle)",
+                      color: "var(--text)",
+                      border: "1px solid var(--border)",
+                      opacity: page >= totalPages ? 0.3 : 1,
+                      pointerEvents: page >= totalPages ? "none" : "auto",
+                    }}
+                  >
+                    Next
+                  </Link>
+                </>
+              );
+            })()}
           </div>
         )}
       </main>
