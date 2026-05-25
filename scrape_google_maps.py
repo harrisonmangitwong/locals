@@ -17,6 +17,7 @@ This will:
 """
 
 import os
+import json
 import hashlib
 from datetime import datetime
 
@@ -33,7 +34,7 @@ SEARCH_TERMS = [
     # General
     "best restaurant",
     "local restaurant",
-    # Cuisine-specific
+    # Cuisine-specific — broad
     "pizza",
     "tacos",
     "noodles",
@@ -46,6 +47,22 @@ SEARCH_TERMS = [
     "korean food",
     "thai food",
     "caribbean food",
+    # Cuisine-specific — expansion
+    "Ethiopian restaurant New York",
+    "Colombian restaurant New York",
+    "Dominican restaurant New York",
+    "Filipino restaurant New York",
+    "Peruvian restaurant New York",
+    "Vietnamese restaurant New York",
+    "dim sum New York",
+    "soul food New York",
+    "Turkish restaurant New York",
+    "Bangladeshi restaurant New York",
+    "West African restaurant New York",
+    "Tibetan restaurant New York",
+    "Salvadoran restaurant New York",
+    "Uzbek restaurant New York",
+    "Georgian restaurant New York",
     # Brooklyn neighborhoods
     "restaurant Williamsburg Brooklyn",
     "restaurant Bushwick Brooklyn",
@@ -54,23 +71,49 @@ SEARCH_TERMS = [
     "restaurant Crown Heights Brooklyn",
     "restaurant Greenpoint Brooklyn",
     "restaurant Sunset Park Brooklyn",
-    # Manhattan gaps
+    "restaurant Bay Ridge Brooklyn",
+    "restaurant Brighton Beach Brooklyn",
+    "restaurant Bensonhurst Brooklyn",
+    "restaurant Flatbush Brooklyn",
+    "restaurant Canarsie Brooklyn",
+    "restaurant Red Hook Brooklyn",
+    # Manhattan neighborhoods
     "restaurant Lower East Side Manhattan",
     "restaurant East Village Manhattan",
     "restaurant West Village Manhattan",
     "restaurant Chinatown Manhattan",
-    # Staten Island
-    "restaurant Staten Island",
-    # More Bronx
+    "restaurant Harlem Manhattan",
+    "restaurant East Harlem Manhattan",
+    "restaurant Inwood Manhattan",
+    "restaurant Washington Heights Manhattan",
+    "restaurant Hell's Kitchen Manhattan",
+    "restaurant Nolita Manhattan",
+    # Queens neighborhoods
+    "restaurant Jackson Heights Queens",
+    "restaurant Flushing Queens",
+    "restaurant Astoria Queens",
+    "restaurant Forest Hills Queens",
+    "restaurant Ridgewood Queens",
+    "restaurant Woodside Queens",
+    "restaurant Elmhurst Queens",
+    "restaurant Jamaica Queens",
+    "restaurant Bayside Queens",
+    # Bronx neighborhoods
     "restaurant Fordham Bronx",
     "restaurant Arthur Avenue Bronx",
+    "restaurant Mott Haven Bronx",
+    "restaurant Kingsbridge Bronx",
+    "restaurant Pelham Parkway Bronx",
+    # Staten Island
+    "restaurant Staten Island",
+    "restaurant St George Staten Island",
 ]
 
 LOCATION = "New York City, USA"
 MAX_PLACES_PER_SEARCH = 40      # results per search term
 MAX_REVIEWS_PER_PLACE = 50      # reviews to pull per restaurant
 OUTPUT_DIR = "data"
-USE_LAST_RUN = True  # Set to False to trigger a fresh scrape
+USE_LAST_RUN = False  # Set to True to re-use the last Apify run without spending credits
 
 # ---------------------------------------------------------------------------
 # STEP 1 — Run the Apify actor (or fetch the last run's data)
@@ -317,17 +360,45 @@ def build_reviews_df(items: list[dict]) -> pd.DataFrame:
 # STEP 4 — Save CSVs
 # ---------------------------------------------------------------------------
 
-def save(restaurants_df: pd.DataFrame, reviews_df: pd.DataFrame):
+def save(restaurants_df: pd.DataFrame, reviews_df: pd.DataFrame, raw_items: list[dict]):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     r_path = os.path.join(OUTPUT_DIR, "restaurants.csv")
     v_path = os.path.join(OUTPUT_DIR, "reviews.csv")
+    j_path = os.path.join(OUTPUT_DIR, "raw_apify_data.json")
+
+    # Merge with existing data (deduplicate by google_place_id / review_id)
+    if os.path.exists(r_path):
+        existing_r = pd.read_csv(r_path)
+        known_pids = set(existing_r["google_place_id"].dropna())
+        new_r = restaurants_df[~restaurants_df["google_place_id"].isin(known_pids)]
+        restaurants_df = pd.concat([existing_r, new_r], ignore_index=True)
+        print(f"   Merged: {len(existing_r)} existing + {len(new_r)} new restaurants = {len(restaurants_df)} total")
+
+    if os.path.exists(v_path):
+        existing_v = pd.read_csv(v_path)
+        known_rids = set(existing_v["review_id"])
+        new_v = reviews_df[~reviews_df["review_id"].isin(known_rids)]
+        reviews_df = pd.concat([existing_v, new_v], ignore_index=True)
+        print(f"   Merged: {len(existing_v)} existing + {len(new_v)} new reviews = {len(reviews_df)} total")
+
+    # Merge raw JSON (needed by enrich_data.py)
+    existing_raw: list[dict] = []
+    if os.path.exists(j_path):
+        with open(j_path) as f:
+            existing_raw = json.load(f)
+    existing_pids = {r.get("placeId") for r in existing_raw if r.get("placeId")}
+    new_raw = [r for r in raw_items if r.get("placeId") not in existing_pids]
+    merged_raw = existing_raw + new_raw
+    with open(j_path, "w") as f:
+        json.dump(merged_raw, f)
 
     restaurants_df.to_csv(r_path, index=False)
     reviews_df.to_csv(v_path, index=False)
 
     print(f"\n✅ Saved {r_path}  ({len(restaurants_df)} restaurants)")
     print(f"✅ Saved {v_path}  ({len(reviews_df)} reviews)")
+    print(f"✅ Saved {j_path}  ({len(merged_raw)} raw place records)")
 
 
 # ---------------------------------------------------------------------------
@@ -351,7 +422,7 @@ def main():
     restaurants_df = build_restaurants_df(items)
     reviews_df = build_reviews_df(items)
 
-    save(restaurants_df, reviews_df)
+    save(restaurants_df, reviews_df, items)
 
     print(f"\n🎉 Done! Now run:  python run_pipeline.py")
 

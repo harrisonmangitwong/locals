@@ -38,7 +38,7 @@ def main():
         sys.exit(1)
     restaurants_df = build_restaurants_df(items)
     reviews_df = build_reviews_df(items)
-    save(restaurants_df, reviews_df)
+    save(restaurants_df, reviews_df, items)
 
     # Step 2: Pipeline
     print("\n" + "=" * 50)

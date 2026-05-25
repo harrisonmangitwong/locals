@@ -6,3 +6,11 @@ __pycache__/
 .venv/
 venv/
 .vercel
+
+# Large local-only pipeline data (only backend/data.csv is deployed)
+data/raw_apify_data.json
+data/restaurants.csv
+data/reviews.csv
+data/labeling_sheet.csv
+data/user_labels_raw.csv
+outputs/
