@@ -10,10 +10,14 @@ from datetime import datetime
 from typing import Optional
 
 try:
-    import pytz
-    _NYC_TZ = pytz.timezone("America/New_York")
-except ImportError:
-    _NYC_TZ = None
+    from zoneinfo import ZoneInfo
+    _NYC_TZ = ZoneInfo("America/New_York")
+except Exception:
+    try:
+        import pytz
+        _NYC_TZ = pytz.timezone("America/New_York")
+    except ImportError:
+        _NYC_TZ = None
 
 app = FastAPI(title="Locals API")
 
