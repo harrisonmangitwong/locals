@@ -88,10 +88,11 @@ export default function RestaurantCard({
   const [savePop, setSavePop] = useState(false);
   const [likePop, setLikePop] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(photoUrlProp || getPhotoUrl(cuisine));
+  const [imgFit, setImgFit] = useState<"cover" | "contain">("cover");
 
   useEffect(() => { setSaved(initialSaved); }, [initialSaved]);
   useEffect(() => { setLiked(initialLiked); }, [initialLiked]);
-  useEffect(() => { setPhotoUrl(photoUrlProp || getPhotoUrl(cuisine)); }, [photoUrlProp, cuisine]);
+  useEffect(() => { setPhotoUrl(photoUrlProp || getPhotoUrl(cuisine)); setImgFit("cover"); }, [photoUrlProp, cuisine]);
   const stars = Math.round(rating * 2) / 2;
   const fullStars = Math.floor(stars);
   const hasHalf = stars - fullStars >= 0.5;
@@ -134,8 +135,23 @@ export default function RestaurantCard({
           src={photoUrl}
           alt={name}
           className="card-photo"
-          style={{ objectFit: "cover", width: "100%", height: "100%" }}
-          onError={() => setPhotoUrl(getPhotoUrl(cuisine))}
+          style={{
+            objectFit: imgFit,
+            width: "100%",
+            height: "100%",
+            backgroundColor: imgFit === "contain" ? "var(--bg-subtle)" : undefined,
+            padding: imgFit === "contain" ? "16px" : undefined,
+          }}
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            const container = img.parentElement;
+            if (!container) return;
+            const containerAspect = container.clientWidth / container.clientHeight;
+            const imageAspect = img.naturalWidth / img.naturalHeight;
+            const ratio = Math.max(imageAspect / containerAspect, containerAspect / imageAspect);
+            if (ratio > 1.5) setImgFit("contain");
+          }}
+          onError={() => { setPhotoUrl(getPhotoUrl(cuisine)); setImgFit("cover"); }}
         />
         {/* Rank */}
         <span
