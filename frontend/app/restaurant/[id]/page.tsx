@@ -259,7 +259,7 @@ export default function RestaurantPage() {
       <div className="relative w-full overflow-hidden" style={{ height: "clamp(260px, 40vw, 420px)" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={heroUrl} alt={r.name} className="w-full h-full object-cover" loading="eager" />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.15) 55%, transparent 100%)" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.1) 75%, transparent 100%)" }} />
 
         {/* Rank badge */}
         <span className="absolute top-4 left-4 text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
@@ -300,7 +300,7 @@ export default function RestaurantPage() {
         </div>
 
         {/* Name + meta overlay */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>{r.neighborhood}</span>
             <span style={{ color: "rgba(255,255,255,0.35)" }}>·</span>
