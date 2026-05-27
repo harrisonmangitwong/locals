@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 
 async function toggleSaved(id: string, currently: boolean): Promise<boolean> {
@@ -130,13 +129,12 @@ export default function RestaurantCard({
     >
       {/* Photo */}
       <Link href={`/restaurant/${restaurantId}`} className="relative overflow-hidden h-52 sm:h-48 block" style={{ flexShrink: 0 }}>
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={photoUrl}
           alt={name}
-          fill
           className="card-photo"
-          style={{ objectFit: "cover" }}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          style={{ objectFit: "cover", width: "100%", height: "100%" }}
           onError={() => setPhotoUrl(getPhotoUrl(cuisine))}
         />
         {/* Rank */}
