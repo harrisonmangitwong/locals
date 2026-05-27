@@ -79,31 +79,23 @@ function RatingBar({ label, value, maxValue = 5, color }: { label: string; value
 
 function getVerdict(localRating: number, touristRating: number): { text: string; color: string } {
   const gap = localRating - touristRating;
-  if (gap > 0.3) return { text: "Locals rate this higher than tourists — a hidden gem.", color: "var(--success)" };
-  if (gap < -0.3) return { text: "Tourists rate this higher than locals — but locals still approve.", color: "var(--accent-text)" };
-  return { text: "Locals and tourists agree — this place is universally loved.", color: "var(--text-secondary)" };
+  if (gap > 0.5) return { text: `Locals rate it ${localRating.toFixed(1)} vs. tourists' ${touristRating.toFixed(1)} — regulars love it more than visitors do.`, color: "var(--success)" };
+  if (gap > 0.3) return { text: `Locals give it ${localRating.toFixed(1)} — noticeably higher than tourists' ${touristRating.toFixed(1)}. A neighborhood favorite.`, color: "var(--success)" };
+  if (gap < -0.3) return { text: `Tourists give it ${touristRating.toFixed(1)}, locals ${localRating.toFixed(1)} — popular with visitors, but locals still rate it well.`, color: "var(--accent-text)" };
+  return { text: `Locals (${localRating.toFixed(1)}) and tourists (${touristRating.toFixed(1)}) agree — this place holds up across the board.`, color: "var(--text-secondary)" };
 }
 
-function SignalMeter({ value }: { value: number }) {
-  const pct = Math.min(value * 100, 100);
-  let strength: string, color: string;
-  if (pct >= 40) { strength = "Strong"; color = "var(--success)"; }
-  else if (pct >= 25) { strength = "Moderate"; color = "var(--accent-text)"; }
-  else { strength = "Limited"; color = "var(--text-muted)"; }
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs" style={{ color: "var(--text-muted)" }}>Local signal strength</span>
-        <span className="text-xs font-medium" style={{ color }}>{strength}</span>
-      </div>
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--bg-inset)" }}>
-        <div className="bar-fill h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
-      </div>
-      <p className="text-xs mt-1.5" style={{ color: "var(--text-muted)" }}>
-        Based on {pct.toFixed(0)}% average reviewer localness
-      </p>
-    </div>
-  );
+function LocalContext({ avgLocalness, localRating, touristRating }: { avgLocalness: number; localRating: number; touristRating: number }) {
+  const pct = Math.round(avgLocalness * 100);
+  let text: string;
+  if (pct >= 40) {
+    text = `${pct}% of reviewers are NYC regulars — this place has a real local following.`;
+  } else if (pct >= 20) {
+    text = `${pct}% of reviewers are locals. Fewer local reviews, but they rate it ${localRating.toFixed(1)}/5.`;
+  } else {
+    text = `Mostly tourist-reviewed spot. The locals who do go rate it ${localRating.toFixed(1)}/5 vs. tourists' ${touristRating.toFixed(1)}/5.`;
+  }
+  return <p className="text-xs" style={{ color: "var(--text-muted)" }}>{text}</p>;
 }
 
 function MiniStars({ rating }: { rating: number }) {
@@ -428,7 +420,8 @@ export default function RestaurantPage() {
 
         {/* Why it's local-approved */}
         <section className="mb-10">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--success)" }}>Why it&apos;s local-approved</h2>
+          <h2 className="font-display text-xl mb-1" style={{ color: "var(--success)" }}>The local take</h2>
+          <p className="text-sm mb-3" style={{ color: "var(--text-muted)" }}>We separate local reviewers from tourists and weight ratings accordingly.</p>
           <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: "var(--success-soft)", border: "1px solid var(--border)" }}>
             <div className="space-y-3">
               <RatingBar label="Locals" value={r.local_weighted_rating ?? 0} color="var(--success)" />
@@ -436,7 +429,7 @@ export default function RestaurantPage() {
             </div>
             <p className="text-sm font-medium" style={{ color: verdict.color }}>{verdict.text}</p>
             <div style={{ borderTop: "1px solid var(--border)" }} />
-            <SignalMeter value={r.avg_localness ?? 0} />
+            <LocalContext avgLocalness={r.avg_localness ?? 0} localRating={r.local_weighted_rating ?? 0} touristRating={r.tourist_weighted_rating ?? 0} />
           </div>
         </section>
 
