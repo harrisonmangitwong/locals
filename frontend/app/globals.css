@@ -207,6 +207,17 @@ body {
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
+/* ── Save confirmation pill ── */
+@keyframes save-confirm {
+  0%   { opacity: 0; transform: translateY(-2px); }
+  15%  { opacity: 1; transform: translateY(0); }
+  75%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-2px); }
+}
+.save-confirm-pill {
+  animation: save-confirm 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .restaurant-card,
@@ -219,6 +230,7 @@ body {
   .card-enter,
   .bar-fill,
   .hours-body,
+  .save-confirm-pill,
   .skeleton {
     transition: none !important;
     transform: none !important;

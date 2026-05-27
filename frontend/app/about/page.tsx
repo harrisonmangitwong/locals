@@ -40,7 +40,7 @@ export default function AboutPage() {
 
         {/* The Problem */}
         <section className="mb-12">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>
+          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>
             The Problem
           </h2>
           <p className="leading-relaxed max-w-prose" style={{ color: "var(--text-secondary)" }}>
@@ -53,7 +53,7 @@ export default function AboutPage() {
 
         {/* The Data */}
         <section className="mb-10">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>
+          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>
             The Data
           </h2>
           <p className="leading-relaxed mb-4 max-w-prose" style={{ color: "var(--text-secondary)" }}>
@@ -70,7 +70,7 @@ export default function AboutPage() {
 
         {/* Localness Score */}
         <section className="mb-14">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>
+          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>
             Localness Score
           </h2>
           <p className="leading-relaxed mb-4 max-w-prose" style={{ color: "var(--text-secondary)" }}>
@@ -111,7 +111,7 @@ export default function AboutPage() {
 
         {/* Restaurant Ranking */}
         <section className="mb-14">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>
+          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>
             Restaurant Ranking
           </h2>
           <p className="leading-relaxed mb-4 max-w-prose" style={{ color: "var(--text-secondary)" }}>
@@ -133,7 +133,7 @@ export default function AboutPage() {
 
         {/* Vision */}
         <section className="mb-10">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--accent-text)" }}>
+          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>
             What&apos;s Next
           </h2>
           <p className="leading-relaxed max-w-prose" style={{ color: "var(--text-secondary)" }}>

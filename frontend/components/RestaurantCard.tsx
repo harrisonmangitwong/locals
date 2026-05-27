@@ -89,6 +89,7 @@ export default function RestaurantCard({
   const [liked, setLiked] = useState(initialLiked);
   const [savePop, setSavePop] = useState(false);
   const [likePop, setLikePop] = useState(false);
+  const [showSavedMsg, setShowSavedMsg] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(photoUrlProp || getPhotoUrl(cuisine));
 
   useEffect(() => { setSaved(initialSaved); }, [initialSaved]);
@@ -159,31 +160,41 @@ export default function RestaurantCard({
             {isOpenNow ? "Open" : "Closed"}
           </span>
         )}
-        {/* Bookmark (save) button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const nowSaved = !saved;
-            setSaved(nowSaved);
-            if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); }
-            if (!nowSaved && onUnsave) onUnsave(restaurantId);
-            toggleSaved(restaurantId, saved).catch(() => setSaved(saved));
-          }}
-          className={`absolute top-3 right-3 flex items-center justify-center w-9 h-9 rounded-full transition-all duration-150 hover:scale-110 active:scale-95${savePop ? " heart-pop" : ""}`}
-          style={{
-            backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)",
-            backdropFilter: "blur(4px)",
-            cursor: "pointer",
-          }}
-          aria-label={saved ? "Remove from saved" : "Save restaurant"}
-        >
-          {/* Bookmark icon */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
-            fill={saved ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-          </svg>
-        </button>
+        {/* Bookmark (save) button + confirmation */}
+        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+          {showSavedMsg && (
+            <span
+              className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
+              onAnimationEnd={() => setShowSavedMsg(false)}
+              style={{ backgroundColor: "rgba(45,138,86,0.85)", color: "#fff", backdropFilter: "blur(4px)" }}
+            >
+              Saved
+            </span>
+          )}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const nowSaved = !saved;
+              setSaved(nowSaved);
+              if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); setShowSavedMsg(true); }
+              if (!nowSaved && onUnsave) onUnsave(restaurantId);
+              toggleSaved(restaurantId, saved).catch(() => setSaved(saved));
+            }}
+            className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-150 hover:scale-110 active:scale-95${savePop ? " heart-pop" : ""}`}
+            style={{
+              backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)",
+              backdropFilter: "blur(4px)",
+              cursor: "pointer",
+            }}
+            aria-label={saved ? "Remove from saved" : "Save restaurant"}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
+              fill={saved ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+          </button>
+        </div>
       </Link>
 
       {/* Content */}
@@ -220,7 +231,7 @@ export default function RestaurantCard({
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-medium transition-opacity hover:opacity-75"
-            style={{ color: "var(--accent-text)" }}
+            style={{ color: "var(--text-muted)" }}
           >
             Open in Maps &rarr;
           </a>
