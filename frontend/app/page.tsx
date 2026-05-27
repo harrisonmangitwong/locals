@@ -75,38 +75,14 @@ export default function Home() {
         {/* CTA */}
         <Link
           href="/recommendations"
-          className="cta-btn inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold mb-14"
+          className="cta-btn inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold"
           style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
         >
           Find a restaurant
         </Link>
-
-        {/* Stats row */}
-        <div
-          className="flex flex-col sm:flex-row items-center gap-8 sm:gap-12 px-8 py-6 rounded-2xl"
-          style={{ color: "var(--text-muted)", backgroundColor: "var(--warm-soft)" }}
-        >
-          <div className="text-center">
-            <div className="font-display text-3xl sm:text-4xl mb-1" style={{ color: "var(--text)" }}>407</div>
-            <div className="text-xs uppercase tracking-wider">Restaurants</div>
-          </div>
-          <div
-            className="hidden sm:block w-px h-10"
-            style={{ backgroundColor: "var(--border-strong)" }}
-          />
-          <div className="text-center">
-            <div className="font-display text-3xl sm:text-4xl mb-1" style={{ color: "var(--text)" }}>48k+</div>
-            <div className="text-xs uppercase tracking-wider">Reviews analyzed</div>
-          </div>
-          <div
-            className="hidden sm:block w-px h-10"
-            style={{ backgroundColor: "var(--border-strong)" }}
-          />
-          <div className="text-center">
-            <div className="font-display text-3xl sm:text-4xl mb-1" style={{ color: "var(--text)" }}>5</div>
-            <div className="text-xs uppercase tracking-wider">Boroughs</div>
-          </div>
-        </div>
+        <p className="mt-4 mb-14 text-xs" style={{ color: "var(--text-muted)" }}>
+          48,000+ Google Maps reviews &mdash; filtered for who&apos;s actually from here
+        </p>
 
         {/* How it works — editorial text, not cards */}
         <div className="mt-28 max-w-2xl w-full text-left">

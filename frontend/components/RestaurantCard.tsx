@@ -62,6 +62,7 @@ export interface RestaurantCardProps {
   isOpenNow?: boolean | null;
   initialSaved?: boolean;
   initialLiked?: boolean;
+  featured?: boolean;
   onUnsave?: (id: string) => void;
   onUnlike?: (id: string) => void;
 }
@@ -80,6 +81,7 @@ export default function RestaurantCard({
   isOpenNow,
   initialSaved = false,
   initialLiked = false,
+  featured = false,
   onUnsave,
   onUnlike,
 }: RestaurantCardProps) {
@@ -128,7 +130,7 @@ export default function RestaurantCard({
       }}
     >
       {/* Photo */}
-      <Link href={`/restaurant/${restaurantId}`} className="relative overflow-hidden h-52 sm:h-48 block" style={{ flexShrink: 0 }}>
+      <Link href={`/restaurant/${restaurantId}`} className={`relative overflow-hidden block${featured ? " h-72 sm:h-64" : " h-52 sm:h-48"}`} style={{ flexShrink: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photoUrl}

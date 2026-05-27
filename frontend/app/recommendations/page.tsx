@@ -2,10 +2,9 @@
 
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
+import UserMenu from "@/components/UserMenu";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -171,54 +170,6 @@ interface ApiResponse {
   results: Restaurant[];
 }
 
-function UserMenu() {
-  const [user, setUser] = useState<User | null>(null);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
-  }, []);
-
-  async function handleSignOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    window.location.href = "/";
-  }
-
-  if (!user) return null;
-
-  const name = user.user_metadata?.full_name ?? user.email ?? "?";
-  const avatar = user.user_metadata?.avatar_url as string | undefined;
-
-  return (
-    <div className="relative">
-      <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 focus:outline-none">
-        {avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatar} alt={name} className="w-7 h-7 rounded-full" referrerPolicy="no-referrer" />
-        ) : (
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold" style={{ backgroundColor: "var(--accent)", color: "#fff" }}>
-            {name[0]}
-          </div>
-        )}
-      </button>
-      {open && (
-        <div className="absolute right-0 mt-2 w-44 rounded-xl py-1 z-50 shadow-lg" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)" }}>
-          <p className="px-4 py-2 text-xs truncate" style={{ color: "var(--text-secondary)" }}>{user.email}</p>
-          <button
-            onClick={handleSignOut}
-            className="w-full text-left px-4 py-2 text-sm transition-opacity hover:opacity-75"
-            style={{ color: "var(--text)" }}
-          >
-            Sign out
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function RecommendationsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -237,6 +188,9 @@ function RecommendationsContent() {
   const [locating, setLocating] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [filtersExpanded, setFiltersExpanded] = useState(!!(neighborhood || cuisine || price || openNow));
+  const activeFilterCount = [neighborhood, cuisine, price, openNow ? "open" : ""].filter(Boolean).length;
+  const filterSummary = [neighborhood, cuisine, price, openNow ? "Open now" : ""].filter(Boolean).join(" · ");
 
   useEffect(() => {
     Promise.all([
@@ -362,8 +316,8 @@ function RecommendationsContent() {
           </p>
         </div>
 
-        {/* Search bar */}
-        <div className="mb-3">
+        {/* Search bar — always visible */}
+        <div className="mb-4">
           <div className="flex items-center gap-2">
             <label htmlFor="search-restaurants" className="sr-only">Search restaurants</label>
             <input
@@ -400,106 +354,145 @@ function RecommendationsContent() {
           </div>
         </div>
 
-        {/* Filters row */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-10">
-          <div className="flex gap-2 w-full sm:w-auto">
-            <label htmlFor="filter-neighborhood" className="sr-only">Filter by neighborhood</label>
-            <select
-              id="filter-neighborhood"
-              value={neighborhood}
-              onChange={(e) => updateParams({ neighborhood: e.target.value })}
-              className="filter-control flex-1 sm:flex-none rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
-              style={{
-                backgroundColor: "var(--bg-subtle)",
-                color: "var(--text)",
-                border: "1px solid var(--border)",
-                outline: "none",
-              }}
-            >
-              <option value="" style={{ backgroundColor: "var(--bg-card)" }}>
-                All neighborhoods
-              </option>
-              {BOROUGH_NEIGHBORHOODS.map((group) => {
-                const available = group.neighborhoods.filter((n) => allNeighborhoods.includes(n));
-                if (available.length === 0) return null;
-                return (
-                  <optgroup key={group.borough} label={group.borough} style={{ backgroundColor: "var(--bg-card)", color: "var(--text-secondary)", fontWeight: 600 }}>
-                    {available.map((n) => (
-                      <option key={n} value={n} style={{ backgroundColor: "var(--bg-card)", color: "var(--text)", fontWeight: 400 }}>
-                        {n}
-                      </option>
-                    ))}
-                  </optgroup>
-                );
-              })}
-            </select>
-            <button
-              onClick={handleNearMe}
-              disabled={locating}
-              className="filter-control px-3.5 py-3 sm:py-2 rounded-lg text-sm font-medium whitespace-nowrap"
-              style={{
-                backgroundColor: "var(--bg-subtle)",
-                color: "var(--text-secondary)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              {locating ? "Locating..." : "Near Me"}
-            </button>
-          </div>
-
-          <label htmlFor="filter-cuisine" className="sr-only">Filter by cuisine</label>
-          <select
-            id="filter-cuisine"
-            value={cuisine}
-            onChange={(e) => updateParams({ cuisine: e.target.value })}
-            className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
-            style={{
-              backgroundColor: "var(--bg-subtle)",
-              color: "var(--text)",
-              border: "1px solid var(--border)",
-              outline: "none",
-            }}
-          >
-            <option value="" style={{ backgroundColor: "var(--bg-card)" }}>
-              All cuisines
-            </option>
-            {allCuisines.map((c) => (
-              <option key={c} value={c} style={{ backgroundColor: "var(--bg-card)" }}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <label htmlFor="filter-price" className="sr-only">Filter by price</label>
-          <select
-            id="filter-price"
-            value={price}
-            onChange={(e) => updateParams({ price: e.target.value })}
-            className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
-            style={{
-              backgroundColor: "var(--bg-subtle)",
-              color: "var(--text)",
-              border: "1px solid var(--border)",
-              outline: "none",
-            }}
-          >
-            <option value="" style={{ backgroundColor: "var(--bg-card)" }}>All prices</option>
-            <option value="$" style={{ backgroundColor: "var(--bg-card)" }}>$ (under $15)</option>
-            <option value="$$" style={{ backgroundColor: "var(--bg-card)" }}>$$ ($15-30)</option>
-            <option value="$$$" style={{ backgroundColor: "var(--bg-card)" }}>$$$ ($30-60)</option>
-            <option value="$$$$" style={{ backgroundColor: "var(--bg-card)" }}>$$$$ ($60+)</option>
-          </select>
+        {/* Filter toggle */}
+        <div className="flex items-center gap-3 mb-1">
           <button
-            onClick={() => updateParams({ open_now: openNow ? "" : "1" })}
-            aria-pressed={openNow}
-            className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium whitespace-nowrap transition-colors"
-            style={{
-              backgroundColor: openNow ? "var(--success)" : "var(--bg-subtle)",
-              color: openNow ? "#ffffff" : "var(--text-secondary)",
-              border: `1px solid ${openNow ? "var(--success)" : "var(--border)"}`,
-            }}
+            onClick={() => setFiltersExpanded((v) => !v)}
+            className="flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-75"
+            style={{ color: "var(--text-secondary)" }}
           >
-            Open Now
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+              <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+              <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
+            </svg>
+            Filters
+            {activeFilterCount > 0 && (
+              <span
+                className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                style={{ backgroundColor: "var(--accent)", color: "#fff", lineHeight: 1.4 }}
+              >
+                {activeFilterCount}
+              </span>
+            )}
+            <svg
+              width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+              strokeLinecap="round" strokeLinejoin="round"
+              style={{ transition: "transform 0.2s", transform: filtersExpanded ? "rotate(180deg)" : "none" }}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </button>
+          {activeFilterCount > 0 && !filtersExpanded && (
+            <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{filterSummary}</p>
+          )}
+        </div>
+
+        {/* Collapsible filter panel */}
+        <div className={`filter-expand${filtersExpanded ? " open" : ""} mb-10`}>
+          <div className="filter-expand-inner">
+            <div className="flex flex-col sm:flex-row gap-3 pt-3 pb-1">
+              <div className="flex gap-2 w-full sm:w-auto">
+                <label htmlFor="filter-neighborhood" className="sr-only">Filter by neighborhood</label>
+                <select
+                  id="filter-neighborhood"
+                  value={neighborhood}
+                  onChange={(e) => updateParams({ neighborhood: e.target.value })}
+                  className="filter-control flex-1 sm:flex-none rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
+                  style={{
+                    backgroundColor: "var(--bg-subtle)",
+                    color: "var(--text)",
+                    border: "1px solid var(--border)",
+                    outline: "none",
+                  }}
+                >
+                  <option value="" style={{ backgroundColor: "var(--bg-card)" }}>
+                    All neighborhoods
+                  </option>
+                  {BOROUGH_NEIGHBORHOODS.map((group) => {
+                    const available = group.neighborhoods.filter((n) => allNeighborhoods.includes(n));
+                    if (available.length === 0) return null;
+                    return (
+                      <optgroup key={group.borough} label={group.borough} style={{ backgroundColor: "var(--bg-card)", color: "var(--text-secondary)", fontWeight: 600 }}>
+                        {available.map((n) => (
+                          <option key={n} value={n} style={{ backgroundColor: "var(--bg-card)", color: "var(--text)", fontWeight: 400 }}>
+                            {n}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
+                </select>
+                <button
+                  onClick={handleNearMe}
+                  disabled={locating}
+                  className="filter-control px-3.5 py-3 sm:py-2 rounded-lg text-sm font-medium whitespace-nowrap"
+                  style={{
+                    backgroundColor: "var(--bg-subtle)",
+                    color: "var(--text-secondary)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  {locating ? "Locating..." : "Near Me"}
+                </button>
+              </div>
+
+              <label htmlFor="filter-cuisine" className="sr-only">Filter by cuisine</label>
+              <select
+                id="filter-cuisine"
+                value={cuisine}
+                onChange={(e) => updateParams({ cuisine: e.target.value })}
+                className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
+                style={{
+                  backgroundColor: "var(--bg-subtle)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border)",
+                  outline: "none",
+                }}
+              >
+                <option value="" style={{ backgroundColor: "var(--bg-card)" }}>
+                  All cuisines
+                </option>
+                {allCuisines.map((c) => (
+                  <option key={c} value={c} style={{ backgroundColor: "var(--bg-card)" }}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <label htmlFor="filter-price" className="sr-only">Filter by price</label>
+              <select
+                id="filter-price"
+                value={price}
+                onChange={(e) => updateParams({ price: e.target.value })}
+                className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
+                style={{
+                  backgroundColor: "var(--bg-subtle)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border)",
+                  outline: "none",
+                }}
+              >
+                <option value="" style={{ backgroundColor: "var(--bg-card)" }}>All prices</option>
+                <option value="$" style={{ backgroundColor: "var(--bg-card)" }}>$ (under $15)</option>
+                <option value="$$" style={{ backgroundColor: "var(--bg-card)" }}>$$ ($15-30)</option>
+                <option value="$$$" style={{ backgroundColor: "var(--bg-card)" }}>$$$ ($30-60)</option>
+                <option value="$$$$" style={{ backgroundColor: "var(--bg-card)" }}>$$$$ ($60+)</option>
+              </select>
+              <button
+                onClick={() => updateParams({ open_now: openNow ? "" : "1" })}
+                aria-pressed={openNow}
+                className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium whitespace-nowrap transition-colors"
+                style={{
+                  backgroundColor: openNow ? "var(--success)" : "var(--bg-subtle)",
+                  color: openNow ? "#ffffff" : "var(--text-secondary)",
+                  border: `1px solid ${openNow ? "var(--success)" : "var(--border)"}`,
+                }}
+              >
+                Open Now
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Loading — skeleton cards */}
@@ -532,7 +525,7 @@ function RecommendationsContent() {
             }}
           >
             <p className="text-sm font-medium" style={{ color: "var(--accent)" }}>
-              {error}
+              {/\d{3}/.test(error ?? "") || (error ?? "").includes("API error") ? "Having trouble loading restaurants — please try again." : error}
             </p>
             <button
               onClick={fetchData}
@@ -547,25 +540,29 @@ function RecommendationsContent() {
         {/* Restaurant grid */}
         {!loading && !error && restaurants.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            {restaurants.map((r, i) => (
-              <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
-              <RestaurantCard
-                restaurantId={r.restaurant_id}
-                rank={r.rank}
-                name={r.name}
-                neighborhood={r.neighborhood}
-                cuisine={r.cuisine}
-                reviews={r.review_count ?? r.num_reviews ?? 0}
-                rating={r.total_score ?? 0}
-                mapsUrl={r.url}
-                photoUrl={r.image_url}
-                price={r.price_midpoint ? (r.price_midpoint <= 15 ? "$" : r.price_midpoint <= 30 ? "$$" : r.price_midpoint <= 60 ? "$$$" : "$$$$") : undefined}
-                isOpenNow={r.is_open_now}
-                initialSaved={savedIds.has(r.restaurant_id)}
-                initialLiked={likedIds.has(r.restaurant_id)}
-              />
-              </div>
-            ))}
+            {restaurants.map((r, i) => {
+              const isFeatured = i === 0 && page === 1;
+              return (
+                <div key={r.restaurant_id} className={`card-enter${isFeatured ? " md:col-span-2" : ""}`} style={{ animationDelay: `${i * 50}ms` }}>
+                  <RestaurantCard
+                    restaurantId={r.restaurant_id}
+                    rank={r.rank}
+                    name={r.name}
+                    neighborhood={r.neighborhood}
+                    cuisine={r.cuisine}
+                    reviews={r.review_count ?? r.num_reviews ?? 0}
+                    rating={r.total_score ?? 0}
+                    mapsUrl={r.url}
+                    photoUrl={r.image_url}
+                    price={r.price_midpoint ? (r.price_midpoint <= 15 ? "$" : r.price_midpoint <= 30 ? "$$" : r.price_midpoint <= 60 ? "$$$" : "$$$$") : undefined}
+                    isOpenNow={r.is_open_now}
+                    initialSaved={savedIds.has(r.restaurant_id)}
+                    initialLiked={likedIds.has(r.restaurant_id)}
+                    featured={isFeatured}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
 

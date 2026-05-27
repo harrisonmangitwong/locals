@@ -1,4 +1,5 @@
 import Link from "next/link";
+import UserMenu from "@/components/UserMenu";
 
 export default function AboutPage() {
   return (
@@ -27,6 +28,7 @@ export default function AboutPage() {
           <Link href="/about" className="text-xs sm:text-sm font-medium" style={{ color: "var(--text)" }}>
             About
           </Link>
+          <UserMenu />
         </nav>
       </header>
 
@@ -135,9 +137,11 @@ export default function AboutPage() {
             What&apos;s Next
           </h2>
           <p className="leading-relaxed max-w-prose" style={{ color: "var(--text-secondary)" }}>
-            Locals started with NYC, but the vision is bigger: help you find the right
-            (non-touristy) restaurants wherever you are and wherever you travel. We&apos;re
-            expanding to more cities soon.
+            Locals started in NYC because it has the highest density of local/tourist review
+            contrast in the US — every neighborhood has its own food culture, and tourists
+            cluster in the same spots. The methodology is city-agnostic: any city with a
+            strong resident-vs-visitor dynamic (Chicago, LA, New Orleans, Tokyo) produces
+            the same reviewable signal.
           </p>
         </section>
 

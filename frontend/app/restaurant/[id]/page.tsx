@@ -222,23 +222,10 @@ function ReviewCard({ review }: { review: ReviewEntry }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Favorites helpers
-// ---------------------------------------------------------------------------
-
-function getFavorites(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = localStorage.getItem("locals_favorites");
-    return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch { return new Set(); }
-}
-
-function toggleFavorite(id: string): boolean {
-  const favs = getFavorites();
-  if (favs.has(id)) { favs.delete(id); } else { favs.add(id); }
-  localStorage.setItem("locals_favorites", JSON.stringify([...favs]));
-  return favs.has(id);
+function friendlyDetailError(err: string | null): string {
+  if (!err) return "Restaurant not found.";
+  if (err.includes("404")) return "We couldn't find this restaurant.";
+  return "Something went wrong — try going back and refreshing.";
 }
 
 // ---------------------------------------------------------------------------
@@ -251,24 +238,31 @@ export default function RestaurantPage() {
   const [restaurant, setRestaurant] = useState<RestaurantDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hearted, setHearted] = useState(false);
-  const [heartPop, setHeartPop] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [savePop, setSavePop] = useState(false);
 
   useEffect(() => {
-    async function load() {
+    async function loadRestaurant() {
       try {
         const res = await fetch(`${API_BASE}/api/restaurant/${id}`);
-        if (!res.ok) throw new Error(`Not found (${res.status})`);
+        if (!res.ok) throw new Error(`${res.status}`);
         const data = await res.json();
         setRestaurant(data);
-        setHearted(getFavorites().has(data.restaurant_id));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load");
       } finally {
         setLoading(false);
       }
     }
-    load();
+    async function loadSaved() {
+      try {
+        const res = await fetch("/api/saved");
+        const data = await res.json();
+        setSaved((data.ids ?? []).includes(id));
+      } catch { /* ignore */ }
+    }
+    loadRestaurant();
+    loadSaved();
   }, [id]);
 
   if (loading) {
@@ -292,7 +286,7 @@ export default function RestaurantPage() {
   if (error || !restaurant) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
-        <p style={{ color: "var(--accent)" }}>{error ?? "Restaurant not found"}</p>
+        <p style={{ color: "var(--accent)" }}>{friendlyDetailError(error)}</p>
         <Link href="/recommendations" className="text-sm underline" style={{ color: "var(--text-muted)" }}>Back to recommendations</Link>
       </div>
     );
@@ -300,9 +294,10 @@ export default function RestaurantPage() {
 
   const r = restaurant;
   const fallbackId = CUISINE_PHOTO_MAP[r.cuisine] ?? DEFAULT_PHOTO;
-  const heroUrl = `https://images.unsplash.com/${fallbackId}?w=1200&q=80&auto=format&fit=crop`;
+  const heroUrl = r.image_url || `https://images.unsplash.com/${fallbackId}?w=1200&q=80&auto=format&fit=crop`;
 
   const allPhotos: string[] = [];
+  if (r.image_url) allPhotos.push(r.image_url);
 
   let reviews: ReviewEntry[] = [];
   if (r.top_reviews) {
@@ -356,17 +351,22 @@ export default function RestaurantPage() {
         </span>
         <button
           onClick={() => {
-            const now = toggleFavorite(r.restaurant_id);
-            setHearted(now);
-            if (now) { setHeartPop(true); setTimeout(() => setHeartPop(false), 400); }
+            const nowSaved = !saved;
+            setSaved(nowSaved);
+            if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); }
+            fetch("/api/saved", {
+              method: nowSaved ? "POST" : "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ restaurant_id: r.restaurant_id }),
+            }).catch(() => setSaved(saved));
           }}
-          className={`heart-btn absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full${heartPop ? " heart-pop" : ""}`}
-          style={{ backgroundColor: hearted ? "var(--accent)" : "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
-          aria-label={hearted ? "Remove from favorites" : "Save to favorites"}
+          className={`heart-btn absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full${savePop ? " heart-pop" : ""}`}
+          style={{ backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
+          aria-label={saved ? "Remove from saved" : "Save restaurant"}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"
-            fill={hearted ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            fill={saved ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
           </svg>
         </button>
       </div>
@@ -420,7 +420,7 @@ export default function RestaurantPage() {
 
         {/* Why it's local-approved */}
         <section className="mb-10">
-          <h2 className="font-display text-xl mb-1" style={{ color: "var(--success)" }}>The local take</h2>
+          <h2 className="font-display text-xl mb-1" style={{ color: "var(--accent-text)" }}>The local take</h2>
           <p className="text-sm mb-3" style={{ color: "var(--text-muted)" }}>We separate local reviewers from tourists and weight ratings accordingly.</p>
           <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: "var(--success-soft)", border: "1px solid var(--border)" }}>
             <div className="space-y-3">
