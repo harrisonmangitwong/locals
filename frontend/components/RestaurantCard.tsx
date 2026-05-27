@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 async function toggleSaved(id: string, currently: boolean): Promise<boolean> {
@@ -129,14 +130,14 @@ export default function RestaurantCard({
     >
       {/* Photo */}
       <Link href={`/restaurant/${restaurantId}`} className="relative overflow-hidden h-52 sm:h-48 block" style={{ flexShrink: 0 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={photoUrl}
           alt={name}
-          className="card-photo w-full h-full"
+          fill
+          className="card-photo"
           style={{ objectFit: "cover" }}
-          loading="lazy"
-          onError={(e) => { e.currentTarget.src = getPhotoUrl(cuisine); }}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          onError={() => {}}
         />
         {/* Rank */}
         <span
@@ -237,13 +238,13 @@ export default function RestaurantCard({
             }}
             className={`flex items-center gap-1 text-xs font-medium transition-all duration-150 hover:opacity-80 active:scale-95${likePop ? " heart-pop" : ""}`}
             style={{ color: liked ? "var(--accent)" : "var(--text-muted)", cursor: "pointer" }}
-            aria-label={liked ? "Remove from liked" : "Mark as been here"}
+            aria-label={liked ? "Remove from visited" : "Mark as visited"}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13"
               fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
-            Been here
+            Visited
           </button>
         </div>
       </div>

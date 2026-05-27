@@ -78,7 +78,7 @@ export default function Home() {
           className="cta-btn inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold mb-14"
           style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
         >
-          See recommendations
+          Find a restaurant
         </Link>
 
         {/* Stats row */}
@@ -87,7 +87,7 @@ export default function Home() {
           style={{ color: "var(--text-muted)", backgroundColor: "var(--warm-soft)" }}
         >
           <div className="text-center">
-            <div className="font-display text-3xl sm:text-4xl mb-1" style={{ color: "var(--text)" }}>415</div>
+            <div className="font-display text-3xl sm:text-4xl mb-1" style={{ color: "var(--text)" }}>407</div>
             <div className="text-xs uppercase tracking-wider">Restaurants</div>
           </div>
           <div
@@ -129,8 +129,8 @@ export default function Home() {
                   Score every reviewer
                 </h3>
                 <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  Our algorithm analyzes each reviewer&apos;s history to determine if
-                  they&apos;re a local or a tourist passing through.
+                  We look at each reviewer&apos;s history to figure out if they live in
+                  NYC or were just passing through.
                 </p>
               </div>
             </div>
@@ -165,8 +165,8 @@ export default function Home() {
                   Rank by local love
                 </h3>
                 <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  A trained ML model classifies each restaurant using review signals,
-                  NLP, and location data. The best local picks rise to the top.
+                  Restaurants where locals keep coming back — not ones that ride
+                  tourist hype — rise to the top.
                 </p>
               </div>
             </div>

@@ -355,13 +355,11 @@ function RecommendationsContent() {
           <h1 className="font-display text-3xl mb-1" style={{ color: "var(--text)" }}>
             Recommendations
           </h1>
-          {!loading && (
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              {total} local-approved spots
-              {neighborhood ? ` in ${neighborhood}` : ""}
-              {cuisine ? ` · ${cuisine}` : ""}
-            </p>
-          )}
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            {!loading
+              ? `${total} spot${total !== 1 ? "s" : ""}${neighborhood ? ` in ${neighborhood}` : ""}${cuisine ? ` · ${cuisine}` : ""} — ranked by local reviews, not tourist traffic`
+              : "Ranked by local reviews, not tourist traffic"}
+          </p>
         </div>
 
         {/* Search bar */}
