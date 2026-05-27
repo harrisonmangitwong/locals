@@ -88,11 +88,11 @@ export default function RestaurantCard({
   const [liked, setLiked] = useState(initialLiked);
   const [savePop, setSavePop] = useState(false);
   const [likePop, setLikePop] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState(photoUrlProp || getPhotoUrl(cuisine));
 
   useEffect(() => { setSaved(initialSaved); }, [initialSaved]);
   useEffect(() => { setLiked(initialLiked); }, [initialLiked]);
-
-  const photoUrl = photoUrlProp || getPhotoUrl(cuisine);
+  useEffect(() => { setPhotoUrl(photoUrlProp || getPhotoUrl(cuisine)); }, [photoUrlProp, cuisine]);
   const stars = Math.round(rating * 2) / 2;
   const fullStars = Math.floor(stars);
   const hasHalf = stars - fullStars >= 0.5;
@@ -137,7 +137,7 @@ export default function RestaurantCard({
           className="card-photo"
           style={{ objectFit: "cover" }}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          onError={() => {}}
+          onError={() => setPhotoUrl(getPhotoUrl(cuisine))}
         />
         {/* Rank */}
         <span
