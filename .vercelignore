@@ -1,0 +1,9 @@
+data/
+outputs/
+__pycache__/
+*.py
+*.ipynb
+*.pkl
+*.joblib
+models/
+notebooks/
