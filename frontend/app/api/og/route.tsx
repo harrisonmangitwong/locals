@@ -8,15 +8,23 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
-  const fontRes = await fetch(
-    "https://fonts.gstatic.com/s/dmseriftext/v12/rnCu-xZa_krGokauCeNq3wUDBg.woff"
-  );
-  const fontData = await fontRes.arrayBuffer();
+  // Attempt to load DM Serif Display; fall back gracefully if unavailable
+  let fontData: ArrayBuffer | null = null;
+  try {
+    const fontRes = await fetch(
+      "https://fonts.gstatic.com/s/dmseriftext/v12/rnCu-xZa_krGokauCeNq3wUDBg.woff"
+    );
+    if (fontRes.ok) fontData = await fontRes.arrayBuffer();
+  } catch {
+    // font optional — Satori falls back to built-in sans-serif
+  }
 
   let r: Record<string, unknown> = {};
   try {
-    const res = await fetch(`${API_BASE}/api/restaurant/${id}`);
-    r = await res.json();
+    const res = await fetch(`${API_BASE}/api/restaurant/${id}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) r = await res.json();
   } catch {
     // fallback to empty state
   }
@@ -39,6 +47,9 @@ export async function GET(request: Request) {
     verdict = `Tourists give it ${touristRating.toFixed(1)}, locals ${localRating.toFixed(1)} — popular with visitors.`;
 
   const meta = [neighborhood, cuisine].filter(Boolean).join(" · ");
+
+  const fonts: { name: string; data: ArrayBuffer; style: "normal" }[] = [];
+  if (fontData) fonts.push({ name: "DM Serif Display", data: fontData, style: "normal" });
 
   return new ImageResponse(
     (
@@ -98,7 +109,6 @@ export async function GET(request: Request) {
                   fontWeight: 700,
                   padding: "4px 14px",
                   borderRadius: 999,
-                  fontFamily: "sans-serif",
                 }}
               >
                 #{rank}
@@ -108,7 +118,7 @@ export async function GET(request: Request) {
           {/* Name */}
           <div
             style={{
-              fontFamily: "DM Serif Display",
+              fontFamily: fontData ? "DM Serif Display" : "serif",
               fontSize: 62,
               color: "#fff",
               lineHeight: 1.1,
@@ -123,7 +133,6 @@ export async function GET(request: Request) {
               style={{
                 fontSize: 24,
                 color: "rgba(255,255,255,0.7)",
-                fontFamily: "sans-serif",
               }}
             >
               {meta}
@@ -135,7 +144,6 @@ export async function GET(request: Request) {
               fontSize: 20,
               color: "rgba(255,255,255,0.85)",
               marginTop: 4,
-              fontFamily: "sans-serif",
             }}
           >
             {verdict}
@@ -146,7 +154,6 @@ export async function GET(request: Request) {
               fontSize: 18,
               color: "rgba(255,255,255,0.4)",
               marginTop: 8,
-              fontFamily: "sans-serif",
             }}
           >
             locals-nyc.com
@@ -157,9 +164,7 @@ export async function GET(request: Request) {
     {
       width: 1200,
       height: 630,
-      fonts: [
-        { name: "DM Serif Display", data: fontData, style: "normal" },
-      ],
+      fonts,
     }
   );
 }
