@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, Suspense } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
@@ -181,6 +181,8 @@ function RecommendationsContent() {
   const openNow = searchParams.get("open_now") === "1";
   const page = parseInt(searchParams.get("page") ?? "1", 10);
 
+  const abortRef = useRef<AbortController | null>(null);
+
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -188,9 +190,9 @@ function RecommendationsContent() {
   const [locating, setLocating] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [saveCounts, setSaveCounts] = useState<Record<string, number>>({});
   const [filtersExpanded, setFiltersExpanded] = useState(!!(neighborhood || cuisine || price || openNow));
   const activeFilterCount = [neighborhood, cuisine, price, openNow ? "open" : ""].filter(Boolean).length;
-  const filterSummary = [neighborhood, cuisine, price, openNow ? "Open now" : ""].filter(Boolean).join(" · ");
 
   useEffect(() => {
     Promise.all([
@@ -201,6 +203,15 @@ function RecommendationsContent() {
       setLikedIds(new Set(liked.ids ?? []));
     });
   }, []);
+
+  // Live search: debounce 350ms, only fire when input differs from current URL param
+  useEffect(() => {
+    if (searchInput === search) return;
+    const timer = setTimeout(() => {
+      updateParams({ search: searchInput });
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleNearMe() {
     if (!navigator.geolocation) return;
@@ -225,6 +236,10 @@ function RecommendationsContent() {
   }
 
   const fetchData = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError(null);
     try {
@@ -237,19 +252,29 @@ function RecommendationsContent() {
       params.set("page", String(page));
       params.set("page_size", "20");
 
-      const res = await fetch(`${API_BASE}/api/recommendations?${params.toString()}`);
+      const res = await fetch(`${API_BASE}/api/recommendations?${params.toString()}`, { signal: controller.signal });
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const json: ApiResponse = await res.json();
       setData(json);
+
+      const ids = json.results.map((r) => r.restaurant_id).join(",");
+      if (ids) {
+        fetch(`/api/save-counts?ids=${ids}`)
+          .then((r) => r.json())
+          .then((d) => setSaveCounts(d.counts ?? {}))
+          .catch(() => {});
+      }
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Failed to load restaurants");
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, [neighborhood, cuisine, price, search, openNow, page]);
 
   useEffect(() => {
     fetchData();
+    return () => { abortRef.current?.abort(); };
   }, [fetchData]);
 
   function updateParams(updates: Record<string, string>) {
@@ -271,7 +296,6 @@ function RecommendationsContent() {
   const allCuisines = data?.cuisines ?? [];
   const restaurants = data?.results ?? [];
   const totalPages = data?.total_pages ?? 1;
-  const total = data?.total ?? 0;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
@@ -303,74 +327,44 @@ function RecommendationsContent() {
         </nav>
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        {/* Page title */}
-        <div className="mb-8">
-          <h1 className="font-display text-3xl mb-1" style={{ color: "var(--text)" }}>
-            Recommendations
-          </h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            {!loading
-              ? `${total} spot${total !== 1 ? "s" : ""}${neighborhood ? ` in ${neighborhood}` : ""}${cuisine ? ` · ${cuisine}` : ""} — ranked by local reviews, not tourist traffic`
-              : "Ranked by local reviews, not tourist traffic"}
-          </p>
-        </div>
-
-        {/* Search bar — always visible */}
-        <div className="mb-4">
-          <div className="flex items-center gap-2">
-            <label htmlFor="search-restaurants" className="sr-only">Search restaurants</label>
-            <div className="relative w-full sm:w-80">
-              <input
-                id="search-restaurants"
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    updateParams({ search: searchInput });
-                  }
-                }}
-                placeholder="Search restaurants..."
-                className="search-input w-full rounded-lg pl-4 pr-10 py-2.5 text-sm"
-                style={{
-                  backgroundColor: "var(--bg-subtle)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border)",
-                  outline: "none",
-                }}
-              />
-              <button
-                onClick={() => updateParams({ search: searchInput })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-75"
-                aria-label="Search"
-                style={{ color: "var(--text-muted)" }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-              </button>
-            </div>
-            {search && (
-              <button
-                onClick={() => {
-                  setSearchInput("");
-                  updateParams({ search: "" });
-                }}
-                className="text-xs font-medium"
-                style={{ color: "var(--text-muted)" }}
-              >
-                Clear
-              </button>
-            )}
+      <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {/* Search + filter toolbar */}
+        <div className="flex items-center gap-2 mb-1">
+          <label htmlFor="search-restaurants" className="sr-only">Search restaurants</label>
+          <div className="relative flex-1">
+            <input
+              id="search-restaurants"
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  updateParams({ search: searchInput });
+                }
+              }}
+              placeholder="Search restaurants..."
+              className="search-input w-full rounded-lg pl-4 pr-10 py-2.5 text-sm min-h-[44px]"
+              style={{
+                backgroundColor: "var(--bg-subtle)",
+                color: "var(--text)",
+                border: "1px solid var(--border)",
+                outline: "none",
+              }}
+            />
+            <button
+              onClick={() => updateParams({ search: searchInput })}
+              className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-75"
+              aria-label="Search"
+              style={{ color: "var(--text-muted)" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </button>
           </div>
-        </div>
-
-        {/* Filter toggle */}
-        <div className="flex items-center gap-3 mb-1">
           <button
             onClick={() => setFiltersExpanded((v) => !v)}
-            className="flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-75"
+            className="flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-75 whitespace-nowrap min-h-[44px] px-1"
             style={{ color: "var(--text-secondary)" }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -396,8 +390,17 @@ function RecommendationsContent() {
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
-          {activeFilterCount > 0 && !filtersExpanded && (
-            <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{filterSummary}</p>
+          {(activeFilterCount > 0 || search) && (
+            <button
+              onClick={() => {
+                setSearchInput("");
+                router.push("/recommendations");
+              }}
+              className="text-xs font-medium whitespace-nowrap transition-opacity hover:opacity-75 min-h-[44px] px-2 flex items-center fade-in"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Clear all
+            </button>
           )}
         </div>
 
@@ -446,7 +449,7 @@ function RecommendationsContent() {
                     border: "1px solid var(--border)",
                   }}
                 >
-                  {locating ? "Locating..." : "Near Me"}
+                  {locating ? "Locating..." : "Near me"}
                 </button>
               </div>
 
@@ -501,7 +504,7 @@ function RecommendationsContent() {
                   border: `1px solid ${openNow ? "var(--success)" : "var(--border)"}`,
                 }}
               >
-                Open Now
+                Open now
               </button>
             </div>
           </div>
@@ -509,7 +512,7 @@ function RecommendationsContent() {
 
         {/* Loading — skeleton cards */}
         {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
@@ -571,6 +574,7 @@ function RecommendationsContent() {
                     initialSaved={savedIds.has(r.restaurant_id)}
                     initialLiked={likedIds.has(r.restaurant_id)}
                     featured={isFeatured}
+                    saveCount={saveCounts[r.restaurant_id]}
                   />
                 </div>
               );
@@ -582,10 +586,10 @@ function RecommendationsContent() {
         {!loading && !error && restaurants.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
-              Nothing here yet
+              No matches found
             </p>
             <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
-              Try a different neighborhood, cuisine, or search term
+              That combination might be too specific — try broadening one filter.
             </p>
             <button
               onClick={() => {
@@ -613,6 +617,7 @@ function RecommendationsContent() {
                   <Link
                     href={page <= 1 ? "#" : `/recommendations?${prevParams.toString()}`}
                     aria-disabled={page <= 1}
+                    tabIndex={page <= 1 ? -1 : undefined}
                     className="page-btn px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium min-w-[44px] min-h-[44px]"
                     style={{
                       backgroundColor: "var(--bg-subtle)",
@@ -632,6 +637,7 @@ function RecommendationsContent() {
                   <Link
                     href={page >= totalPages ? "#" : `/recommendations?${nextParams.toString()}`}
                     aria-disabled={page >= totalPages}
+                    tabIndex={page >= totalPages ? -1 : undefined}
                     className="page-btn px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium min-w-[44px] min-h-[44px]"
                     style={{
                       backgroundColor: "var(--bg-subtle)",

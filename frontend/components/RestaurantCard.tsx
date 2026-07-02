@@ -73,6 +73,7 @@ export interface RestaurantCardProps {
   initialReaction?: string | null;
   promptReaction?: boolean;
   featured?: boolean;
+  saveCount?: number;
   onUnsave?: (id: string) => void;
   onUnlike?: (id: string) => void;
 }
@@ -94,6 +95,7 @@ export default function RestaurantCard({
   initialReaction = null,
   promptReaction = false,
   featured = false,
+  saveCount,
   onUnsave,
   onUnlike,
 }: RestaurantCardProps) {
@@ -103,6 +105,7 @@ export default function RestaurantCard({
   const [likePop, setLikePop] = useState(false);
   const [showSavedMsg, setShowSavedMsg] = useState(false);
   const [reaction, setReaction] = useState<string | null>(initialReaction);
+  const [reactionPop, setReactionPop] = useState<string | null>(null);
   const [showReaction, setShowReaction] = useState(!!initialReaction);
   const [photoUrl, setPhotoUrl] = useState(photoUrlProp || getPhotoUrl(cuisine));
 
@@ -154,6 +157,8 @@ export default function RestaurantCard({
           alt={name}
           className="card-photo"
           style={{ objectFit: "cover", width: "100%", height: "100%" }}
+          loading="lazy"
+          decoding="async"
           onError={() => setPhotoUrl(getPhotoUrl(cuisine))}
         />
         {/* Rank */}
@@ -182,7 +187,7 @@ export default function RestaurantCard({
             <span
               className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
               onAnimationEnd={() => setShowSavedMsg(false)}
-              style={{ backgroundColor: "rgba(45,138,86,0.85)", color: "#fff", backdropFilter: "blur(4px)" }}
+              style={{ backgroundColor: "var(--success)", color: "#fff", backdropFilter: "blur(4px)" }}
             >
               Saved
             </span>
@@ -197,7 +202,7 @@ export default function RestaurantCard({
               if (!nowSaved && onUnsave) onUnsave(restaurantId);
               toggleSaved(restaurantId, saved).catch(() => setSaved(saved));
             }}
-            className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-150 hover:scale-110 active:scale-95${savePop ? " heart-pop" : ""}`}
+            className={`flex items-center justify-center w-11 h-11 rounded-full transition-all duration-150 hover:scale-110 active:scale-95${savePop ? " heart-pop" : ""}`}
             style={{
               backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)",
               backdropFilter: "blur(4px)",
@@ -228,7 +233,7 @@ export default function RestaurantCard({
           {neighborhood} · {cuisine}{price ? ` · ${price}` : ""}
         </p>
 
-        <div className="flex items-center gap-1.5 text-sm" role="img" aria-label={`Rating: ${rating.toFixed(1)} out of 5 stars`}>
+        <div className="flex items-center gap-1.5 text-sm" aria-label={`Rating: ${rating.toFixed(1)} out of 5 stars`} aria-hidden="false">
           {renderStars()}
           <span className="text-xs font-medium ml-0.5" style={{ color: "var(--text-secondary)" }}>
             {rating.toFixed(1)}
@@ -237,6 +242,12 @@ export default function RestaurantCard({
             ({reviews.toLocaleString()})
           </span>
         </div>
+
+        {saveCount && saveCount > 0 ? (
+          <p className="text-xs mt-1.5" style={{ color: "var(--text-muted)" }}>
+            {saveCount} {saveCount === 1 ? "person" : "people"} saved this
+          </p>
+        ) : null}
 
         <div className="flex-1" />
 
@@ -285,22 +296,26 @@ export default function RestaurantCard({
         {/* Reaction prompt */}
         {showReaction && (
           <div
-            className="reaction-prompt mt-2 pt-2 flex items-center gap-2 flex-wrap"
+            className="reaction-prompt reaction-reveal mt-2 pt-2"
             style={{ borderTop: "1px solid var(--border)" }}
           >
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-              How was it?
+            <span className="text-xs block mb-2.5" style={{ color: "var(--text-muted)" }}>
+              Live up to the hype?
             </span>
+            <div className="flex items-center gap-2">
             {(["better", "expected", "disappointing"] as const).map((r) => (
               <button
                 key={r}
+                aria-pressed={reaction === r}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   setReaction(r);
+                  setReactionPop(r);
+                  setTimeout(() => setReactionPop(null), 400);
                   saveReaction(restaurantId, r).catch(() => {});
                 }}
-                className="text-xs px-2.5 py-1 rounded-full transition-all duration-100 hover:opacity-80 active:scale-95"
+                className={`text-xs px-3 py-2 rounded-full transition-all duration-100 hover:opacity-80 active:scale-95 min-h-[44px] flex items-center${reactionPop === r ? " heart-pop" : ""}`}
                 style={{
                   border: `1px solid ${reaction === r ? "var(--accent)" : "var(--border-strong)"}`,
                   backgroundColor: reaction === r ? "var(--accent)" : "var(--bg-subtle)",
@@ -311,6 +326,7 @@ export default function RestaurantCard({
                 {r === "better" ? "Better" : r === "expected" ? "As expected" : "Disappointing"}
               </button>
             ))}
+            </div>
           </div>
         )}
       </div>

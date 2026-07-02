@@ -42,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakarta.variable} ${dmSerif.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <a href="#main-content" className="skip-nav">Skip to main content</a>
         {children}
         <Analytics />
       </body>

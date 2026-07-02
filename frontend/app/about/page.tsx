@@ -32,121 +32,72 @@ export default function AboutPage() {
         </nav>
       </header>
 
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-12">
-        <h1 className="font-display text-3xl sm:text-4xl leading-tight mb-2">How Locals Works</h1>
-        <p className="text-sm mb-12" style={{ color: "var(--text-muted)" }}>
-          The methodology behind our restaurant rankings
-        </p>
+      <main id="main-content" className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-12">
+        <h1 className="font-display text-3xl sm:text-4xl leading-tight mb-10">About</h1>
 
-        {/* The Problem */}
-        <section className="mb-12">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>
-            The Problem
-          </h2>
-          <p className="leading-relaxed max-w-prose" style={{ color: "var(--text-secondary)" }}>
-            Google Maps rankings are skewed by tourist reviews. A restaurant near Times Square
-            with thousands of one-time visitor reviews can outrank an authentic neighborhood spot
-            that locals return to every week. Star ratings alone don&apos;t tell you who&apos;s
-            doing the rating.
+        <div className="space-y-5 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          <p>
+            A few months ago I was traveling through Asia, trying to find good places to eat.
+            I&apos;d open Google Maps and Yelp, but every restaurant had nearly identical star
+            ratings — impossible to tell what was actually worth going to.
           </p>
-        </section>
+          <p>
+            I tried Instagram Reels and TikTok, spent way too long scrolling, and ended up
+            with a handful of maybes. I even tried Xiaohongshu/Rednote and ran into the
+            same problem.
+          </p>
+          <p>
+            Finding good food shouldn&apos;t be this tedious. So I built Locals.
+          </p>
+          <p>
+            I&apos;ve been living in NYC for half a decade and realized the same problem
+            exists here, and honestly, in every major city too. The ratings are hard to
+            validate. The people doing the rating matter. So I scraped 48,000+ Google Maps
+            reviews, figured out which reviewers actually live in NYC, and weighted the
+            rankings accordingly. Local regulars count more. One-time visitors count less.
+          </p>
+          <p>Hope you enjoy :)</p>
+          <p style={{ color: "var(--text-muted)" }}>- Harrison</p>
+        </div>
 
-        {/* The Data */}
-        <section className="mb-10">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>
-            The Data
-          </h2>
-          <p className="leading-relaxed mb-4 max-w-prose" style={{ color: "var(--text-secondary)" }}>
-            We scraped 48,000+ reviews across 1,000+ NYC restaurants using Apify&apos;s Google Maps
-            crawler. For each review, we capture the star rating plus reviewer metadata:
-          </p>
-          <ul className="list-disc list-inside space-y-2" style={{ color: "var(--text-secondary)" }}>
-            <li><strong style={{ color: "var(--text)" }}>Global review count</strong> — total reviews posted worldwide</li>
-            <li><strong style={{ color: "var(--text)" }}>NYC review count</strong> — how many reviews are for NYC restaurants</li>
-            <li><strong style={{ color: "var(--text)" }}>Local Guide status</strong> — whether Google has verified them as a Local Guide</li>
-            <li><strong style={{ color: "var(--text)" }}>Review recency</strong> — how recently they reviewed NYC spots</li>
-          </ul>
-        </section>
-
-        {/* Localness Score */}
-        <section className="mb-14">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>
-            Localness Score
-          </h2>
-          <p className="leading-relaxed mb-4 max-w-prose" style={{ color: "var(--text-secondary)" }}>
-            Each reviewer gets a localness score from 0 to 1 based on three weighted signals:
-          </p>
-          <div className="space-y-4 rounded-xl p-5" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
+        {/* How the score works — for the curious */}
+        <div className="mt-10 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
+          <h2 className="font-display text-lg mb-1" style={{ color: "var(--text)" }}>How the score works</h2>
+          <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>For those of you who are curious, here&apos;s how the ratings work.</p>
+          <div className="space-y-4 rounded-xl p-5 mb-6" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
             <div className="flex items-start gap-4">
-              <span className="font-display text-2xl leading-none shrink-0" style={{ color: "var(--warm)" }}>60%</span>
+              <span className="font-display text-xl leading-none shrink-0 w-10" style={{ color: "var(--warm)" }}>60%</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Geographic concentration</div>
-                <div className="text-sm" style={{ color: "var(--text-muted)" }}>
-                  NYC reviews / global reviews. A tourist with 300 worldwide reviews but 1 NYC review scores low.
-                </div>
+                <div className="text-sm" style={{ color: "var(--text-muted)" }}>What share of their reviews are for NYC restaurants? Someone who&apos;s reviewed 200 spots worldwide but only 1 in NYC is probably a tourist.</div>
               </div>
             </div>
             <div style={{ borderTop: "1px solid var(--border)" }} />
             <div className="flex items-start gap-4">
-              <span className="font-display text-2xl leading-none shrink-0" style={{ color: "var(--warm)" }}>25%</span>
+              <span className="font-display text-xl leading-none shrink-0 w-10" style={{ color: "var(--warm)" }}>25%</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Review stability</div>
-                <div className="text-sm" style={{ color: "var(--text-muted)" }}>
-                  Consistent NYC reviewing over time, not a one-time visit.
-                </div>
+                <div className="text-sm" style={{ color: "var(--text-muted)" }}>Have they been reviewing NYC spots consistently over time, or just in one burst during a trip?</div>
               </div>
             </div>
             <div style={{ borderTop: "1px solid var(--border)" }} />
             <div className="flex items-start gap-4">
-              <span className="font-display text-2xl leading-none shrink-0" style={{ color: "var(--warm)" }}>15%</span>
+              <span className="font-display text-xl leading-none shrink-0 w-10" style={{ color: "var(--warm)" }}>15%</span>
               <div>
-                <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Local Guide badge</div>
-                <div className="text-sm" style={{ color: "var(--text-muted)" }}>
-                  Google-verified Local Guides get a small boost.
-                </div>
+                <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Local Guide status</div>
+                <div className="text-sm" style={{ color: "var(--text-muted)" }}>Google-verified Local Guides get a small boost.</div>
               </div>
             </div>
           </div>
-        </section>
-
-        {/* Restaurant Ranking */}
-        <section className="mb-14">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>
-            Restaurant Ranking
-          </h2>
-          <p className="leading-relaxed mb-4 max-w-prose" style={{ color: "var(--text-secondary)" }}>
-            Each restaurant&apos;s final score blends multiple perspectives:
+          <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            Each restaurant&apos;s final ranking also factors in review text signals, location relative
+            to tourist centers, and rating distribution. The list is updated periodically as new
+            review data comes in.
           </p>
-          <ol className="list-decimal list-inside space-y-2" style={{ color: "var(--text-secondary)" }}>
-            <li><strong style={{ color: "var(--text)" }}>Local-weighted rating</strong> — average rating weighted by reviewer localness</li>
-            <li><strong style={{ color: "var(--text)" }}>Tourist-weighted rating</strong> — the inverse, to measure tourist sentiment separately</li>
-            <li><strong style={{ color: "var(--text)" }}>NLP signals</strong> — keyword analysis of review text (quality language, local language, tourist complaints)</li>
-            <li><strong style={{ color: "var(--text)" }}>Location and price data</strong> — distance from tourist centers, price range, rating distribution</li>
-          </ol>
-          <p className="mt-4 leading-relaxed max-w-prose" style={{ color: "var(--text-secondary)" }}>
-            A Random Forest model trained on 200+ hand-labeled restaurants classifies each spot
-            as &quot;local-approved&quot; or not. The model uses 21 features spanning review statistics,
-            NLP signals, and location data. Restaurants that pass are ranked by confidence score
-            and surfaced in the app.
-          </p>
-        </section>
-
-        {/* Vision */}
-        <section className="mb-10">
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>
-            What&apos;s Next
-          </h2>
-          <p className="leading-relaxed max-w-prose" style={{ color: "var(--text-secondary)" }}>
-            Locals started in NYC because it has the highest density of local/tourist review
-            contrast in the US — every neighborhood has its own food culture, and tourists
-            cluster in the same spots. The methodology is city-agnostic: any city with a
-            strong resident-vs-visitor dynamic (Chicago, LA, New Orleans, Tokyo) produces
-            the same reviewable signal.
-          </p>
-        </section>
+        </div>
 
         {/* CTA */}
-        <div className="pt-4">
+        <div className="pt-10">
           <Link
             href="/recommendations"
             className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"

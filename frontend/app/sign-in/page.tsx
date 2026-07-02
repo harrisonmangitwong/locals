@@ -18,7 +18,7 @@ export default function SignInPage() {
       className="min-h-screen flex flex-col items-center justify-center"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex flex-col items-center gap-8 max-w-sm w-full px-6">
+      <div id="main-content" className="flex flex-col items-center gap-8 max-w-sm w-full px-6">
         <div className="text-center">
           <h1 className="font-display text-4xl mb-3" style={{ color: "var(--text)" }}>
             Locals
@@ -30,7 +30,7 @@ export default function SignInPage() {
 
         <button
           onClick={handleSignIn}
-          className="w-full flex items-center justify-center gap-3 px-6 py-3 rounded-full text-sm font-semibold transition-opacity hover:opacity-80"
+          className="w-full flex items-center justify-center gap-3 px-6 py-3 rounded-full text-sm font-semibold transition-opacity hover:opacity-80 min-h-[44px]"
           style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
         >
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">

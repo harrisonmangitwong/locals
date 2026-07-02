@@ -36,6 +36,26 @@ export default function FavoritesPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [empty, setEmpty] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/me").then((r) => r.json()).then((d) => setUserId(d.id ?? null)).catch(() => {});
+  }, []);
+
+  function handleShareList() {
+    if (!userId) return;
+    const url = `${window.location.origin}/list/${userId}`;
+    if (navigator.share) {
+      navigator.share({ title: "My NYC picks on Locals", url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {});
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -53,7 +73,7 @@ export default function FavoritesPage() {
         const json = await res.json();
         setRestaurants(json.results);
       } catch {
-        setRestaurants([]);
+        setFetchError(true);
       } finally {
         setLoading(false);
       }
@@ -114,18 +134,33 @@ export default function FavoritesPage() {
         </nav>
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div className="mb-6">
-          <h1
-            className="font-display text-3xl mb-1"
-            style={{ color: "var(--text)" }}
-          >
-            Favorites
-          </h1>
-          {!loading && !empty && (
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              {restaurants.length} saved spot{restaurants.length !== 1 ? "s" : ""}
-            </p>
+      <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h1
+              className="font-display text-3xl mb-1"
+              style={{ color: "var(--text)" }}
+            >
+              Saved
+            </h1>
+            {!loading && !empty && (
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                {restaurants.length} saved spot{restaurants.length !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
+          {!loading && !empty && userId && (
+            <button
+              onClick={handleShareList}
+              className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-75 min-h-[44px]"
+              style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+              {copied ? "Link copied!" : "Share my list"}
+            </button>
           )}
         </div>
 
@@ -151,20 +186,39 @@ export default function FavoritesPage() {
           </div>
         )}
 
+        {/* Error state */}
+        {!loading && fetchError && (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
+              Couldn&apos;t load your saved spots
+            </p>
+            <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
+              Something went wrong fetching your list. Try refreshing.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
+              style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
+            >
+              Refresh
+            </button>
+          </div>
+        )}
+
         {/* Empty state */}
-        {!loading && empty && (
+        {!loading && !fetchError && empty && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p
               className="font-display text-xl mb-2"
               style={{ color: "var(--text)" }}
             >
-              Your list is empty
+              Nothing saved yet
             </p>
             <p
               className="text-sm mb-6 max-w-md"
               style={{ color: "var(--text-muted)" }}
             >
-              Found a spot that looks good? Tap the bookmark on any restaurant to save it here for later.
+              When a spot catches your eye, hit the bookmark. It&apos;ll be waiting here when you&apos;re ready.
             </p>
             <Link
               href="/recommendations"
@@ -177,11 +231,11 @@ export default function FavoritesPage() {
         )}
 
         {/* Favorites grid */}
-        {!loading && !empty && restaurants.length > 0 && (
+        {!loading && !fetchError && !empty && restaurants.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {restaurants.map((r) => (
+            {restaurants.map((r, i) => (
+              <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
               <RestaurantCard
-                key={r.restaurant_id}
                 restaurantId={r.restaurant_id}
                 rank={r.rank}
                 name={r.name}
@@ -207,6 +261,7 @@ export default function FavoritesPage() {
                   setRestaurants((prev) => prev.filter((x) => x.restaurant_id !== id))
                 }
               />
+              </div>
             ))}
           </div>
         )}

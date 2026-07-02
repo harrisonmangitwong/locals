@@ -29,7 +29,6 @@ const CUISINE_PHOTO_MAP: Record<string, string> = {
 const DEFAULT_PHOTO = "photo-1504674900247-0877df9cc836";
 
 interface HoursEntry { day: string; hours: string }
-interface ReviewEntry { text: string; rating: number; author: string; published?: string }
 
 interface RestaurantDetail {
   restaurant_id: string;
@@ -90,7 +89,7 @@ function MiniStars({ rating }: { rating: number }) {
   const full = Math.floor(stars);
   const half = stars - full >= 0.5;
   return (
-    <span className="flex items-center gap-0.5" role="img" aria-label={`${rating.toFixed(1)} out of 5 stars`}>
+    <span className="flex items-center gap-0.5" aria-label={`${rating.toFixed(1)} out of 5 stars`}>
       {Array.from({ length: 5 }).map((_, i) => {
         if (i < full) return <span key={i} style={{ color: "var(--star-fill)", fontSize: 13 }}>&#9733;</span>;
         if (i === full && half) return (
@@ -254,14 +253,8 @@ export default function RestaurantPage() {
   const fallbackId = CUISINE_PHOTO_MAP[r.cuisine] ?? DEFAULT_PHOTO;
   const heroUrl = r.image_url || `https://images.unsplash.com/${fallbackId}?w=1200&q=80&auto=format&fit=crop`;
 
-  let reviews: ReviewEntry[] = [];
-  if (r.top_reviews) {
-    try { reviews = JSON.parse(r.top_reviews as string); } catch { /* ignore */ }
-  }
-
   const price = priceLabel(r.price_midpoint);
   const verdictText = getVerdict(r.local_weighted_rating ?? 0, r.tourist_weighted_rating ?? 0);
-  const topReviews = reviews.slice(0, 2);
   const hasDetails = !!(r.address || r.phone || r.website || r.opening_hours);
 
   return (
@@ -296,7 +289,7 @@ export default function RestaurantPage() {
             <span
               className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
               onAnimationEnd={() => setShowSavedMsg(false)}
-              style={{ backgroundColor: "rgba(45,138,86,0.85)", color: "#fff", backdropFilter: "blur(4px)" }}
+              style={{ backgroundColor: "var(--success)", color: "#fff", backdropFilter: "blur(4px)" }}
             >
               Saved
             </span>
@@ -312,7 +305,7 @@ export default function RestaurantPage() {
                 body: JSON.stringify({ restaurant_id: r.restaurant_id }),
               }).catch(() => setSaved(saved));
             }}
-            className={`heart-btn flex items-center justify-center w-9 h-9 rounded-full${savePop ? " heart-pop" : ""}`}
+            className={`heart-btn flex items-center justify-center w-11 h-11 rounded-full${savePop ? " heart-pop" : ""}`}
             style={{ backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
             aria-label={saved ? "Remove from saved" : "Save restaurant"}
           >
@@ -336,7 +329,7 @@ export default function RestaurantPage() {
               </>
             )}
             {r.is_open_now === true && (
-              <span className="text-xs font-semibold px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(34,197,94,0.2)", color: "rgb(134,239,172)" }}>Open</span>
+              <span className="text-xs font-semibold px-1.5 py-0.5 rounded" style={{ backgroundColor: "var(--success-soft)", color: "var(--success)" }}>Open</span>
             )}
             {r.is_open_now === false && (
               <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(0,0,0,0.3)", color: "rgba(255,255,255,0.45)" }}>Closed</span>
@@ -352,36 +345,28 @@ export default function RestaurantPage() {
       </div>
 
       {/* Body */}
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-10">
+      <main id="main-content" className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-10">
 
         {/* The local take */}
         <section>
           <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>The local take</h2>
-          <p className="text-base leading-relaxed mb-2" style={{ color: "var(--text)" }}>{verdictText}</p>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            {Math.round((r.avg_localness ?? 0) * 100)}% of reviewers are NYC regulars
-          </p>
-        </section>
-
-        {/* What locals say */}
-        {topReviews.length > 0 && (
-          <section>
-            <h2 className="font-display text-xl mb-5" style={{ color: "var(--text)" }}>What locals say</h2>
-            <div className="space-y-6">
-              {topReviews.map((rev, i) => (
-                <div key={i} style={{ borderTop: i > 0 ? "1px solid var(--border)" : undefined, paddingTop: i > 0 ? "1.5rem" : undefined }}>
-                  <p className="text-[0.9375rem] leading-relaxed mb-3" style={{ color: "var(--text)" }}>&ldquo;{rev.text}&rdquo;</p>
-                  <div className="flex items-center gap-2">
-                    <MiniStars rating={rev.rating ?? 5} />
-                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                      {rev.author}{rev.published ? ` · ${rev.published}` : ""}
-                    </span>
-                  </div>
-                </div>
-              ))}
+          <p className="text-base leading-relaxed mb-5" style={{ color: "var(--text)" }}>{verdictText}</p>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--bg-subtle)" }}>
+              <div
+                className="bar-fill h-full rounded-full"
+                style={{
+                  width: `${Math.round((r.avg_localness ?? 0) * 100)}%`,
+                  backgroundColor: "var(--success)",
+                  animationDelay: "150ms",
+                }}
+              />
             </div>
-          </section>
-        )}
+            <span className="text-xs whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+              {Math.round((r.avg_localness ?? 0) * 100)}% NYC locals
+            </span>
+          </div>
+        </section>
 
         {/* More in neighborhood */}
         {similar.length > 0 && (
@@ -389,7 +374,7 @@ export default function RestaurantPage() {
             <h2 className="font-display text-xl mb-5" style={{ color: "var(--text)" }}>
               More in {r.neighborhood}
             </h2>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {similar.map((s) => (
                 <Link key={s.restaurant_id} href={`/restaurant/${s.restaurant_id}`} className="group flex flex-col overflow-hidden rounded-xl" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
                   <div className="relative overflow-hidden h-24">
@@ -398,6 +383,8 @@ export default function RestaurantPage() {
                       src={s.image_url || `https://images.unsplash.com/${CUISINE_PHOTO_MAP[s.cuisine] ?? DEFAULT_PHOTO}?w=400&q=65&auto=format&fit=crop`}
                       alt={s.name}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <span className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--accent)", color: "#fff" }}>
                       #{s.rank}
@@ -494,7 +481,7 @@ export default function RestaurantPage() {
                 navigator.clipboard.writeText(`${text} ${url}`).catch(() => {});
               }
             }}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold cursor-pointer transition-all duration-150 hover:opacity-75 active:scale-95"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold cursor-pointer transition-all duration-150 hover:opacity-75 active:scale-95 min-h-[44px]"
             style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -503,7 +490,7 @@ export default function RestaurantPage() {
             </svg>
             Share
           </button>
-          <Link href="/recommendations" className="text-sm transition-opacity hover:opacity-75 ml-auto" style={{ color: "var(--text-muted)" }}>
+          <Link href="/recommendations" className="text-sm transition-opacity hover:opacity-75 ml-auto min-h-[44px] flex items-center" style={{ color: "var(--text-muted)" }}>
             ← Back
           </Link>
         </div>

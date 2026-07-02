@@ -132,6 +132,7 @@ body {
 /* ── CTA press ── */
 .cta-btn {
   transition: transform 100ms ease, opacity 150ms ease;
+  min-height: 44px;
 }
 .cta-btn:hover {
   opacity: 0.92;
@@ -149,10 +150,18 @@ body {
   animation: card-in 350ms ease-out both;
 }
 
+/* ── Global focus-visible ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* ── Search focus ── */
 .search-input:focus {
   border-color: var(--accent) !important;
   box-shadow: 0 0 0 3px var(--accent-soft);
+  outline: none;
 }
 
 /* ── Rating bar fill ── */
@@ -218,6 +227,34 @@ body {
   animation: save-confirm 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
+/* ── Dropdown entrance ── */
+@keyframes menu-drop {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.menu-drop {
+  animation: menu-drop 150ms cubic-bezier(0.25, 1, 0.5, 1) both;
+  transform-origin: top right;
+}
+
+/* ── Reaction prompt reveal ── */
+@keyframes reaction-reveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reaction-reveal {
+  animation: reaction-reveal 250ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* ── Generic fade in ── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-in {
+  animation: fade-in 200ms ease-out both;
+}
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .restaurant-card,
@@ -231,11 +268,47 @@ body {
   .bar-fill,
   .hours-body,
   .save-confirm-pill,
-  .skeleton {
+  .skeleton,
+  .menu-drop,
+  .reaction-reveal,
+  .fade-in {
     transition: none !important;
     transform: none !important;
     animation: none !important;
   }
+}
+
+/* ── Skip navigation ── */
+.skip-nav {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+.skip-nav:focus-visible {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 9999;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background-color: var(--accent);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  outline: 2px solid var(--bg);
+  outline-offset: 2px;
 }
 
 /* ── Serif display font ── */
