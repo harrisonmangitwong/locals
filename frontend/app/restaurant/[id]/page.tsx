@@ -166,6 +166,16 @@ function HoursTable({ hoursJson, isOpenNow }: { hoursJson: string; isOpenNow?: b
 // Page
 // ---------------------------------------------------------------------------
 
+interface SimilarRestaurant {
+  restaurant_id: string;
+  name: string;
+  neighborhood: string;
+  cuisine: string;
+  total_score: number;
+  rank: number;
+  image_url: string;
+}
+
 export default function RestaurantPage() {
   const params = useParams();
   const id = params.id as string;
@@ -176,6 +186,7 @@ export default function RestaurantPage() {
   const [savePop, setSavePop] = useState(false);
   const [showSavedMsg, setShowSavedMsg] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [similar, setSimilar] = useState<SimilarRestaurant[]>([]);
 
   useEffect(() => {
     async function loadRestaurant() {
@@ -184,6 +195,19 @@ export default function RestaurantPage() {
         if (!res.ok) throw new Error(`${res.status}`);
         const data = await res.json();
         setRestaurant(data);
+
+        // Fetch similar restaurants once we have neighborhood + cuisine
+        try {
+          const params = new URLSearchParams({ neighborhood: data.neighborhood, cuisine: data.cuisine, page_size: "6" });
+          const simRes = await fetch(`${API_BASE}/api/recommendations?${params}`);
+          if (simRes.ok) {
+            const simData = await simRes.json();
+            const filtered = (simData.results as SimilarRestaurant[])
+              .filter((r) => r.restaurant_id !== id)
+              .slice(0, 3);
+            setSimilar(filtered);
+          }
+        } catch { /* non-critical */ }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load");
       } finally {
@@ -359,6 +383,36 @@ export default function RestaurantPage() {
           </section>
         )}
 
+        {/* More in neighborhood */}
+        {similar.length > 0 && (
+          <section style={{ borderTop: "1px solid var(--border)", paddingTop: "2.5rem" }}>
+            <h2 className="font-display text-xl mb-5" style={{ color: "var(--text)" }}>
+              More in {r.neighborhood}
+            </h2>
+            <div className="grid grid-cols-3 gap-3">
+              {similar.map((s) => (
+                <Link key={s.restaurant_id} href={`/restaurant/${s.restaurant_id}`} className="group flex flex-col overflow-hidden rounded-xl" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+                  <div className="relative overflow-hidden h-24">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={s.image_url || `https://images.unsplash.com/${CUISINE_PHOTO_MAP[s.cuisine] ?? DEFAULT_PHOTO}?w=400&q=65&auto=format&fit=crop`}
+                      alt={s.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <span className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--accent)", color: "#fff" }}>
+                      #{s.rank}
+                    </span>
+                  </div>
+                  <div className="p-2.5">
+                    <p className="text-xs font-semibold leading-snug line-clamp-2" style={{ color: "var(--text)" }}>{s.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{s.total_score.toFixed(1)} · {s.cuisine}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Address & hours */}
         {hasDetails && (
           <section style={{ borderTop: "1px solid var(--border)", paddingTop: "2.5rem" }}>
@@ -416,8 +470,8 @@ export default function RestaurantPage() {
           </section>
         )}
 
-        {/* Get directions */}
-        <div className="pt-2 pb-8 flex items-center justify-between">
+        {/* Get directions + Share */}
+        <div className="pt-2 pb-8 flex items-center gap-3 flex-wrap">
           <a
             href={r.url}
             target="_blank"
@@ -430,7 +484,26 @@ export default function RestaurantPage() {
             </svg>
             Get directions
           </a>
-          <Link href="/recommendations" className="text-sm transition-opacity hover:opacity-75" style={{ color: "var(--text-muted)" }}>
+          <button
+            onClick={() => {
+              const url = window.location.href;
+              const text = `Check out ${r.name} on Locals — ranked #${r.rank}, locals rate it ${(r.local_weighted_rating ?? 0).toFixed(1)} vs. tourists' ${(r.tourist_weighted_rating ?? 0).toFixed(1)}.`;
+              if (navigator.share) {
+                navigator.share({ title: r.name, text, url }).catch(() => {});
+              } else {
+                navigator.clipboard.writeText(`${text} ${url}`).catch(() => {});
+              }
+            }}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold cursor-pointer transition-all duration-150 hover:opacity-75 active:scale-95"
+            style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Share
+          </button>
+          <Link href="/recommendations" className="text-sm transition-opacity hover:opacity-75 ml-auto" style={{ color: "var(--text-muted)" }}>
             ← Back
           </Link>
         </div>

@@ -17,6 +17,16 @@ async function getLiked(): Promise<string[]> {
   }
 }
 
+async function getReactions(): Promise<Record<string, string>> {
+  try {
+    const res = await fetch("/api/reactions");
+    const data = await res.json();
+    return data.reactions ?? {};
+  } catch {
+    return {};
+  }
+}
+
 interface Restaurant {
   restaurant_id: string;
   name: string;
@@ -34,12 +44,14 @@ interface Restaurant {
 
 export default function VisitedPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [reactions, setReactions] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [empty, setEmpty] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const ids = await getLiked();
+      const [ids, rxns] = await Promise.all([getLiked(), getReactions()]);
+      setReactions(rxns);
       if (ids.length === 0) {
         setEmpty(true);
         setLoading(false);
@@ -203,6 +215,8 @@ export default function VisitedPage() {
                     : undefined
                 }
                 initialLiked={true}
+                initialReaction={reactions[r.restaurant_id] ?? null}
+                promptReaction={!reactions[r.restaurant_id]}
                 onUnlike={(id) =>
                   setRestaurants((prev) => prev.filter((x) => x.restaurant_id !== id))
                 }

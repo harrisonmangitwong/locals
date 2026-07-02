@@ -21,6 +21,14 @@ async function toggleLiked(id: string, currently: boolean): Promise<boolean> {
   return !currently;
 }
 
+async function saveReaction(id: string, reaction: string): Promise<void> {
+  await fetch("/api/reactions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ restaurant_id: id, reaction }),
+  });
+}
+
 const CUISINE_PHOTO_MAP: Record<string, string> = {
   Ramen: "photo-1569050467447-ce54b3bbc37d",
   Japanese: "photo-1553621042-f6e147245754",
@@ -62,6 +70,8 @@ export interface RestaurantCardProps {
   isOpenNow?: boolean | null;
   initialSaved?: boolean;
   initialLiked?: boolean;
+  initialReaction?: string | null;
+  promptReaction?: boolean;
   featured?: boolean;
   onUnsave?: (id: string) => void;
   onUnlike?: (id: string) => void;
@@ -81,6 +91,8 @@ export default function RestaurantCard({
   isOpenNow,
   initialSaved = false,
   initialLiked = false,
+  initialReaction = null,
+  promptReaction = false,
   featured = false,
   onUnsave,
   onUnlike,
@@ -90,10 +102,14 @@ export default function RestaurantCard({
   const [savePop, setSavePop] = useState(false);
   const [likePop, setLikePop] = useState(false);
   const [showSavedMsg, setShowSavedMsg] = useState(false);
+  const [reaction, setReaction] = useState<string | null>(initialReaction);
+  const [showReaction, setShowReaction] = useState(!!initialReaction);
   const [photoUrl, setPhotoUrl] = useState(photoUrlProp || getPhotoUrl(cuisine));
 
   useEffect(() => { setSaved(initialSaved); }, [initialSaved]);
   useEffect(() => { setLiked(initialLiked); }, [initialLiked]);
+  useEffect(() => { setReaction(initialReaction); }, [initialReaction]);
+  useEffect(() => { if (promptReaction || initialReaction) setShowReaction(true); }, [promptReaction, initialReaction]);
   useEffect(() => { setPhotoUrl(photoUrlProp || getPhotoUrl(cuisine)); }, [photoUrlProp, cuisine]);
   const stars = Math.round(rating * 2) / 2;
   const fullStars = Math.floor(stars);
@@ -243,7 +259,14 @@ export default function RestaurantCard({
               e.stopPropagation();
               const nowLiked = !liked;
               setLiked(nowLiked);
-              if (nowLiked) { setLikePop(true); setTimeout(() => setLikePop(false), 400); }
+              if (nowLiked) {
+                setLikePop(true);
+                setTimeout(() => setLikePop(false), 400);
+                setShowReaction(true);
+              } else {
+                setShowReaction(false);
+                setReaction(null);
+              }
               if (!nowLiked && onUnlike) onUnlike(restaurantId);
               toggleLiked(restaurantId, liked).catch(() => setLiked(liked));
             }}
@@ -258,6 +281,38 @@ export default function RestaurantCard({
             Visited
           </button>
         </div>
+
+        {/* Reaction prompt */}
+        {showReaction && (
+          <div
+            className="reaction-prompt mt-2 pt-2 flex items-center gap-2 flex-wrap"
+            style={{ borderTop: "1px solid var(--border)" }}
+          >
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+              How was it?
+            </span>
+            {(["better", "expected", "disappointing"] as const).map((r) => (
+              <button
+                key={r}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setReaction(r);
+                  saveReaction(restaurantId, r).catch(() => {});
+                }}
+                className="text-xs px-2.5 py-1 rounded-full transition-all duration-100 hover:opacity-80 active:scale-95"
+                style={{
+                  border: `1px solid ${reaction === r ? "var(--accent)" : "var(--border-strong)"}`,
+                  backgroundColor: reaction === r ? "var(--accent)" : "var(--bg-subtle)",
+                  color: reaction === r ? "#ffffff" : "var(--text-secondary)",
+                  cursor: "pointer",
+                }}
+              >
+                {r === "better" ? "Better" : r === "expected" ? "As expected" : "Disappointing"}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
