@@ -6,8 +6,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score, classification_report
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
 
 # Manhattan zipcode → sub-neighborhood mapping
 MANHATTAN_ZIP_TO_NEIGHBORHOOD: dict[str, str] = {
@@ -260,103 +258,50 @@ def score_with_model(restaurants_df: pd.DataFrame, model, feature_cols: list[str
     return df
 
 
-def cluster_restaurants(restaurant_scores: pd.DataFrame, k: int = 5) -> pd.DataFrame:
+def cluster_restaurants(restaurant_scores: pd.DataFrame) -> pd.DataFrame:
     """
-    Cluster restaurants into archetypes using K-means on key features.
-    Adds 'cluster' (int) and 'archetype' (str) columns.
+    Assign each restaurant an archetype using explicit, self-calibrating
+    quantile rules on three independent signals:
+      - local_weighted_rating: do locals actually rate it well
+      - log(google_review_count): how well-known it *really* is (NOT the
+        scraped review sample size, which is capped per-restaurant and
+        carries ~no information about real popularity)
+      - tourist_penalty: how much more tourists rate it than locals do
+
+    Replaces an earlier K-means approach whose "popularity" feature was the
+    scrape-capped review sample count (range ~22-100 for every restaurant,
+    correlation with real popularity ~ -0.03) — restaurants with 10,000+
+    real reviews were being labeled "Hidden Gem". Rule-based thresholds
+    computed from the data's own distribution avoid that failure mode and
+    stay legible: each label maps to one plain-English condition instead of
+    an unstable, order-dependent cluster-priority assignment.
     """
     df = restaurant_scores.copy()
+    df["log_review_count"] = np.log1p(df["google_review_count"].fillna(0))
 
-    cluster_features = [
-        "avg_localness",
-        "pct_tourist_reviews",
-        "local_weighted_rating",
-        "tourist_weighted_rating",
-        "tourist_penalty",
-        "num_reviews",
-    ]
+    rating_p75 = df["local_weighted_rating"].quantile(0.75)
+    rating_p50 = df["local_weighted_rating"].quantile(0.50)
+    pop_p33 = df["log_review_count"].quantile(0.33)
+    pop_p67 = df["log_review_count"].quantile(0.67)
+    trap_p85 = df["tourist_penalty"].quantile(0.85)
 
-    X = df[cluster_features].fillna(0).values
+    def assign(row) -> str:
+        if row["tourist_penalty"] >= trap_p85:
+            return "Tourist Trap"
+        if row["local_weighted_rating"] >= rating_p75 and row["log_review_count"] <= pop_p33:
+            return "Hidden Gem"
+        if row["local_weighted_rating"] >= rating_p75 and row["log_review_count"] >= pop_p67:
+            return "Universally Loved"
+        if row["local_weighted_rating"] >= rating_p50:
+            return "Local Favorite"
+        return "Neighborhood Spot"
 
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    df["archetype"] = df.apply(assign, axis=1)
+    df = df.drop(columns=["log_review_count"])
 
-    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-    df["cluster"] = kmeans.fit_predict(X_scaled)
-
-    # Label each cluster by its centroid characteristics
-    centroids = pd.DataFrame(
-        scaler.inverse_transform(kmeans.cluster_centers_),
-        columns=cluster_features,
-    )
-
-    # Rank clusters along each dimension to assign archetypes relative to data
-    archetype_map = {}
-
-    # Rank each centroid (higher rank = more of that trait)
-    ranks = pd.DataFrame(index=centroids.index)
-    ranks["local_rating_rank"] = centroids["local_weighted_rating"].rank()
-    ranks["localness_rank"] = centroids["avg_localness"].rank()
-    ranks["tourist_penalty_rank"] = centroids["tourist_penalty"].rank()
-    ranks["tourist_pct_rank"] = centroids["pct_tourist_reviews"].rank()
-    ranks["review_count_rank"] = centroids["num_reviews"].rank()
-
-    # Composite scores
-    ranks["local_score"] = ranks["local_rating_rank"] + ranks["localness_rank"] - ranks["tourist_penalty_rank"]
-    ranks["tourist_score"] = ranks["tourist_penalty_rank"] + ranks["tourist_pct_rank"] - ranks["localness_rank"]
-
-    # Assign archetypes by sorting clusters
-    assigned = set()
-
-    # Tourist Trap: highest tourist_score
-    tourist_trap = ranks["tourist_score"].idxmax()
-    archetype_map[tourist_trap] = "Tourist Trap"
-    assigned.add(tourist_trap)
-
-    # Hidden Gem: highest localness + high rating + low review count
-    gem_score = ranks["local_score"] - ranks["review_count_rank"] * 0.5
-    for idx in gem_score.sort_values(ascending=False).index:
-        if idx not in assigned:
-            archetype_map[idx] = "Hidden Gem"
-            assigned.add(idx)
-            break
-
-    # Universally Loved: high rating + high review count
-    loved_score = ranks["local_rating_rank"] + ranks["review_count_rank"]
-    for idx in loved_score.sort_values(ascending=False).index:
-        if idx not in assigned:
-            archetype_map[idx] = "Universally Loved"
-            assigned.add(idx)
-            break
-
-    # Local Favorite: next best local_score
-    for idx in ranks["local_score"].sort_values(ascending=False).index:
-        if idx not in assigned:
-            archetype_map[idx] = "Local Favorite"
-            assigned.add(idx)
-            break
-
-    # Remaining clusters
-    for idx in centroids.index:
-        if idx not in assigned:
-            c = centroids.iloc[idx]
-            if c["local_weighted_rating"] < 3.5:
-                archetype_map[idx] = "Under the Radar"
-            else:
-                archetype_map[idx] = "Neighborhood Staple"
-
-    df["archetype"] = df["cluster"].map(archetype_map)
-
-    # Print cluster summary
-    print("\n🔬 Restaurant Archetypes (K-means clustering):")
-    for cluster_id, archetype in sorted(archetype_map.items()):
-        count = (df["cluster"] == cluster_id).sum()
-        c = centroids.iloc[cluster_id]
-        print(
-            f"  Cluster {cluster_id} — {archetype} ({count} restaurants)"
-            f"  | local_rating={c['local_weighted_rating']:.2f}"
-            f"  tourist_penalty={c['tourist_penalty']:.2f}"
-            f"  avg_localness={c['avg_localness']:.2f}"
-        )
+    print("\n🏷️  Restaurant Archetypes (quantile rules):")
+    print(f"  rating_p75={rating_p75:.2f}  rating_p50={rating_p50:.2f}  trap_penalty_p85={trap_p85:.3f}")
+    for archetype, count in df["archetype"].value_counts().items():
+        print(f"  {archetype}: {count} restaurants")
 
     return df
