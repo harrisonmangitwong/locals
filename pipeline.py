@@ -275,6 +275,13 @@ def cluster_restaurants(restaurant_scores: pd.DataFrame) -> pd.DataFrame:
     computed from the data's own distribution avoid that failure mode and
     stay legible: each label maps to one plain-English condition instead of
     an unstable, order-dependent cluster-priority assignment.
+
+    Only three archetypes are ever shown to users — Hidden Gem, Universally
+    Loved, Local Favorite. A large tourist/local rating gap disqualifies a
+    restaurant from any of them (archetype = None) rather than surfacing a
+    "Tourist Trap" label; restaurants that don't clearly earn a story also
+    get None rather than a filler label like "Neighborhood Spot" — a badge
+    should mean something, not appear on every restaurant.
     """
     df = restaurant_scores.copy()
     df["log_review_count"] = np.log1p(df["google_review_count"].fillna(0))
@@ -285,23 +292,24 @@ def cluster_restaurants(restaurant_scores: pd.DataFrame) -> pd.DataFrame:
     pop_p67 = df["log_review_count"].quantile(0.67)
     trap_p85 = df["tourist_penalty"].quantile(0.85)
 
-    def assign(row) -> str:
+    def assign(row) -> str | None:
         if row["tourist_penalty"] >= trap_p85:
-            return "Tourist Trap"
+            return None
         if row["local_weighted_rating"] >= rating_p75 and row["log_review_count"] <= pop_p33:
             return "Hidden Gem"
         if row["local_weighted_rating"] >= rating_p75 and row["log_review_count"] >= pop_p67:
             return "Universally Loved"
         if row["local_weighted_rating"] >= rating_p50:
             return "Local Favorite"
-        return "Neighborhood Spot"
+        return None
 
     df["archetype"] = df.apply(assign, axis=1)
     df = df.drop(columns=["log_review_count"])
 
     print("\n🏷️  Restaurant Archetypes (quantile rules):")
     print(f"  rating_p75={rating_p75:.2f}  rating_p50={rating_p50:.2f}  trap_penalty_p85={trap_p85:.3f}")
-    for archetype, count in df["archetype"].value_counts().items():
-        print(f"  {archetype}: {count} restaurants")
+    for archetype, count in df["archetype"].value_counts(dropna=False).items():
+        label = archetype if archetype is not None else "(no badge)"
+        print(f"  {label}: {count} restaurants")
 
     return df
