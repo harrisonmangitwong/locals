@@ -3,30 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
+import { getPhotoUrl } from "@/lib/photoFallback";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-const CUISINE_PHOTO_MAP: Record<string, string> = {
-  Ramen: "photo-1569050467447-ce54b3bbc37d",
-  Japanese: "photo-1553621042-f6e147245754",
-  Pizza: "photo-1513104890138-7c749659a591",
-  Italian: "photo-1555396273-367ea4eb4db5",
-  Chinese: "photo-1563245372-f21724e3856d",
-  Korean: "photo-1614563637806-1d0e645e0940",
-  Mexican: "photo-1565299585323-38d6b0865b47",
-  Indian: "photo-1585937421612-70a008356fbe",
-  Mediterranean: "photo-1544025162-d76694265947",
-  "Middle Eastern": "photo-1561626423-a51b45aef0a1",
-  Thai: "photo-1562565652-a0d8f0c59eb4",
-  American: "photo-1550317138-10000687a72b",
-  Deli: "photo-1509722747041-616f39b57569",
-  Seafood: "photo-1565680018434-b513d5e5fd47",
-  French: "photo-1414235077428-338989a2e8c0",
-  Halal: "photo-1561626423-a51b45aef0a1",
-  Restaurant: "photo-1466978913421-dad2ebd01d17",
-};
-const DEFAULT_PHOTO = "photo-1504674900247-0877df9cc836";
 
 interface HoursEntry { day: string; hours: string }
 
@@ -250,8 +231,7 @@ export default function RestaurantPage() {
   }
 
   const r = restaurant;
-  const fallbackId = CUISINE_PHOTO_MAP[r.cuisine] ?? DEFAULT_PHOTO;
-  const heroUrl = r.image_url || `https://images.unsplash.com/${fallbackId}?w=1200&q=80&auto=format&fit=crop`;
+  const heroUrl = r.image_url || getPhotoUrl(r.cuisine, 1200, 80);
 
   const price = priceLabel(r.price_midpoint);
   const verdictText = getVerdict(r.local_weighted_rating ?? 0, r.tourist_weighted_rating ?? 0);
@@ -274,8 +254,7 @@ export default function RestaurantPage() {
 
       {/* Hero */}
       <div className="relative w-full overflow-hidden" style={{ height: "clamp(260px, 40vw, 420px)" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={heroUrl} alt={r.name} className="w-full h-full object-cover" loading="eager" />
+        <Image src={heroUrl} alt={r.name} fill sizes="100vw" className="object-cover" priority />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.1) 75%, transparent 100%)" }} />
 
         {/* Rank badge */}
@@ -378,13 +357,13 @@ export default function RestaurantPage() {
               {similar.map((s) => (
                 <Link key={s.restaurant_id} href={`/restaurant/${s.restaurant_id}`} className="group flex flex-col overflow-hidden rounded-xl" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
                   <div className="relative overflow-hidden h-24">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={s.image_url || `https://images.unsplash.com/${CUISINE_PHOTO_MAP[s.cuisine] ?? DEFAULT_PHOTO}?w=400&q=65&auto=format&fit=crop`}
+                    <Image
+                      src={s.image_url || getPhotoUrl(s.cuisine)}
                       alt={s.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 640px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
-                      decoding="async"
                     />
                     <span className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--accent)", color: "#fff" }}>
                       #{s.rank}

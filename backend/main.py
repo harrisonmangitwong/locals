@@ -189,7 +189,7 @@ def get_recommendations(
 
     filtered = df.copy()
     if search:
-        filtered = filtered[filtered["name"].str.contains(search, case=False, na=False)]
+        filtered = filtered[filtered["name"].str.contains(search, case=False, na=False, regex=False)]
     if neighborhood:
         filtered = filtered[filtered["neighborhood"] == neighborhood]
     if cuisine:

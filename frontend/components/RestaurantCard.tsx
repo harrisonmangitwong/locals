@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { getPhotoUrl } from "@/lib/photoFallback";
 
 async function toggleSaved(id: string, currently: boolean): Promise<boolean> {
   await fetch("/api/saved", {
@@ -27,33 +29,6 @@ async function saveReaction(id: string, reaction: string): Promise<void> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ restaurant_id: id, reaction }),
   });
-}
-
-const CUISINE_PHOTO_MAP: Record<string, string> = {
-  Ramen: "photo-1569050467447-ce54b3bbc37d",
-  Japanese: "photo-1553621042-f6e147245754",
-  Pizza: "photo-1513104890138-7c749659a591",
-  Italian: "photo-1555396273-367ea4eb4db5",
-  Chinese: "photo-1563245372-f21724e3856d",
-  Korean: "photo-1614563637806-1d0e645e0940",
-  Mexican: "photo-1565299585323-38d6b0865b47",
-  Indian: "photo-1585937421612-70a008356fbe",
-  Mediterranean: "photo-1544025162-d76694265947",
-  "Middle Eastern": "photo-1561626423-a51b45aef0a1",
-  Thai: "photo-1562565652-a0d8f0c59eb4",
-  American: "photo-1550317138-10000687a72b",
-  Deli: "photo-1509722747041-616f39b57569",
-  Seafood: "photo-1565680018434-b513d5e5fd47",
-  French: "photo-1414235077428-338989a2e8c0",
-  Halal: "photo-1561626423-a51b45aef0a1",
-  Restaurant: "photo-1466978913421-dad2ebd01d17",
-};
-
-const DEFAULT_PHOTO = "photo-1504674900247-0877df9cc836";
-
-function getPhotoUrl(cuisine: string): string {
-  const photoId = CUISINE_PHOTO_MAP[cuisine] ?? DEFAULT_PHOTO;
-  return `https://images.unsplash.com/${photoId}?w=400&q=65&auto=format&fit=crop`;
 }
 
 export interface RestaurantCardProps {
@@ -151,14 +126,13 @@ export default function RestaurantCard({
     >
       {/* Photo */}
       <Link href={`/restaurant/${restaurantId}`} className={`relative overflow-hidden block${featured ? " h-72 sm:h-64" : " h-52 sm:h-48"}`} style={{ flexShrink: 0 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={photoUrl}
           alt={name}
-          className="card-photo"
-          style={{ objectFit: "cover", width: "100%", height: "100%" }}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="card-photo object-cover"
           loading="lazy"
-          decoding="async"
           onError={() => setPhotoUrl(getPhotoUrl(cuisine))}
         />
         {/* Rank */}
@@ -257,7 +231,7 @@ export default function RestaurantCard({
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-medium transition-opacity hover:opacity-75"
+            className="text-xs font-medium transition-opacity hover:opacity-75 min-h-[44px] flex items-center"
             style={{ color: "var(--text-muted)" }}
           >
             Open in Maps &rarr;
@@ -281,7 +255,7 @@ export default function RestaurantCard({
               if (!nowLiked && onUnlike) onUnlike(restaurantId);
               toggleLiked(restaurantId, liked).catch(() => setLiked(liked));
             }}
-            className={`flex items-center gap-1 text-xs font-medium transition-all duration-150 hover:opacity-80 active:scale-95${likePop ? " heart-pop" : ""}`}
+            className={`flex items-center gap-1 text-xs font-medium transition-all duration-150 hover:opacity-80 active:scale-95 min-h-[44px]${likePop ? " heart-pop" : ""}`}
             style={{ color: liked ? "var(--accent)" : "var(--text-muted)", cursor: "pointer" }}
             aria-label={liked ? "Remove from visited" : "Mark as visited"}
           >

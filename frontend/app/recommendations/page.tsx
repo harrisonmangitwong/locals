@@ -420,6 +420,7 @@ function RecommendationsContent() {
                     color: "var(--text)",
                     border: "1px solid var(--border)",
                     outline: "none",
+                    colorScheme: "light dark",
                   }}
                 >
                   <option value="" style={{ backgroundColor: "var(--bg-card)" }}>
@@ -464,6 +465,7 @@ function RecommendationsContent() {
                   color: "var(--text)",
                   border: "1px solid var(--border)",
                   outline: "none",
+                  colorScheme: "light dark",
                 }}
               >
                 <option value="" style={{ backgroundColor: "var(--bg-card)" }}>
@@ -486,6 +488,7 @@ function RecommendationsContent() {
                   color: "var(--text)",
                   border: "1px solid var(--border)",
                   outline: "none",
+                  colorScheme: "light dark",
                 }}
               >
                 <option value="" style={{ backgroundColor: "var(--bg-card)" }}>All prices</option>

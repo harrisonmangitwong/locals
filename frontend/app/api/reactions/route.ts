@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
+const VALID_REACTIONS = ["better", "expected", "disappointing"] as const;
+
 function adminSupabase() {
   return createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,6 +35,9 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { restaurant_id, reaction } = await req.json();
+  if (!VALID_REACTIONS.includes(reaction)) {
+    return NextResponse.json({ error: "Invalid reaction" }, { status: 400 });
+  }
   await adminSupabase()
     .from("reactions")
     .upsert({ user_id: user.id, restaurant_id, reaction });
