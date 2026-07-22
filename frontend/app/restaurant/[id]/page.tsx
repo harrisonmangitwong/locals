@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import { getPhotoUrl } from "@/lib/photoFallback";
+import { ARCHETYPES, isArchetype } from "@/lib/archetypes";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -32,6 +33,7 @@ interface RestaurantDetail {
   top_reviews?: string;
   is_open_now?: boolean | null;
   price_midpoint?: number | null;
+  archetype?: string | null;
   [key: string]: unknown;
 }
 
@@ -166,6 +168,7 @@ export default function RestaurantPage() {
   const [savePop, setSavePop] = useState(false);
   const [showSavedMsg, setShowSavedMsg] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [showArchetypeInfo, setShowArchetypeInfo] = useState(false);
   const [similar, setSimilar] = useState<SimilarRestaurant[]>([]);
 
   useEffect(() => {
@@ -329,6 +332,30 @@ export default function RestaurantPage() {
         {/* The local take */}
         <section>
           <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>The local take</h2>
+
+          {isArchetype(r.archetype) && (
+            <div className="mb-4">
+              <button
+                onClick={() => setShowArchetypeInfo((v) => !v)}
+                aria-expanded={showArchetypeInfo}
+                className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-opacity hover:opacity-80"
+                style={{ backgroundColor: ARCHETYPES[r.archetype].bg, color: ARCHETYPES[r.archetype].color }}
+              >
+                {r.archetype}
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.7 }}>
+                  <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+              </button>
+              <div className={`filter-expand${showArchetypeInfo ? " open" : ""}`}>
+                <div className="filter-expand-inner">
+                  <p className="text-sm pt-2 leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                    {ARCHETYPES[r.archetype].description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <p className="text-base leading-relaxed mb-5" style={{ color: "var(--text)" }}>{verdictText}</p>
           <div className="flex items-center gap-3">
             <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--bg-subtle)" }}>

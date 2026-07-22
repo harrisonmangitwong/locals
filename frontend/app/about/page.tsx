@@ -1,5 +1,6 @@
 import Link from "next/link";
 import UserMenu from "@/components/UserMenu";
+import { ARCHETYPES } from "@/lib/archetypes";
 
 export default function AboutPage() {
   return (
@@ -94,6 +95,31 @@ export default function AboutPage() {
             to tourist centers, and rating distribution. The list is updated periodically as new
             review data comes in.
           </p>
+        </div>
+
+        {/* What the tags mean */}
+        <div className="mt-10 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
+          <h2 className="font-display text-lg mb-1" style={{ color: "var(--text)" }}>What the tags mean</h2>
+          <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
+            Some restaurants get a badge on their card. Not all of them — a badge only shows up when a
+            restaurant clearly earns one.
+          </p>
+          <div className="space-y-4 rounded-xl p-5" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
+            {(Object.keys(ARCHETYPES) as (keyof typeof ARCHETYPES)[]).map((key, i) => (
+              <div key={key}>
+                {i > 0 && <div className="mb-4" style={{ borderTop: "1px solid var(--border)" }} />}
+                <div className="flex items-start gap-4">
+                  <span
+                    className="text-xs font-medium shrink-0 px-2.5 py-1 rounded-full whitespace-nowrap"
+                    style={{ backgroundColor: ARCHETYPES[key].bg, color: ARCHETYPES[key].color }}
+                  >
+                    {key}
+                  </span>
+                  <div className="text-sm" style={{ color: "var(--text-muted)" }}>{ARCHETYPES[key].description}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* CTA */}

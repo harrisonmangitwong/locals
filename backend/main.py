@@ -179,6 +179,7 @@ def get_recommendations(
     search: Optional[str] = Query(default=None),
     price: Optional[str] = Query(default=None),
     open_now: Optional[bool] = Query(default=None),
+    archetype: Optional[str] = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
 ):
@@ -194,6 +195,8 @@ def get_recommendations(
         filtered = filtered[filtered["neighborhood"] == neighborhood]
     if cuisine:
         filtered = filtered[filtered["cuisine"] == cuisine]
+    if archetype:
+        filtered = filtered[filtered["archetype"] == archetype]
     if price:
         price_ranges = {"$": (0, 15), "$$": (15, 30), "$$$": (30, 60), "$$$$": (60, 500)}
         if price in price_ranges:

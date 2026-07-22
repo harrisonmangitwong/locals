@@ -29,6 +29,7 @@ interface Restaurant {
   rank: number;
   image_url: string;
   price_midpoint: number | null;
+  archetype?: string | null;
   [key: string]: unknown;
 }
 
@@ -245,6 +246,7 @@ export default function FavoritesPage() {
                 rating={r.total_score ?? 0}
                 mapsUrl={r.url}
                 photoUrl={r.image_url}
+                archetype={r.archetype}
                 price={
                   r.price_midpoint
                     ? r.price_midpoint <= 15
