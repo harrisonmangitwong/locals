@@ -48,8 +48,8 @@ def main():
     run_pipeline.main()
 
     print("\n" + "=" * 50)
-    print("Done! Start the app with:")
-    print("  python3 -m streamlit run app.py")
+    print("Done! Sync the new data to the backend with:")
+    print("  python3 update_backend.py")
     print("=" * 50)
 
 
