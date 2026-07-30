@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
 import UserMenu from "@/components/UserMenu";
+import RequestRestaurantForm from "@/components/RequestRestaurantForm";
 import { ARCHETYPES, isArchetype, type Archetype } from "@/lib/archetypes";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -628,11 +629,12 @@ function RecommendationsContent() {
                 setSearchInput("");
                 router.push("/recommendations");
               }}
-              className="text-sm font-medium"
+              className="text-sm font-medium mb-6"
               style={{ color: "var(--accent-text)" }}
             >
               Clear all filters
             </button>
+            <RequestRestaurantForm />
           </div>
         )}
 
