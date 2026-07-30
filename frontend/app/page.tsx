@@ -66,7 +66,6 @@ export default function Home() {
         <Link
           href="/recommendations"
           className="cta-btn inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold"
-          style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
         >
           Find a restaurant
         </Link>

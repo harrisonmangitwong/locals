@@ -131,11 +131,14 @@ body {
 
 /* ── CTA press ── */
 .cta-btn {
-  transition: transform 100ms ease, opacity 150ms ease;
+  background-color: var(--accent);
+  color: #ffffff;
+  transition: background-color 150ms ease, transform 100ms ease, box-shadow 150ms ease;
   min-height: 44px;
 }
 .cta-btn:hover {
-  opacity: 0.92;
+  background-color: var(--accent-hover);
+  box-shadow: var(--shadow);
 }
 .cta-btn:active {
   transform: translateY(1px);

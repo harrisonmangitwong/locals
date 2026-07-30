@@ -420,7 +420,7 @@ function RecommendationsContent() {
                 key={key}
                 onClick={() => updateParams({ archetype: active ? "" : key })}
                 aria-pressed={active}
-                className="text-xs font-medium px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center"
+                className="text-xs font-medium px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-75"
                 style={{
                   backgroundColor: active ? ARCHETYPES[key].color : ARCHETYPES[key].bg,
                   color: active ? "#ffffff" : ARCHETYPES[key].color,
@@ -576,7 +576,7 @@ function RecommendationsContent() {
             </p>
             <button
               onClick={fetchData}
-              className="mt-3 text-xs font-medium underline"
+              className="mt-3 text-xs font-medium underline transition-opacity hover:opacity-70"
               style={{ color: "var(--text-muted)" }}
             >
               Try again
@@ -629,7 +629,7 @@ function RecommendationsContent() {
                 setSearchInput("");
                 router.push("/recommendations");
               }}
-              className="text-sm font-medium mb-6"
+              className="text-sm font-medium mb-6 transition-opacity hover:opacity-70"
               style={{ color: "var(--accent-text)" }}
             >
               Clear all filters

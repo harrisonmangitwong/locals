@@ -103,7 +103,7 @@ function HoursTable({ hoursJson, isOpenNow }: { hoursJson: string; isOpenNow?: b
       <button
         onClick={() => setExpanded(v => !v)}
         aria-expanded={expanded}
-        className="flex items-center gap-2 text-sm font-medium w-full text-left"
+        className="flex items-center gap-2 text-sm font-medium w-full text-left transition-opacity hover:opacity-70"
         style={{ color: "var(--text)" }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-muted)", flexShrink: 0 }}>
@@ -411,7 +411,7 @@ export default function RestaurantPage() {
           <section style={{ borderTop: "1px solid var(--border)", paddingTop: "2.5rem" }}>
             <button
               onClick={() => setDetailsOpen(v => !v)}
-              className="flex items-center justify-between w-full text-left"
+              className="flex items-center justify-between w-full text-left transition-opacity hover:opacity-70"
               aria-expanded={detailsOpen}
             >
               <h2 className="font-display text-xl" style={{ color: "var(--text)" }}>Address & hours</h2>
@@ -470,7 +470,6 @@ export default function RestaurantPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-            style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>

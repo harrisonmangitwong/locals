@@ -89,7 +89,6 @@ export default function RequestRestaurantForm({
               type="submit"
               disabled={submitting || !name.trim()}
               className="cta-btn self-start px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
             >
               {submitting ? "Sending…" : "Send"}
             </button>

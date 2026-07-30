@@ -51,7 +51,7 @@ export default function UserMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={`Account menu for ${name}`}
-        className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-full"
+        className="flex items-center gap-2 transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-full"
         style={{ ["--tw-ring-color" as string]: "var(--accent)", ["--tw-ring-offset-color" as string]: "var(--bg)" }}
       >
         {avatar ? (
