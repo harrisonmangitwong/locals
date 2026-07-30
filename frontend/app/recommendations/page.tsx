@@ -688,6 +688,12 @@ function RecommendationsContent() {
             })()}
           </div>
         )}
+
+        {!loading && !error && restaurants.length > 0 && (
+          <div className="flex justify-center py-6">
+            <RequestRestaurantForm />
+          </div>
+        )}
       </main>
     </div>
   );
