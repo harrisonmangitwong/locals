@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
 import UserMenu from "@/components/UserMenu";
+import type { Bucket } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -40,6 +41,15 @@ export default function FavoritesPage() {
   const [fetchError, setFetchError] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [ratings, setRatings] = useState<Record<string, Bucket>>({});
+
+  useEffect(() => {
+    fetch("/api/ratings").then((r) => r.json()).then((d) => {
+      const map: Record<string, Bucket> = {};
+      for (const r of d.ratings ?? []) map[r.restaurant_id] = r.bucket;
+      setRatings(map);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch("/api/me").then((r) => r.json()).then((d) => setUserId(d.id ?? null)).catch(() => {});
@@ -257,6 +267,8 @@ export default function FavoritesPage() {
                     : undefined
                 }
                 initialSaved={true}
+                initialBucket={ratings[r.restaurant_id] ?? null}
+                onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: bucket }))}
                 onUnsave={(id) =>
                   setRestaurants((prev) => prev.filter((x) => x.restaurant_id !== id))
                 }

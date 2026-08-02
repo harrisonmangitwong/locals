@@ -5,6 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPhotoUrl } from "@/lib/photoFallback";
 import { ARCHETYPES, isArchetype } from "@/lib/archetypes";
+import { BUCKETS, type Bucket } from "@/lib/ranking";
+import RateRestaurantFlow from "./RateRestaurantFlow";
+
+const BUCKET_LABELS: Record<Bucket, string> = Object.fromEntries(BUCKETS.map((b) => [b.key, b.label])) as Record<Bucket, string>;
 
 async function toggleSaved(id: string, currently: boolean): Promise<boolean> {
   await fetch("/api/saved", {
@@ -13,23 +17,6 @@ async function toggleSaved(id: string, currently: boolean): Promise<boolean> {
     body: JSON.stringify({ restaurant_id: id }),
   });
   return !currently;
-}
-
-async function toggleLiked(id: string, currently: boolean): Promise<boolean> {
-  await fetch("/api/liked", {
-    method: currently ? "DELETE" : "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ restaurant_id: id }),
-  });
-  return !currently;
-}
-
-async function saveReaction(id: string, reaction: string): Promise<void> {
-  await fetch("/api/reactions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ restaurant_id: id, reaction }),
-  });
 }
 
 export interface RestaurantCardProps {
@@ -46,13 +33,11 @@ export interface RestaurantCardProps {
   archetype?: string | null;
   isOpenNow?: boolean | null;
   initialSaved?: boolean;
-  initialLiked?: boolean;
-  initialReaction?: string | null;
-  promptReaction?: boolean;
+  initialBucket?: Bucket | null;
   featured?: boolean;
   saveCount?: number;
   onUnsave?: (id: string) => void;
-  onUnlike?: (id: string) => void;
+  onRated?: (id: string, bucket: Bucket) => void;
 }
 
 export default function RestaurantCard({
@@ -69,29 +54,23 @@ export default function RestaurantCard({
   archetype,
   isOpenNow,
   initialSaved = false,
-  initialLiked = false,
-  initialReaction = null,
-  promptReaction = false,
+  initialBucket = null,
   featured = false,
   saveCount,
   onUnsave,
-  onUnlike,
+  onRated,
 }: RestaurantCardProps) {
   const [saved, setSaved] = useState(initialSaved);
-  const [liked, setLiked] = useState(initialLiked);
+  const [bucket, setBucket] = useState<Bucket | null>(initialBucket);
   const [savePop, setSavePop] = useState(false);
-  const [likePop, setLikePop] = useState(false);
+  const [ratePop, setRatePop] = useState(false);
   const [showSavedMsg, setShowSavedMsg] = useState(false);
-  const [reaction, setReaction] = useState<string | null>(initialReaction);
-  const [reactionPop, setReactionPop] = useState<string | null>(null);
-  const [showReaction, setShowReaction] = useState(!!initialReaction);
   const [photoUrl, setPhotoUrl] = useState(photoUrlProp || getPhotoUrl(cuisine));
   const [showArchetypeInfo, setShowArchetypeInfo] = useState(false);
+  const [showRateFlow, setShowRateFlow] = useState(false);
 
   useEffect(() => { setSaved(initialSaved); }, [initialSaved]);
-  useEffect(() => { setLiked(initialLiked); }, [initialLiked]);
-  useEffect(() => { setReaction(initialReaction); }, [initialReaction]);
-  useEffect(() => { if (promptReaction || initialReaction) setShowReaction(true); }, [promptReaction, initialReaction]);
+  useEffect(() => { setBucket(initialBucket); }, [initialBucket]);
   useEffect(() => { setPhotoUrl(photoUrlProp || getPhotoUrl(cuisine)); }, [photoUrlProp, cuisine]);
   const stars = Math.round(rating * 2) / 2;
   const fullStars = Math.floor(stars);
@@ -268,73 +247,41 @@ export default function RestaurantCard({
             Open in Maps &rarr;
           </a>
 
-          {/* Heart (liked — been there) */}
+          {/* Rate / visited status */}
           <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              const nowLiked = !liked;
-              setLiked(nowLiked);
-              if (nowLiked) {
-                setLikePop(true);
-                setTimeout(() => setLikePop(false), 400);
-                setShowReaction(true);
-              } else {
-                setShowReaction(false);
-                setReaction(null);
-              }
-              if (!nowLiked && onUnlike) onUnlike(restaurantId);
-              toggleLiked(restaurantId, liked).catch(() => setLiked(liked));
+              setShowRateFlow(true);
             }}
-            className={`flex items-center gap-1 text-xs font-medium transition-all duration-150 hover:opacity-80 active:scale-95 min-h-[44px]${likePop ? " heart-pop" : ""}`}
-            style={{ color: liked ? "var(--accent)" : "var(--text-muted)", cursor: "pointer" }}
-            aria-label={liked ? "Remove from visited" : "Mark as visited"}
+            className={`flex items-center gap-1 text-xs font-medium transition-all duration-150 hover:opacity-80 active:scale-95 min-h-[44px]${ratePop ? " heart-pop" : ""}`}
+            style={{ color: bucket ? "var(--accent)" : "var(--text-muted)", cursor: "pointer" }}
+            aria-label={bucket ? "Edit your rating" : "Rate this restaurant"}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13"
-              fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              fill={bucket ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
-            Visited
+            {bucket ? BUCKET_LABELS[bucket] : "Visited"}
           </button>
         </div>
-
-        {/* Reaction prompt */}
-        {showReaction && (
-          <div
-            className="reaction-prompt reaction-reveal mt-2 pt-2"
-            style={{ borderTop: "1px solid var(--border)" }}
-          >
-            <span className="text-xs block mb-2.5" style={{ color: "var(--text-muted)" }}>
-              Live up to the hype?
-            </span>
-            <div className="flex items-center gap-2">
-            {(["better", "expected", "disappointing"] as const).map((r) => (
-              <button
-                key={r}
-                aria-pressed={reaction === r}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setReaction(r);
-                  setReactionPop(r);
-                  setTimeout(() => setReactionPop(null), 400);
-                  saveReaction(restaurantId, r).catch(() => {});
-                }}
-                className={`text-xs px-3 py-2 rounded-full transition-all duration-100 hover:opacity-80 active:scale-95 min-h-[44px] flex items-center${reactionPop === r ? " heart-pop" : ""}`}
-                style={{
-                  border: `1px solid ${reaction === r ? "var(--accent)" : "var(--border-strong)"}`,
-                  backgroundColor: reaction === r ? "var(--accent)" : "var(--bg-subtle)",
-                  color: reaction === r ? "#ffffff" : "var(--text-secondary)",
-                  cursor: "pointer",
-                }}
-              >
-                {r === "better" ? "Better" : r === "expected" ? "As expected" : "Disappointing"}
-              </button>
-            ))}
-            </div>
-          </div>
-        )}
       </div>
+
+      {showRateFlow && (
+        <RateRestaurantFlow
+          restaurantId={restaurantId}
+          restaurantName={name}
+          restaurantPhotoUrl={photoUrl}
+          onClose={() => setShowRateFlow(false)}
+          onComplete={(newBucket) => {
+            setShowRateFlow(false);
+            setBucket(newBucket);
+            setRatePop(true);
+            setTimeout(() => setRatePop(false), 400);
+            onRated?.(restaurantId, newBucket);
+          }}
+        />
+      )}
     </div>
   );
 }

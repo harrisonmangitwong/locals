@@ -4,26 +4,23 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
 import UserMenu from "@/components/UserMenu";
+import type { Bucket } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-async function getLiked(): Promise<string[]> {
-  try {
-    const res = await fetch("/api/liked");
-    const data = await res.json();
-    return data.ids ?? [];
-  } catch {
-    return [];
-  }
+interface RatingRow {
+  restaurant_id: string;
+  bucket: Bucket;
+  score: number;
 }
 
-async function getReactions(): Promise<Record<string, string>> {
+async function getRatings(): Promise<RatingRow[]> {
   try {
-    const res = await fetch("/api/reactions");
+    const res = await fetch("/api/ratings");
     const data = await res.json();
-    return data.reactions ?? {};
+    return data.ratings ?? [];
   } catch {
-    return {};
+    return [];
   }
 }
 
@@ -45,27 +42,39 @@ interface Restaurant {
 
 export default function VisitedPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [reactions, setReactions] = useState<Record<string, string>>({});
+  const [ratings, setRatings] = useState<Record<string, Bucket>>({});
   const [loading, setLoading] = useState(true);
   const [empty, setEmpty] = useState(false);
   const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const [ids, rxns] = await Promise.all([getLiked(), getReactions()]);
-      setReactions(rxns);
-      if (ids.length === 0) {
+      const ratingRows = await getRatings();
+      if (ratingRows.length === 0) {
         setEmpty(true);
         setLoading(false);
         return;
       }
+      const bucketMap: Record<string, Bucket> = {};
+      for (const r of ratingRows) bucketMap[r.restaurant_id] = r.bucket;
+      setRatings(bucketMap);
+
+      // Ranked by score (best first) — the bucket ranges never overlap, so
+      // this naturally groups Liked it > It was ok > Didn't like it too.
+      const scoreById: Record<string, number> = {};
+      for (const r of ratingRows) scoreById[r.restaurant_id] = r.score;
+      const ids = ratingRows.map((r) => r.restaurant_id);
+
       try {
         const res = await fetch(
           `${API_BASE}/api/restaurants/batch?ids=${ids.join(",")}`
         );
         if (!res.ok) throw new Error("Failed to fetch");
         const json = await res.json();
-        setRestaurants(json.results);
+        const sorted = [...json.results].sort(
+          (a, b) => (scoreById[b.restaurant_id] ?? 0) - (scoreById[a.restaurant_id] ?? 0)
+        );
+        setRestaurants(sorted);
       } catch {
         setFetchError(true);
       } finally {
@@ -138,7 +147,7 @@ export default function VisitedPage() {
           </h1>
           {!loading && !empty && (
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              {restaurants.length} place{restaurants.length !== 1 ? "s" : ""}{" "}you&apos;ve visited
+              {restaurants.length} place{restaurants.length !== 1 ? "s" : ""}{" "}you&apos;ve ranked, best first
             </p>
           )}
         </div>
@@ -196,7 +205,7 @@ export default function VisitedPage() {
               className="text-sm mb-6 max-w-md"
               style={{ color: "var(--text-muted)" }}
             >
-              After you&apos;ve been somewhere, tap the heart on the restaurant. We&apos;ll keep track.
+              After you&apos;ve been somewhere, tap the heart on the restaurant to rank it. We&apos;ll keep track.
             </p>
             <Link
               href="/recommendations"
@@ -234,12 +243,8 @@ export default function VisitedPage() {
                             : "$$$$"
                       : undefined
                   }
-                  initialLiked={true}
-                  initialReaction={reactions[r.restaurant_id] ?? null}
-                  promptReaction={!reactions[r.restaurant_id]}
-                  onUnlike={(id) =>
-                    setRestaurants((prev) => prev.filter((x) => x.restaurant_id !== id))
-                  }
+                  initialBucket={ratings[r.restaurant_id] ?? null}
+                  onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: bucket }))}
                 />
               </div>
             ))}

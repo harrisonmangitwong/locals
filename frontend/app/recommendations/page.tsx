@@ -7,6 +7,7 @@ import RestaurantCard from "@/components/RestaurantCard";
 import UserMenu from "@/components/UserMenu";
 import RequestRestaurantForm from "@/components/RequestRestaurantForm";
 import { ARCHETYPES, isArchetype, type Archetype } from "@/lib/archetypes";
+import type { Bucket } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -194,7 +195,7 @@ function RecommendationsContent() {
   const [searchInput, setSearchInput] = useState(search);
   const [locating, setLocating] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [ratings, setRatings] = useState<Record<string, Bucket>>({});
   const [saveCounts, setSaveCounts] = useState<Record<string, number>>({});
   const [filtersExpanded, setFiltersExpanded] = useState(!!(neighborhood || cuisine || price || openNow));
   const activeFilterCount = [neighborhood, cuisine, price, openNow ? "open" : ""].filter(Boolean).length;
@@ -203,10 +204,12 @@ function RecommendationsContent() {
   useEffect(() => {
     Promise.all([
       fetch("/api/saved").then((r) => r.json()).catch(() => ({ ids: [] })),
-      fetch("/api/liked").then((r) => r.json()).catch(() => ({ ids: [] })),
-    ]).then(([saved, liked]) => {
+      fetch("/api/ratings").then((r) => r.json()).catch(() => ({ ratings: [] })),
+    ]).then(([saved, ratingsRes]) => {
       setSavedIds(new Set(saved.ids ?? []));
-      setLikedIds(new Set(liked.ids ?? []));
+      const map: Record<string, Bucket> = {};
+      for (const r of ratingsRes.ratings ?? []) map[r.restaurant_id] = r.bucket;
+      setRatings(map);
     });
   }, []);
 
@@ -605,7 +608,8 @@ function RecommendationsContent() {
                     archetype={r.archetype}
                     isOpenNow={r.is_open_now}
                     initialSaved={savedIds.has(r.restaurant_id)}
-                    initialLiked={likedIds.has(r.restaurant_id)}
+                    initialBucket={ratings[r.restaurant_id] ?? null}
+                    onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: bucket }))}
                     featured={isFeatured}
                     saveCount={saveCounts[r.restaurant_id]}
                   />
