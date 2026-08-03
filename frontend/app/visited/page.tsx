@@ -4,14 +4,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
 import UserMenu from "@/components/UserMenu";
-import type { Bucket } from "@/lib/ranking";
+import { BUCKETS, type Bucket, type Tag } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 interface RatingRow {
   restaurant_id: string;
   bucket: Bucket;
+  rank_position: number;
   score: number;
+  tags: Tag[];
 }
 
 async function getRatings(): Promise<RatingRow[]> {
@@ -42,7 +44,7 @@ interface Restaurant {
 
 export default function VisitedPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [ratings, setRatings] = useState<Record<string, Bucket>>({});
+  const [ratings, setRatings] = useState<Record<string, RatingRow>>({});
   const [loading, setLoading] = useState(true);
   const [empty, setEmpty] = useState(false);
   const [fetchError, setFetchError] = useState(false);
@@ -55,26 +57,18 @@ export default function VisitedPage() {
         setLoading(false);
         return;
       }
-      const bucketMap: Record<string, Bucket> = {};
-      for (const r of ratingRows) bucketMap[r.restaurant_id] = r.bucket;
-      setRatings(bucketMap);
+      const byId: Record<string, RatingRow> = {};
+      for (const r of ratingRows) byId[r.restaurant_id] = r;
+      setRatings(byId);
 
-      // Ranked by score (best first) — the bucket ranges never overlap, so
-      // this naturally groups Liked it > It was ok > Didn't like it too.
-      const scoreById: Record<string, number> = {};
-      for (const r of ratingRows) scoreById[r.restaurant_id] = r.score;
       const ids = ratingRows.map((r) => r.restaurant_id);
-
       try {
         const res = await fetch(
           `${API_BASE}/api/restaurants/batch?ids=${ids.join(",")}`
         );
         if (!res.ok) throw new Error("Failed to fetch");
         const json = await res.json();
-        const sorted = [...json.results].sort(
-          (a, b) => (scoreById[b.restaurant_id] ?? 0) - (scoreById[a.restaurant_id] ?? 0)
-        );
-        setRestaurants(sorted);
+        setRestaurants(json.results);
       } catch {
         setFetchError(true);
       } finally {
@@ -83,6 +77,12 @@ export default function VisitedPage() {
     }
     load();
   }, []);
+
+  function bucketGroup(bucket: Bucket): Restaurant[] {
+    return restaurants
+      .filter((r) => ratings[r.restaurant_id]?.bucket === bucket)
+      .sort((a, b) => ratings[a.restaurant_id].rank_position - ratings[b.restaurant_id].rank_position);
+  }
 
   return (
     <div
@@ -147,7 +147,7 @@ export default function VisitedPage() {
           </h1>
           {!loading && !empty && (
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              {restaurants.length} place{restaurants.length !== 1 ? "s" : ""}{" "}you&apos;ve ranked, best first
+              {restaurants.length} place{restaurants.length !== 1 ? "s" : ""} you&apos;ve ranked
             </p>
           )}
         </div>
@@ -216,38 +216,59 @@ export default function VisitedPage() {
           </div>
         )}
 
-        {/* Visited grid */}
+        {/* Ranked sections, grouped by bucket */}
         {!loading && !fetchError && !empty && restaurants.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {restaurants.map((r, i) => (
-              <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
-                <RestaurantCard
-                  restaurantId={r.restaurant_id}
-                  rank={r.rank}
-                  name={r.name}
-                  neighborhood={r.neighborhood}
-                  cuisine={r.cuisine}
-                  reviews={r.review_count ?? r.num_reviews ?? 0}
-                  rating={r.total_score ?? 0}
-                  mapsUrl={r.url}
-                  photoUrl={r.image_url}
-                  archetype={r.archetype}
-                  price={
-                    r.price_midpoint
-                      ? r.price_midpoint <= 15
-                        ? "$"
-                        : r.price_midpoint <= 30
-                          ? "$$"
-                          : r.price_midpoint <= 60
-                            ? "$$$"
-                            : "$$$$"
-                      : undefined
-                  }
-                  initialBucket={ratings[r.restaurant_id] ?? null}
-                  onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: bucket }))}
-                />
-              </div>
-            ))}
+          <div className="space-y-10">
+            {BUCKETS.map(({ key, label }) => {
+              const group = bucketGroup(key);
+              if (group.length === 0) return null;
+              return (
+                <section key={key}>
+                  <h2 className="font-display text-xl mb-4" style={{ color: "var(--text)" }}>
+                    {label} <span style={{ color: "var(--text-muted)" }}>({group.length})</span>
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {group.map((r, i) => {
+                      const rating = ratings[r.restaurant_id];
+                      return (
+                        <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
+                          <RestaurantCard
+                            restaurantId={r.restaurant_id}
+                            rank={r.rank}
+                            rankOverride={rating.rank_position}
+                            name={r.name}
+                            neighborhood={r.neighborhood}
+                            cuisine={r.cuisine}
+                            reviews={r.review_count ?? r.num_reviews ?? 0}
+                            rating={r.total_score ?? 0}
+                            mapsUrl={r.url}
+                            photoUrl={r.image_url}
+                            archetype={r.archetype}
+                            price={
+                              r.price_midpoint
+                                ? r.price_midpoint <= 15
+                                  ? "$"
+                                  : r.price_midpoint <= 30
+                                    ? "$$"
+                                    : r.price_midpoint <= 60
+                                      ? "$$$"
+                                      : "$$$$"
+                                : undefined
+                            }
+                            initialBucket={rating.bucket}
+                            ratingScore={rating.score}
+                            ratingTags={rating.tags}
+                            onRated={(id, bucket) =>
+                              setRatings((prev) => ({ ...prev, [id]: { ...prev[id], bucket } }))
+                            }
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         )}
       </main>

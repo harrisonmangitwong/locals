@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPhotoUrl } from "@/lib/photoFallback";
 import { ARCHETYPES, isArchetype } from "@/lib/archetypes";
-import { BUCKETS, type Bucket } from "@/lib/ranking";
+import { BUCKETS, TAG_LABELS, type Bucket, type Tag } from "@/lib/ranking";
 import RateRestaurantFlow from "./RateRestaurantFlow";
 
 const BUCKET_LABELS: Record<Bucket, string> = Object.fromEntries(BUCKETS.map((b) => [b.key, b.label])) as Record<Bucket, string>;
@@ -34,6 +34,12 @@ export interface RestaurantCardProps {
   isOpenNow?: boolean | null;
   initialSaved?: boolean;
   initialBucket?: Bucket | null;
+  /** Overrides the top-left "#N" badge — e.g. a personal rank-within-bucket instead of the global recommendation rank */
+  rankOverride?: number;
+  /** Your own interpolated score for this restaurant, if rated — shown next to the bucket label */
+  ratingScore?: number;
+  /** Tags picked when rating this restaurant (atmosphere / food_quality / service) */
+  ratingTags?: Tag[];
   featured?: boolean;
   saveCount?: number;
   onUnsave?: (id: string) => void;
@@ -55,6 +61,9 @@ export default function RestaurantCard({
   isOpenNow,
   initialSaved = false,
   initialBucket = null,
+  rankOverride,
+  ratingScore,
+  ratingTags,
   featured = false,
   saveCount,
   onUnsave,
@@ -123,7 +132,7 @@ export default function RestaurantCard({
           className="absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full"
           style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
         >
-          #{rank}
+          #{rankOverride ?? rank}
         </span>
         {/* Open/Closed badge */}
         {isOpenNow !== null && isOpenNow !== undefined && (
@@ -263,8 +272,15 @@ export default function RestaurantCard({
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
             {bucket ? BUCKET_LABELS[bucket] : "Visited"}
+            {bucket && ratingScore != null ? ` · ${ratingScore.toFixed(1)}` : ""}
           </button>
         </div>
+
+        {bucket && ratingTags && ratingTags.length > 0 && (
+          <p className="text-xs mt-1.5" style={{ color: "var(--text-muted)" }}>
+            {ratingTags.map((t) => TAG_LABELS[t]).join(" · ")}
+          </p>
+        )}
       </div>
 
       {showRateFlow && (
