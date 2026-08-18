@@ -39,23 +39,15 @@ export default function AboutPage() {
         <div className="space-y-5 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
           <p>
             A few months ago I was traveling through Asia, trying to find good places to eat.
-            I&apos;d open Google Maps and Yelp, but every restaurant had nearly identical star
-            ratings — impossible to tell what was actually worth going to.
+            Google, Yelp, Instagram, TikTok — didn&apos;t matter which app, every restaurant
+            had nearly identical ratings. No way to tell what was actually worth going to.
           </p>
           <p>
-            I tried Instagram Reels and TikTok, spent way too long scrolling, and ended up
-            with a handful of maybes. I even tried Xiaohongshu/Rednote and ran into the
-            same problem.
-          </p>
-          <p>
-            Finding good food shouldn&apos;t be this tedious. So I built Locals.
-          </p>
-          <p>
-            I&apos;ve been living in NYC for half a decade and realized the same problem
-            exists here, and honestly, in every major city too. The ratings are hard to
-            validate. The people doing the rating matter. So I scraped 48,000+ Google Maps
-            reviews, figured out which reviewers actually live in NYC, and weighted the
-            rankings accordingly. Local regulars count more. One-time visitors count less.
+            I came back to NYC and realized the same problem exists here, just at a bigger
+            scale. Ratings aren&apos;t wrong exactly, they&apos;re just not weighted by who&apos;s
+            doing the rating — a local who&apos;s eaten there 20 times and a tourist who visited
+            once shouldn&apos;t count the same. So I scraped 48,000+ NYC reviews and built
+            Locals to fix that.
           </p>
           <p>Hope you enjoy :)</p>
           <p style={{ color: "var(--text-muted)" }}>- Harrison</p>
@@ -64,7 +56,7 @@ export default function AboutPage() {
         {/* How the score works — for the curious */}
         <div className="mt-10 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
           <h2 className="font-display text-lg mb-1" style={{ color: "var(--text)" }}>How the score works</h2>
-          <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>For those of you who are curious, here&apos;s how the ratings work.</p>
+          <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>Here&apos;s how the ratings work, for the curious.</p>
           <div className="space-y-4 rounded-xl p-5 mb-6" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
             <div className="flex items-start gap-4">
               <span className="font-display text-xl leading-none shrink-0 w-10" style={{ color: "var(--warm)" }}>60%</span>
@@ -91,9 +83,7 @@ export default function AboutPage() {
             </div>
           </div>
           <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            Each restaurant&apos;s final ranking also factors in review text signals, location relative
-            to tourist centers, and rating distribution. The list is updated periodically as new
-            review data comes in.
+            The full ranking also weighs review text and location, and refreshes as new data comes in.
           </p>
         </div>
 
@@ -101,8 +91,7 @@ export default function AboutPage() {
         <div className="mt-10 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
           <h2 className="font-display text-lg mb-1" style={{ color: "var(--text)" }}>What the tags mean</h2>
           <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
-            Some restaurants get a badge on their card. Not all of them — a badge only shows up when a
-            restaurant clearly earns one.
+            Not every restaurant gets a badge on its card — only the ones that clearly earn one.
           </p>
           <div className="space-y-4 rounded-xl p-5" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
             {(Object.keys(ARCHETYPES) as (keyof typeof ARCHETYPES)[]).map((key, i) => (
