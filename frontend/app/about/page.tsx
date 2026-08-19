@@ -59,7 +59,7 @@ export default function AboutPage() {
           <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>Here&apos;s how the ratings work, for the curious.</p>
           <div className="space-y-4 rounded-xl p-5 mb-6" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
             <div className="flex items-start gap-4">
-              <span className="font-display text-xl leading-none shrink-0 w-10" style={{ color: "var(--warm)" }}>60%</span>
+              <span className="font-display text-xl leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Most</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Geographic concentration</div>
                 <div className="text-sm" style={{ color: "var(--text-muted)" }}>What share of their reviews are for NYC restaurants? Someone who&apos;s reviewed 200 spots worldwide but only 1 in NYC is probably a tourist.</div>
@@ -67,7 +67,7 @@ export default function AboutPage() {
             </div>
             <div style={{ borderTop: "1px solid var(--border)" }} />
             <div className="flex items-start gap-4">
-              <span className="font-display text-xl leading-none shrink-0 w-10" style={{ color: "var(--warm)" }}>25%</span>
+              <span className="font-display text-xl leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Some</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Review stability</div>
                 <div className="text-sm" style={{ color: "var(--text-muted)" }}>Have they been reviewing NYC spots consistently over time, or just in one burst during a trip?</div>
@@ -75,7 +75,7 @@ export default function AboutPage() {
             </div>
             <div style={{ borderTop: "1px solid var(--border)" }} />
             <div className="flex items-start gap-4">
-              <span className="font-display text-xl leading-none shrink-0 w-10" style={{ color: "var(--warm)" }}>15%</span>
+              <span className="font-display text-xl leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Minor</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Local Guide status</div>
                 <div className="text-sm" style={{ color: "var(--text-muted)" }}>Google-verified Local Guides get a small boost.</div>
