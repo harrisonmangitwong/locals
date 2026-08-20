@@ -186,6 +186,7 @@ function RecommendationsContent() {
   const archetypeParam = searchParams.get("archetype") ?? "";
   const archetype: Archetype | "" = isArchetype(archetypeParam) ? archetypeParam : "";
   const page = parseInt(searchParams.get("page") ?? "1", 10);
+  const forYou = searchParams.get("for_you") === "1";
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -201,6 +202,7 @@ function RecommendationsContent() {
   const [filtersExpanded, setFiltersExpanded] = useState(!!(neighborhood || cuisine || price || openNow));
   const activeFilterCount = [neighborhood, cuisine, price, openNow ? "open" : ""].filter(Boolean).length;
   const hasAnyFilter = activeFilterCount > 0 || !!archetype || !!search;
+  const forYouEligible = savedIds.size + Object.keys(ratings).length >= 5;
 
   useEffect(() => {
     Promise.all([
@@ -263,7 +265,10 @@ function RecommendationsContent() {
       params.set("page", String(page));
       params.set("page_size", "20");
 
-      const res = await fetch(`${API_BASE}/api/recommendations?${params.toString()}`, { signal: controller.signal });
+      const url = forYou && forYouEligible
+        ? `/api/recommendations/personalized?${params.toString()}`
+        : `${API_BASE}/api/recommendations?${params.toString()}`;
+      const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const json: ApiResponse = await res.json();
       setData(json);
@@ -285,7 +290,7 @@ function RecommendationsContent() {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [neighborhood, cuisine, price, search, openNow, archetype, page]);
+  }, [neighborhood, cuisine, price, search, openNow, archetype, page, forYou, forYouEligible]);
 
   useEffect(() => {
     fetchData();
@@ -418,6 +423,24 @@ function RecommendationsContent() {
             </button>
           )}
         </div>
+
+        {/* For You toggle -- only shown once someone has enough signal to personalize on */}
+        {forYouEligible && (
+          <div className="flex items-center gap-2 mt-3">
+            <button
+              onClick={() => updateParams({ for_you: forYou ? "" : "1" })}
+              aria-pressed={forYou}
+              className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90"
+              style={{
+                backgroundColor: forYou ? "var(--accent)" : "var(--bg-subtle)",
+                color: forYou ? "#ffffff" : "var(--text-secondary)",
+                border: `1px solid ${forYou ? "var(--accent)" : "var(--border)"}`,
+              }}
+            >
+              {forYou ? "For You" : "All restaurants"}
+            </button>
+          </div>
+        )}
 
         {/* Archetype quick filters */}
         <div className="flex flex-wrap items-center gap-2 mt-3 mb-1">
