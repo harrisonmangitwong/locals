@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { getActiveLocalIds } from "@/lib/server/activeLocal";
 import { NextResponse } from "next/server";
 
 function adminSupabase() {
@@ -25,12 +26,20 @@ export async function GET() {
     .eq("status", "pending")
     .order("created_at", { ascending: false });
 
+  const activeLocalIds = await getActiveLocalIds(admin, (pending ?? []).map((r) => r.follower_id));
+
   const requests = await Promise.all(
     (pending ?? []).map(async (row) => {
       const { data: userData } = await admin.auth.admin.getUserById(row.follower_id);
       const name = userData?.user?.user_metadata?.full_name ?? userData?.user?.email ?? "Someone";
       const avatarUrl = userData?.user?.user_metadata?.avatar_url ?? null;
-      return { userId: row.follower_id, name, avatarUrl, createdAt: row.created_at };
+      return {
+        userId: row.follower_id,
+        name,
+        avatarUrl,
+        createdAt: row.created_at,
+        isActiveLocal: activeLocalIds.has(row.follower_id),
+      };
     })
   );
 

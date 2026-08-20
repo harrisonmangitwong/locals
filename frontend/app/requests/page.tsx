@@ -9,6 +9,7 @@ interface FollowRequest {
   name: string;
   avatarUrl: string | null;
   createdAt: string;
+  isActiveLocal: boolean;
 }
 
 export default function RequestsPage() {
@@ -105,7 +106,17 @@ export default function RequestsPage() {
                     {r.name[0]}
                   </div>
                 )}
-                <p className="text-sm font-medium flex-1 truncate" style={{ color: "var(--text)" }}>{r.name}</p>
+                <div className="flex-1 min-w-0 flex items-center gap-2">
+                  <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>{r.name}</p>
+                  {r.isActiveLocal && (
+                    <span
+                      className="text-xs font-medium px-2 py-0.5 rounded-full shrink-0"
+                      style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+                    >
+                      Active locally
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={() => respond(r.userId, "decline")}
                   disabled={respondingTo === r.userId}

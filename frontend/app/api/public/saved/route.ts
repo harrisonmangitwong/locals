@@ -1,4 +1,5 @@
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { getActiveLocalIds } from "@/lib/server/activeLocal";
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE = process.env.API_URL ?? "http://localhost:8000";
@@ -27,9 +28,13 @@ export async function GET(req: NextRequest) {
   if (!res.ok) return NextResponse.json({ results: [], name: null });
   const json = await res.json();
 
+  const admin = adminSupabase();
+
   // Fetch display name from auth.users metadata
-  const { data: userData } = await adminSupabase().auth.admin.getUserById(userId);
+  const { data: userData } = await admin.auth.admin.getUserById(userId);
   const name = userData?.user?.user_metadata?.full_name ?? userData?.user?.email ?? null;
 
-  return NextResponse.json({ results: json.results ?? [], name });
+  const activeLocalIds = await getActiveLocalIds(admin, [userId]);
+
+  return NextResponse.json({ results: json.results ?? [], name, isActiveLocal: activeLocalIds.has(userId) });
 }

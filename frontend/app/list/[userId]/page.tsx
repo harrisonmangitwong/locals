@@ -27,6 +27,7 @@ export default function PublicListPage() {
   const { userId } = useParams<{ userId: string }>();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [ownerName, setOwnerName] = useState<string | null>(null);
+  const [ownerIsActiveLocal, setOwnerIsActiveLocal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [followStatus, setFollowStatus] = useState<FollowStatus>(null);
@@ -40,6 +41,7 @@ export default function PublicListPage() {
         if (!d.results || d.results.length === 0) setNotFound(true);
         setRestaurants(d.results ?? []);
         setOwnerName(d.name ?? null);
+        setOwnerIsActiveLocal(!!d.isActiveLocal);
         const ids = (d.results ?? []).map((r: Restaurant) => r.restaurant_id).join(",");
         if (ids) {
           fetch(`/api/follow-save-counts?ids=${ids}`)
@@ -155,9 +157,19 @@ export default function PublicListPage() {
           <>
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h1 className="font-display text-3xl mb-1" style={{ color: "var(--text)" }}>
-                  {ownerName ? `${ownerName}'s picks` : "Saved restaurants"}
-                </h1>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <h1 className="font-display text-3xl" style={{ color: "var(--text)" }}>
+                    {ownerName ? `${ownerName}'s picks` : "Saved restaurants"}
+                  </h1>
+                  {ownerIsActiveLocal && (
+                    <span
+                      className="text-xs font-medium px-2 py-0.5 rounded-full shrink-0"
+                      style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+                    >
+                      Active locally
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                   {restaurants.length} spot{restaurants.length !== 1 ? "s" : ""} saved on Locals
                 </p>
