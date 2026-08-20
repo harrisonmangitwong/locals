@@ -31,6 +31,7 @@ export default function PublicListPage() {
   const [notFound, setNotFound] = useState(false);
   const [followStatus, setFollowStatus] = useState<FollowStatus>(null);
   const [followBusy, setFollowBusy] = useState(false);
+  const [followedSaveCounts, setFollowedSaveCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetch(`/api/public/saved?userId=${userId}`)
@@ -39,6 +40,13 @@ export default function PublicListPage() {
         if (!d.results || d.results.length === 0) setNotFound(true);
         setRestaurants(d.results ?? []);
         setOwnerName(d.name ?? null);
+        const ids = (d.results ?? []).map((r: Restaurant) => r.restaurant_id).join(",");
+        if (ids) {
+          fetch(`/api/follow-save-counts?ids=${ids}`)
+            .then((r) => r.json())
+            .then((fd) => setFollowedSaveCounts(fd.counts ?? {}))
+            .catch(() => {});
+        }
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -213,6 +221,7 @@ export default function PublicListPage() {
                     mapsUrl={r.url}
                     photoUrl={r.image_url}
                     archetype={r.archetype}
+                    followedSaveCount={followedSaveCounts[r.restaurant_id]}
                     price={
                       r.price_midpoint
                         ? r.price_midpoint <= 15 ? "$"

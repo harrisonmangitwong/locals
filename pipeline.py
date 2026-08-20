@@ -171,33 +171,6 @@ def compute_restaurant_metrics(
 
     return restaurant_metrics
 
-def make_training_labels(restaurants_df: pd.DataFrame, seed: int = 42) -> pd.DataFrame:
-    """
-    Creates MOCK labels for training.
-    label_safe_pick = 1 means "non-touristy good" (safe for travelers).
-    label_safe_pick = 0 means "touristy / risky".
-    """
-    df = restaurants_df.copy()
-    rng = np.random.default_rng(seed)
-
-    # Hidden rule that generates labels (tunable):
-    # locals like it, tourist penalty low, more local share helps
-    base = (
-        0.65 * df["local_weighted_rating"].fillna(0)
-        - 1.10 * df["tourist_penalty"].fillna(0)
-        + 0.30 * df["pct_local_reviews"].fillna(0)
-        - 0.20 * df["pct_tourist_reviews"].fillna(0)
-    )
-
-    # Add small noise so labels aren't perfectly deterministic
-    noise = rng.normal(0, 0.15, size=len(df))
-    hidden = base + noise
-
-    # Convert to binary label using a threshold
-    df["label_safe_pick"] = (hidden >= 2.7).astype(int)
-    return df
-
-
 def train_logistic_model(labeled_df: pd.DataFrame, feature_cols: list[str]):
     """
     Trains a Random Forest classifier and returns (model, auc, report).

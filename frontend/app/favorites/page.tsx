@@ -42,6 +42,7 @@ export default function FavoritesPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [ratings, setRatings] = useState<Record<string, Bucket>>({});
+  const [followedSaveCounts, setFollowedSaveCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetch("/api/ratings").then((r) => r.json()).then((d) => {
@@ -83,6 +84,10 @@ export default function FavoritesPage() {
         if (!res.ok) throw new Error("Failed to fetch");
         const json = await res.json();
         setRestaurants(json.results);
+        fetch(`/api/follow-save-counts?ids=${ids.join(",")}`)
+          .then((r) => r.json())
+          .then((d) => setFollowedSaveCounts(d.counts ?? {}))
+          .catch(() => {});
       } catch {
         setFetchError(true);
       } finally {
@@ -268,6 +273,7 @@ export default function FavoritesPage() {
                 }
                 initialSaved={true}
                 initialBucket={ratings[r.restaurant_id] ?? null}
+                followedSaveCount={followedSaveCounts[r.restaurant_id]}
                 onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: bucket }))}
                 onUnsave={(id) =>
                   setRestaurants((prev) => prev.filter((x) => x.restaurant_id !== id))

@@ -48,6 +48,7 @@ export default function VisitedPage() {
   const [loading, setLoading] = useState(true);
   const [empty, setEmpty] = useState(false);
   const [fetchError, setFetchError] = useState(false);
+  const [followedSaveCounts, setFollowedSaveCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function load() {
@@ -69,6 +70,10 @@ export default function VisitedPage() {
         if (!res.ok) throw new Error("Failed to fetch");
         const json = await res.json();
         setRestaurants(json.results);
+        fetch(`/api/follow-save-counts?ids=${ids.join(",")}`)
+          .then((r) => r.json())
+          .then((d) => setFollowedSaveCounts(d.counts ?? {}))
+          .catch(() => {});
       } catch {
         setFetchError(true);
       } finally {
@@ -258,6 +263,7 @@ export default function VisitedPage() {
                             initialBucket={rating.bucket}
                             ratingScore={rating.score}
                             ratingTags={rating.tags}
+                            followedSaveCount={followedSaveCounts[r.restaurant_id]}
                             onRated={(id, bucket) =>
                               setRatings((prev) => ({ ...prev, [id]: { ...prev[id], bucket } }))
                             }

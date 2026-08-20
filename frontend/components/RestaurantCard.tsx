@@ -42,6 +42,8 @@ export interface RestaurantCardProps {
   ratingTags?: Tag[];
   featured?: boolean;
   saveCount?: number;
+  /** How many people the current user follows have saved this restaurant */
+  followedSaveCount?: number;
   onUnsave?: (id: string) => void;
   onRated?: (id: string, bucket: Bucket) => void;
 }
@@ -66,6 +68,7 @@ export default function RestaurantCard({
   ratingTags,
   featured = false,
   saveCount,
+  followedSaveCount,
   onUnsave,
   onRated,
 }: RestaurantCardProps) {
@@ -236,7 +239,11 @@ export default function RestaurantCard({
           </span>
         </div>
 
-        {saveCount && saveCount > 0 ? (
+        {followedSaveCount && followedSaveCount > 0 ? (
+          <p className="text-xs mt-1.5 font-medium" style={{ color: "var(--accent)" }}>
+            {followedSaveCount === 1 ? "1 person" : `${followedSaveCount} people`} you follow saved this
+          </p>
+        ) : saveCount && saveCount > 0 ? (
           <p className="text-xs mt-1.5" style={{ color: "var(--text-muted)" }}>
             {saveCount} {saveCount === 1 ? "person" : "people"} saved this
           </p>

@@ -197,6 +197,7 @@ function RecommendationsContent() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [ratings, setRatings] = useState<Record<string, Bucket>>({});
   const [saveCounts, setSaveCounts] = useState<Record<string, number>>({});
+  const [followedSaveCounts, setFollowedSaveCounts] = useState<Record<string, number>>({});
   const [filtersExpanded, setFiltersExpanded] = useState(!!(neighborhood || cuisine || price || openNow));
   const activeFilterCount = [neighborhood, cuisine, price, openNow ? "open" : ""].filter(Boolean).length;
   const hasAnyFilter = activeFilterCount > 0 || !!archetype || !!search;
@@ -272,6 +273,10 @@ function RecommendationsContent() {
         fetch(`/api/save-counts?ids=${ids}`)
           .then((r) => r.json())
           .then((d) => setSaveCounts(d.counts ?? {}))
+          .catch(() => {});
+        fetch(`/api/follow-save-counts?ids=${ids}`)
+          .then((r) => r.json())
+          .then((d) => setFollowedSaveCounts(d.counts ?? {}))
           .catch(() => {});
       }
     } catch (err) {
@@ -612,6 +617,7 @@ function RecommendationsContent() {
                     onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: bucket }))}
                     featured={isFeatured}
                     saveCount={saveCounts[r.restaurant_id]}
+                    followedSaveCount={followedSaveCounts[r.restaurant_id]}
                   />
                 </div>
               );
