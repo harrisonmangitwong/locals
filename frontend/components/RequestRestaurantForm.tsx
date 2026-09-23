@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import SignInPrompt from "./SignInPrompt";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 interface RequestRestaurantFormProps {
   triggerLabel?: string;
@@ -17,10 +19,16 @@ export default function RequestRestaurantForm({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useCurrentUser();
+  const [showSignIn, setShowSignIn] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || submitting) return;
+    if (!user) {
+      setShowSignIn(true);
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -95,6 +103,12 @@ export default function RequestRestaurantForm({
           </form>
         </div>
       </div>
+
+      <SignInPrompt
+        open={showSignIn}
+        reason="Sign in to send a restaurant request"
+        onClose={() => setShowSignIn(false)}
+      />
     </div>
   );
 }

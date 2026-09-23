@@ -7,15 +7,18 @@ import { getPhotoUrl } from "@/lib/photoFallback";
 import { ARCHETYPES, isArchetype } from "@/lib/archetypes";
 import { BUCKETS, TAG_LABELS, type Bucket, type Tag } from "@/lib/ranking";
 import RateRestaurantFlow from "./RateRestaurantFlow";
+import SignInPrompt from "./SignInPrompt";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 const BUCKET_LABELS: Record<Bucket, string> = Object.fromEntries(BUCKETS.map((b) => [b.key, b.label])) as Record<Bucket, string>;
 
 async function toggleSaved(id: string, currently: boolean): Promise<boolean> {
-  await fetch("/api/saved", {
+  const res = await fetch("/api/saved", {
     method: currently ? "DELETE" : "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ restaurant_id: id }),
   });
+  if (!res.ok) throw new Error("Failed to update saved state");
   return !currently;
 }
 
@@ -80,6 +83,8 @@ export default function RestaurantCard({
   const [photoUrl, setPhotoUrl] = useState(photoUrlProp || getPhotoUrl(cuisine));
   const [showArchetypeInfo, setShowArchetypeInfo] = useState(false);
   const [showRateFlow, setShowRateFlow] = useState(false);
+  const { user } = useCurrentUser();
+  const [signInReason, setSignInReason] = useState<string | null>(null);
 
   useEffect(() => { setSaved(initialSaved); }, [initialSaved]);
   useEffect(() => { setBucket(initialBucket); }, [initialBucket]);
@@ -165,6 +170,10 @@ export default function RestaurantCard({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (!user) {
+                setSignInReason("Sign in to save restaurants");
+                return;
+              }
               const nowSaved = !saved;
               setSaved(nowSaved);
               if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); setShowSavedMsg(true); }
@@ -268,6 +277,10 @@ export default function RestaurantCard({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (!user) {
+                setSignInReason("Sign in to rate a restaurant");
+                return;
+              }
               setShowRateFlow(true);
             }}
             className={`flex items-center gap-1 text-xs font-medium transition-all duration-150 hover:opacity-80 active:scale-95 min-h-[44px]${ratePop ? " heart-pop" : ""}`}
@@ -305,6 +318,12 @@ export default function RestaurantCard({
           }}
         />
       )}
+
+      <SignInPrompt
+        open={signInReason !== null}
+        reason={signInReason ?? ""}
+        onClose={() => setSignInReason(null)}
+      />
     </div>
   );
 }

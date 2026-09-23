@@ -6,6 +6,11 @@ export function proxy(req: NextRequest) {
   const isPublic =
     pathname === "/" ||
     pathname === "/about" ||
+    pathname === "/recommendations" ||
+    pathname.startsWith("/restaurant/") ||
+    pathname.startsWith("/list/") ||
+    pathname === "/favorites" ||
+    pathname === "/visited" ||
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/auth/");
 

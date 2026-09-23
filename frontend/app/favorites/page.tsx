@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
 import UserMenu from "@/components/UserMenu";
+import LockedState from "@/components/LockedState";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 import type { Bucket } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -39,26 +42,23 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [empty, setEmpty] = useState(false);
   const [fetchError, setFetchError] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user, loading: authLoading } = useCurrentUser();
   const [copied, setCopied] = useState(false);
   const [ratings, setRatings] = useState<Record<string, Bucket>>({});
   const [followedSaveCounts, setFollowedSaveCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
+    if (!user) return;
     fetch("/api/ratings").then((r) => r.json()).then((d) => {
       const map: Record<string, Bucket> = {};
       for (const r of d.ratings ?? []) map[r.restaurant_id] = r.bucket;
       setRatings(map);
     }).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/me").then((r) => r.json()).then((d) => setUserId(d.id ?? null)).catch(() => {});
-  }, []);
+  }, [user]);
 
   function handleShareList() {
-    if (!userId) return;
-    const url = `${window.location.origin}/list/${userId}`;
+    if (!user) return;
+    const url = `${window.location.origin}/list/${user.id}`;
     if (navigator.share) {
       navigator.share({ title: "My NYC picks on Locals", url }).catch(() => {});
     } else {
@@ -70,6 +70,11 @@ export default function FavoritesPage() {
   }
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     async function load() {
       const ids = await getSaved();
       if (ids.length === 0) {
@@ -95,7 +100,7 @@ export default function FavoritesPage() {
       }
     }
     load();
-  }, []);
+  }, [authLoading, user]);
 
   return (
     <div
@@ -159,13 +164,13 @@ export default function FavoritesPage() {
             >
               Saved
             </h1>
-            {!loading && !empty && (
+            {user && !loading && !empty && (
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 {restaurants.length} saved spot{restaurants.length !== 1 ? "s" : ""}
               </p>
             )}
           </div>
-          {!loading && !empty && userId && (
+          {!loading && !empty && user && (
             <button
               onClick={handleShareList}
               className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-75 min-h-[44px]"
@@ -180,8 +185,17 @@ export default function FavoritesPage() {
           )}
         </div>
 
+        {/* Signed out */}
+        {!authLoading && !user && (
+          <LockedState
+            heading="Sign in to see your saved spots"
+            body="Save restaurants as you browse and they'll show up here. Create an account to start your list."
+            cta={<GoogleSignInButton />}
+          />
+        )}
+
         {/* Loading */}
-        {loading && (
+        {(authLoading || user) && loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
@@ -203,7 +217,7 @@ export default function FavoritesPage() {
         )}
 
         {/* Error state */}
-        {!loading && fetchError && (
+        {user && !loading && fetchError && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
               Couldn&apos;t load your saved spots
@@ -221,27 +235,19 @@ export default function FavoritesPage() {
         )}
 
         {/* Empty state */}
-        {!loading && !fetchError && empty && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p
-              className="font-display text-xl mb-2"
-              style={{ color: "var(--text)" }}
-            >
-              Nothing saved yet
-            </p>
-            <p
-              className="text-sm mb-6 max-w-md"
-              style={{ color: "var(--text-muted)" }}
-            >
-              When a spot catches your eye, hit the bookmark. It&apos;ll be waiting here when you&apos;re ready.
-            </p>
-            <Link
-              href="/recommendations"
-              className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-            >
-              Browse restaurants
-            </Link>
-          </div>
+        {user && !loading && !fetchError && empty && (
+          <LockedState
+            heading="Nothing saved yet"
+            body="When a spot catches your eye, hit the bookmark. It'll be waiting here when you're ready."
+            cta={
+              <Link
+                href="/recommendations"
+                className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
+              >
+                Browse restaurants
+              </Link>
+            }
+          />
         )}
 
         {/* Favorites grid */}

@@ -5,8 +5,10 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
+import SignInPrompt from "@/components/SignInPrompt";
 import { getPhotoUrl } from "@/lib/photoFallback";
 import { ARCHETYPES, isArchetype } from "@/lib/archetypes";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -170,6 +172,8 @@ export default function RestaurantPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [showArchetypeInfo, setShowArchetypeInfo] = useState(false);
   const [similar, setSimilar] = useState<SimilarRestaurant[]>([]);
+  const { user } = useCurrentUser();
+  const [signInReason, setSignInReason] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadRestaurant() {
@@ -278,6 +282,10 @@ export default function RestaurantPage() {
           )}
           <button
             onClick={() => {
+              if (!user) {
+                setSignInReason("Sign in to save restaurants");
+                return;
+              }
               const nowSaved = !saved;
               setSaved(nowSaved);
               if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); setShowSavedMsg(true); }
@@ -285,6 +293,8 @@ export default function RestaurantPage() {
                 method: nowSaved ? "POST" : "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ restaurant_id: r.restaurant_id }),
+              }).then((res) => {
+                if (!res.ok) setSaved(saved);
               }).catch(() => setSaved(saved));
             }}
             className={`heart-btn flex items-center justify-center w-11 h-11 rounded-full${savePop ? " heart-pop" : ""}`}
@@ -501,6 +511,12 @@ export default function RestaurantPage() {
         </div>
 
       </main>
+
+      <SignInPrompt
+        open={signInReason !== null}
+        reason={signInReason ?? ""}
+        onClose={() => setSignInReason(null)}
+      />
     </div>
   );
 }

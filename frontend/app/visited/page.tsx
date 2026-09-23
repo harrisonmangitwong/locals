@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
 import UserMenu from "@/components/UserMenu";
+import LockedState from "@/components/LockedState";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 import { BUCKETS, type Bucket, type Tag } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -49,8 +52,14 @@ export default function VisitedPage() {
   const [empty, setEmpty] = useState(false);
   const [fetchError, setFetchError] = useState(false);
   const [followedSaveCounts, setFollowedSaveCounts] = useState<Record<string, number>>({});
+  const { user, loading: authLoading } = useCurrentUser();
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     async function load() {
       const ratingRows = await getRatings();
       if (ratingRows.length === 0) {
@@ -81,7 +90,7 @@ export default function VisitedPage() {
       }
     }
     load();
-  }, []);
+  }, [authLoading, user]);
 
   function bucketGroup(bucket: Bucket): Restaurant[] {
     return restaurants
@@ -150,15 +159,24 @@ export default function VisitedPage() {
           >
             Visited
           </h1>
-          {!loading && !empty && (
+          {user && !loading && !empty && (
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
               {restaurants.length} place{restaurants.length !== 1 ? "s" : ""} you&apos;ve ranked
             </p>
           )}
         </div>
 
+        {/* Signed out */}
+        {!authLoading && !user && (
+          <LockedState
+            heading="Sign in to see your visited spots"
+            body="Rate the places you've been and build your own ranked list. Create an account to start tracking."
+            cta={<GoogleSignInButton />}
+          />
+        )}
+
         {/* Loading */}
-        {loading && (
+        {(authLoading || user) && loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
@@ -180,7 +198,7 @@ export default function VisitedPage() {
         )}
 
         {/* Error state */}
-        {!loading && fetchError && (
+        {user && !loading && fetchError && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
               Couldn&apos;t load your visited spots
@@ -198,27 +216,19 @@ export default function VisitedPage() {
         )}
 
         {/* Empty state */}
-        {!loading && !fetchError && empty && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p
-              className="font-display text-xl mb-2"
-              style={{ color: "var(--text)" }}
-            >
-              Nothing visited yet
-            </p>
-            <p
-              className="text-sm mb-6 max-w-md"
-              style={{ color: "var(--text-muted)" }}
-            >
-              After you&apos;ve been somewhere, tap the heart on the restaurant to rank it. We&apos;ll keep track.
-            </p>
-            <Link
-              href="/recommendations"
-              className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-            >
-              Browse restaurants
-            </Link>
-          </div>
+        {user && !loading && !fetchError && empty && (
+          <LockedState
+            heading="Nothing visited yet"
+            body="After you've been somewhere, tap the heart on the restaurant to rank it. We'll keep track."
+            cta={
+              <Link
+                href="/recommendations"
+                className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
+              >
+                Browse restaurants
+              </Link>
+            }
+          />
         )}
 
         {/* Ranked sections, grouped by bucket */}

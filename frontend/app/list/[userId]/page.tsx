@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
+import SignInPrompt from "@/components/SignInPrompt";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 interface Restaurant {
   restaurant_id: string;
@@ -33,6 +35,8 @@ export default function PublicListPage() {
   const [followStatus, setFollowStatus] = useState<FollowStatus>(null);
   const [followBusy, setFollowBusy] = useState(false);
   const [followedSaveCounts, setFollowedSaveCounts] = useState<Record<string, number>>({});
+  const { user } = useCurrentUser();
+  const [signInReason, setSignInReason] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/public/saved?userId=${userId}`)
@@ -60,6 +64,10 @@ export default function PublicListPage() {
   }, [userId]);
 
   async function handleFollow() {
+    if (!user) {
+      setSignInReason("Sign in to follow people");
+      return;
+    }
     setFollowBusy(true);
     try {
       const res = await fetch("/api/follow", {
@@ -67,6 +75,7 @@ export default function PublicListPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ target_user_id: userId }),
       });
+      if (!res.ok) return;
       const data = await res.json();
       setFollowStatus(data.status ?? "accepted");
     } catch {
@@ -249,6 +258,12 @@ export default function PublicListPage() {
           </>
         )}
       </main>
+
+      <SignInPrompt
+        open={signInReason !== null}
+        reason={signInReason ?? ""}
+        onClose={() => setSignInReason(null)}
+      />
     </div>
   );
 }
