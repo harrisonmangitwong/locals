@@ -1,0 +1,46 @@
+name: Scrape new restaurants
+
+# Data-only: finds and scrapes NYC restaurants not already in data/restaurants.csv,
+# capped by MAX_NEW_PLACES_PER_RUN in scrape_new_restaurants.py to stay within the
+# $5/month Apify budget. Does NOT run the scoring pipeline or touch backend/data.csv --
+# nothing here reaches the live site. Trigger manually first and check the real cost
+# in the Apify dashboard before trusting the schedule unattended.
+
+on:
+  schedule:
+    - cron: "0 13 1 * *" # 1st of each month, 9am ET -- adjust to match your Apify billing cycle
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Scrape new restaurants
+        env:
+          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+        run: python scrape_new_restaurants.py
+
+      - name: Commit and push if data changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/restaurants.csv data/reviews.csv data/raw_apify_data.json
+          if git diff --cached --quiet; then
+            echo "No new restaurants this run."
+          else
+            git commit -m "Scrape: add new NYC restaurants"
+            git push
+          fi

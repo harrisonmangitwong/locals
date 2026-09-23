@@ -3,7 +3,7 @@ import pandas as pd
 from pipeline import (
     compute_reviewer_metrics,
     compute_restaurant_metrics,
-    train_logistic_model,
+    train_random_forest_model,
     score_with_model,
     cluster_restaurants,
 )
@@ -126,7 +126,7 @@ def main():
         return
 
     # B) Train model
-    model, auc, report = train_logistic_model(labeled, feature_cols)
+    model, auc, report = train_random_forest_model(labeled, feature_cols)
     print("\nModel AUC:", round(auc, 3))
     print("\nClassification report:\n", report)
 

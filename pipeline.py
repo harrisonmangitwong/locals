@@ -171,10 +171,9 @@ def compute_restaurant_metrics(
 
     return restaurant_metrics
 
-def train_logistic_model(labeled_df: pd.DataFrame, feature_cols: list[str]):
+def train_random_forest_model(labeled_df: pd.DataFrame, feature_cols: list[str]):
     """
     Trains a Random Forest classifier and returns (model, auc, report).
-    Falls back to logistic regression if RF fails.
     """
     df = labeled_df.copy()
     # Fill NaN features with median (RF handles this better than dropping rows)

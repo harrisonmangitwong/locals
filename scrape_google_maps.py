@@ -177,6 +177,62 @@ def run_scraper(token: str, use_last_run: bool = False) -> list[dict]:
     return items
 
 
+def discover_place_ids(client: ApifyClient, max_per_search: int = 20) -> set[str]:
+    """
+    Cheap pass: search the same SEARCH_TERMS but skip detail pages and
+    reviews, so it only costs the base per-place listing rate. Returns
+    the set of Google placeIds found, for comparing against what's
+    already scraped before paying for the expensive detail+review pass.
+    """
+    actor_input = {
+        "searchStringsArray": SEARCH_TERMS,
+        "locationQuery": LOCATION,
+        "maxCrawledPlacesPerSearch": max_per_search,
+        "language": "en",
+        "searchMatching": "all",
+        "skipClosedPlaces": True,
+        "scrapePlaceDetailPage": False,
+        "maxReviews": 0,
+    }
+    print(f"🔎 Discovering places (no details/reviews, max {max_per_search}/search)...")
+    run = client.actor("compass/crawler-google-places").call(run_input=actor_input)
+    items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
+    place_ids = {item["placeId"] for item in items if item.get("placeId")}
+    print(f"   Found {len(place_ids)} unique places\n")
+    return place_ids
+
+
+def scrape_by_place_ids(
+    client: ApifyClient,
+    place_ids: list[str],
+    max_reviews: int = MAX_REVIEWS_PER_PLACE,
+) -> list[dict]:
+    """
+    Expensive pass: full detail + review scrape, targeted at exact
+    placeIds (not a broad search) — used to fetch only places already
+    confirmed new by discover_place_ids(), so the detail/review cost is
+    never spent re-scraping a restaurant we already have.
+    """
+    actor_input = {
+        "placeIds": place_ids,
+        "scrapePlaceDetailPage": True,
+        "maxReviews": max_reviews,
+        "reviewsSort": "newest",
+        "scrapeReviewsPersonalData": True,
+        "maxImages": 1,
+        "maxQuestions": 0,
+        "scrapeContacts": False,
+        "scrapeDirectories": False,
+        "includeWebResults": False,
+        "scrapeTableReservationProvider": False,
+    }
+    print(f"🚀 Scraping full details + reviews for {len(place_ids)} new place(s)...")
+    run = client.actor("compass/crawler-google-places").call(run_input=actor_input)
+    items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
+    print(f"   Got {len(items)} places\n")
+    return items
+
+
 # ---------------------------------------------------------------------------
 # STEP 2 — Transform Apify output → restaurants.csv
 # ---------------------------------------------------------------------------
@@ -310,7 +366,6 @@ def estimate_reviewer_city(reviewer: dict) -> str:
 def build_reviews_df(items: list[dict]) -> pd.DataFrame:
     """Extract individual reviews from Apify place items."""
     rows = []
-    review_id = 1
 
     for item in items:
         pid = item.get("placeId")
@@ -321,7 +376,7 @@ def build_reviews_df(items: list[dict]) -> pd.DataFrame:
 
         for rev in reviews:
             # Reviewer ID: use Google's reviewer URL or name as a stable key
-            reviewer_url = rev.get("reviewerUrl") or rev.get("name") or f"anon_{review_id}"
+            reviewer_url = rev.get("reviewerUrl") or rev.get("name") or "anon"
             reviewer_id = "u_" + hashlib.md5(reviewer_url.encode()).hexdigest()[:8]
 
             # Rating (1-5 stars)
@@ -339,8 +394,18 @@ def build_reviews_df(items: list[dict]) -> pd.DataFrame:
             else:
                 ts = datetime.today().strftime("%Y-%m-%d")
 
+            # Stable across runs: same restaurant + reviewer + date + rating
+            # + a text fingerprint always hashes to the same review_id, so
+            # save()'s dedup (`known_rids = set(existing_v["review_id"])`)
+            # actually catches repeat reviews across separate scrape runs
+            # (the old sequential rev00001-style ID reset every run, so it
+            # never did).
+            text_fp = (rev.get("text") or "")[:60]
+            review_key = f"{rid}|{reviewer_id}|{ts}|{stars}|{text_fp}"
+            review_id = "rev_" + hashlib.md5(review_key.encode()).hexdigest()[:12]
+
             rows.append({
-                "review_id": f"rev{review_id:05d}",
+                "review_id": review_id,
                 "reviewer_id": reviewer_id,
                 "restaurant_id": rid,
                 "restaurant_city": "NYC",
@@ -349,7 +414,6 @@ def build_reviews_df(items: list[dict]) -> pd.DataFrame:
                 "reviewer_total_reviews": rev.get("reviewerNumberOfReviews") or 0,
                 "is_local_guide": bool(rev.get("isLocalGuide")),
             })
-            review_id += 1
 
     df = pd.DataFrame(rows)
     print(f"📝 Built reviews table: {len(df)} reviews from {df['reviewer_id'].nunique()} unique reviewers")
