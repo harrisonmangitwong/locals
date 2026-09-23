@@ -14,3 +14,9 @@ data/reviews.csv
 data/labeling_sheet.csv
 data/user_labels_raw.csv
 outputs/
+
+# Impeccable design-skill install (local tooling, includes platform binaries)
+.claude/
+.github/agents/
+.github/hooks/
+.github/skills/

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
-import UserMenu from "@/components/UserMenu";
+import SiteHeader from "@/components/SiteHeader";
 import RequestRestaurantForm from "@/components/RequestRestaurantForm";
 import { ARCHETYPES, isArchetype, type Archetype } from "@/lib/archetypes";
 import type { Bucket } from "@/lib/ranking";
@@ -319,33 +319,7 @@ function RecommendationsContent() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
-      {/* Topbar */}
-      <header
-        className="sticky top-0 z-50 flex items-center justify-between px-6 py-4"
-        style={{
-          backgroundColor: "var(--bg)",
-          borderBottom: "1px solid var(--border)",
-        }}
-      >
-        <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>
-          Locals
-        </Link>
-        <nav className="flex items-center gap-3 sm:gap-6">
-          <Link href="/recommendations" className="text-xs sm:text-sm font-medium" style={{ color: "var(--text)" }}>
-            Recs
-          </Link>
-          <Link href="/favorites" className="text-xs sm:text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            Saved
-          </Link>
-          <Link href="/visited" className="text-xs sm:text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            Visited
-          </Link>
-          <Link href="/about" className="hidden sm:inline text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            About
-          </Link>
-          <UserMenu />
-        </nav>
-      </header>
+      <SiteHeader current="recs" />
 
       <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {/* Search + filter toolbar */}

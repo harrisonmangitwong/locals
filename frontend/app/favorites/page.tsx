@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
-import UserMenu from "@/components/UserMenu";
+import SiteHeader from "@/components/SiteHeader";
 import LockedState from "@/components/LockedState";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -107,53 +107,7 @@ export default function FavoritesPage() {
       className="min-h-screen flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      {/* Topbar */}
-      <header
-        className="sticky top-0 z-50 flex items-center justify-between px-6 py-4"
-        style={{
-          backgroundColor: "var(--bg)",
-          borderBottom: "1px solid var(--border)",
-        }}
-      >
-        <Link
-          href="/"
-          className="font-display text-xl"
-          style={{ color: "var(--text)" }}
-        >
-          Locals
-        </Link>
-        <nav className="flex items-center gap-3 sm:gap-6">
-          <Link
-            href="/recommendations"
-            className="text-xs sm:text-sm transition-colors hover:opacity-75"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Recs
-          </Link>
-          <Link
-            href="/favorites"
-            className="text-xs sm:text-sm font-medium"
-            style={{ color: "var(--text)" }}
-          >
-            Saved
-          </Link>
-          <Link
-            href="/visited"
-            className="text-xs sm:text-sm transition-colors hover:opacity-75"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Visited
-          </Link>
-          <Link
-            href="/about"
-            className="hidden sm:inline text-sm transition-colors hover:opacity-75"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            About
-          </Link>
-          <UserMenu />
-        </nav>
-      </header>
+      <SiteHeader current="saved" />
 
       <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-6 flex items-start justify-between gap-4">

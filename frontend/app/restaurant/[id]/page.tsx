@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import UserMenu from "@/components/UserMenu";
+import SiteHeader from "@/components/SiteHeader";
 import SignInPrompt from "@/components/SignInPrompt";
 import { getPhotoUrl } from "@/lib/photoFallback";
 import { ARCHETYPES, isArchetype } from "@/lib/archetypes";
@@ -248,16 +248,7 @@ export default function RestaurantPage() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4" style={{ backgroundColor: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
-        <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>Locals</Link>
-        <nav className="flex items-center gap-3 sm:gap-6">
-          <Link href="/recommendations" className="text-xs sm:text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>Recs</Link>
-          <Link href="/favorites" className="text-xs sm:text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>Saved</Link>
-          <Link href="/visited" className="text-xs sm:text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>Visited</Link>
-          <Link href="/about" className="hidden sm:inline text-sm transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>About</Link>
-          <UserMenu />
-        </nav>
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <div className="relative w-full overflow-hidden" style={{ height: "clamp(260px, 40vw, 420px)" }}>
