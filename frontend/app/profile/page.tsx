@@ -199,9 +199,6 @@ export default function ProfilePage() {
 
             {followCounts && (
               <div>
-                <h2 className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
-                  Network
-                </h2>
                 <div className="flex items-center gap-4 text-sm">
                   <button
                     onClick={() => setListModalType("followers")}
