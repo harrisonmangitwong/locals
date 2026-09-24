@@ -119,7 +119,7 @@ function NeighborhoodPicker({
             <button
               key={n}
               onClick={() => onToggle(n)}
-              className="flex items-center gap-1.5 text-xs font-medium pl-3 pr-2 py-1 rounded-full transition-opacity hover:opacity-75"
+              className="flex items-center gap-1.5 text-xs font-medium pl-3 pr-2 min-h-[44px] rounded-full transition-opacity hover:opacity-75"
               style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent-text)" }}
             >
               {n}
@@ -179,16 +179,22 @@ export default function OnboardingPage() {
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [favorites, setFavorites] = useState<RestaurantResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [justFinished, setJustFinished] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [optionsLoadError, setOptionsLoadError] = useState(false);
   const [showAllCuisines, setShowAllCuisines] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/filters`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load filters");
+        return r.json();
+      })
       .then((d) => {
         setNeighborhoods(d.neighborhoods ?? []);
         setCuisines(d.cuisines ?? []);
       })
-      .catch(() => {})
+      .catch(() => setOptionsLoadError(true))
       .finally(() => setLoadingOptions(false));
   }, []);
 
@@ -200,7 +206,7 @@ export default function OnboardingPage() {
 
   async function savePreferencesIfAny() {
     if (selectedNeighborhoods.length === 0 && selectedCuisines.length === 0 && selectedPrice === null) return;
-    await fetch("/api/profile/preferences", {
+    const res = await fetch("/api/profile/preferences", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -208,23 +214,42 @@ export default function OnboardingPage() {
         cuisines: selectedCuisines,
         price: selectedPrice,
       }),
-    }).catch(() => {});
+    });
+    if (!res.ok) throw new Error("Failed to save preferences");
   }
 
   async function finishOnboarding(favoriteRestaurantIds: string[]) {
     setSubmitting(true);
+    setSaveError(null);
     try {
       await savePreferencesIfAny();
-      await fetch("/api/onboarding/complete", {
+      const res = await fetch("/api/onboarding/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ favoriteRestaurantIds }),
       });
+      if (!res.ok) throw new Error("Failed to complete onboarding");
+      // Brief acknowledgment before handing off -- Finish shouldn't feel like
+      // a form submitting into silence.
+      setJustFinished(true);
+      setTimeout(() => router.push("/recommendations"), 700);
     } catch {
-      // proceed regardless -- onboarding shouldn't be able to trap someone
-    } finally {
-      router.push("/recommendations");
+      setSubmitting(false);
+      setSaveError("Couldn't save your picks, but you can set these anytime from your profile.");
     }
+  }
+
+  // Skip is the unconditional exit -- it never blocks on the network, so a
+  // failed save can never trap someone here. Best-effort save happens
+  // silently in the background; Finish is the path that surfaces failures.
+  function handleSkip() {
+    savePreferencesIfAny().catch(() => {});
+    fetch("/api/onboarding/complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ favoriteRestaurantIds: [] }),
+    }).catch(() => {});
+    router.push("/recommendations");
   }
 
   return (
@@ -235,9 +260,8 @@ export default function OnboardingPage() {
       >
         <span className="font-display text-xl" style={{ color: "var(--text)" }}>Locals</span>
         <button
-          onClick={() => finishOnboarding([])}
-          disabled={submitting}
-          className="text-sm font-medium transition-opacity hover:opacity-75 disabled:opacity-50"
+          onClick={handleSkip}
+          className="inline-flex items-center min-h-[44px] px-2 text-sm font-medium transition-opacity hover:opacity-75"
           style={{ color: "var(--text-muted)" }}
         >
           Skip for now
@@ -251,6 +275,12 @@ export default function OnboardingPage() {
         <p className="text-sm mb-10" style={{ color: "var(--text-muted)" }}>
           This helps us show you better picks right away, instead of waiting for you to save a bunch of restaurants first. All of it is optional, and changeable anytime from your profile.
         </p>
+
+        {optionsLoadError && (
+          <p className="text-sm mb-6" style={{ color: "var(--accent)" }}>
+            Couldn&apos;t load cuisine and neighborhood options — try refreshing the page.
+          </p>
+        )}
 
         <section className="mb-10">
           <h2 className="text-sm font-medium mb-3" style={{ color: "var(--text)" }}>Cuisines you like</h2>
@@ -296,8 +326,11 @@ export default function OnboardingPage() {
           disabled={submitting}
           className="cta-btn px-6 py-3 rounded-full text-sm font-semibold disabled:opacity-50"
         >
-          {submitting ? "Saving…" : "Finish"}
+          {justFinished ? "All set — taking you there…" : submitting ? "Saving…" : "Finish"}
         </button>
+        {saveError && (
+          <p className="text-sm mt-3" style={{ color: "var(--accent)" }}>{saveError}</p>
+        )}
       </main>
     </div>
   );

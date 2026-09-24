@@ -335,6 +335,8 @@ body {
   .menu-drop,
   .reaction-reveal,
   .fade-in,
+  .filter-expand,
+  .filter-expand-inner,
   .price-slider::-webkit-slider-thumb {
     transition: none !important;
     transform: none !important;

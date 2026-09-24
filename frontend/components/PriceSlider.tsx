@@ -4,7 +4,6 @@ import type { CSSProperties } from "react";
 
 const MAX_PRICE = 100;
 const STEP = 5;
-const DEFAULT_PRICE = 40;
 
 interface PriceSliderProps {
   value: number | null;
@@ -12,7 +11,10 @@ interface PriceSliderProps {
 }
 
 export default function PriceSlider({ value, onChange }: PriceSliderProps) {
-  const shown = value ?? DEFAULT_PRICE;
+  // Render at the empty/left end when unset, so the track's fill never implies
+  // a value that was never actually chosen -- the label is the only thing
+  // that should say "unset," not a half-filled track contradicting it.
+  const shown = value ?? 0;
   const pct = Math.min(100, (shown / MAX_PRICE) * 100);
 
   return (

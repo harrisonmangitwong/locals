@@ -63,7 +63,7 @@ export default function RestaurantPicker({ selected, onChange }: RestaurantPicke
             <button
               key={r.restaurant_id}
               onClick={() => removeRestaurant(r.restaurant_id)}
-              className="flex items-center gap-1.5 text-xs font-medium pl-1 pr-2 py-1 rounded-full transition-opacity hover:opacity-75"
+              className="flex items-center gap-1.5 text-xs font-medium pl-1 pr-2 min-h-[44px] rounded-full transition-opacity hover:opacity-75"
               style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent-text)" }}
             >
               <span className="relative w-5 h-5 rounded-full overflow-hidden shrink-0">
