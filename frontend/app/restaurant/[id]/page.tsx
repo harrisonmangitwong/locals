@@ -390,7 +390,7 @@ export default function RestaurantPage() {
                       alt={s.name}
                       fill
                       sizes="(max-width: 640px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="object-cover transition-transform duration-[220ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
                       loading="lazy"
                     />
                     <span className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--accent)", color: "#fff" }}>

@@ -95,7 +95,7 @@ export default function AboutPage() {
           </Link>
           <p className="text-sm mt-4" style={{ color: "var(--text-muted)" }}>
             Know a spot we&apos;re missing?{" "}
-            <Link href="/recommendations" className="font-medium hover:opacity-75" style={{ color: "var(--accent-text)" }}>
+            <Link href="/recommendations" className="font-medium transition-opacity hover:opacity-75" style={{ color: "var(--accent-text)" }}>
               Browse and tell us
             </Link>
             .
