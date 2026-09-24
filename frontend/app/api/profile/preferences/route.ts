@@ -14,6 +14,8 @@ export async function POST(req: NextRequest) {
   const { neighborhoods, cuisines, price } = await req.json();
   const asStringArray = (v: unknown): string[] =>
     Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
+  const asNullableNumber = (v: unknown): number | null =>
+    typeof v === "number" && Number.isFinite(v) ? v : null;
 
   const { error } = await createAdminClient()
     .from("profiles")
@@ -21,7 +23,7 @@ export async function POST(req: NextRequest) {
       user_id: user.id,
       preferred_neighborhoods: asStringArray(neighborhoods),
       preferred_cuisines: asStringArray(cuisines),
-      preferred_price: asStringArray(price),
+      preferred_price: asNullableNumber(price),
       updated_at: new Date().toISOString(),
     });
 

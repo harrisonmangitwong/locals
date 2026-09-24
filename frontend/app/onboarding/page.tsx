@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import RestaurantPicker from "@/components/RestaurantPicker";
 import Chip from "@/components/Chip";
+import PriceSlider from "@/components/PriceSlider";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const PRICE_TIERS = ["$", "$$", "$$$", "$$$$"];
 
 // The 10 neighborhoods with the most restaurants in the live dataset --
 // one-tap picks for people who don't want to type, computed from
@@ -176,7 +176,7 @@ export default function OnboardingPage() {
 
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>([]);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
-  const [selectedPrice, setSelectedPrice] = useState<string[]>([]);
+  const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [favorites, setFavorites] = useState<RestaurantResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [showAllCuisines, setShowAllCuisines] = useState(false);
@@ -199,7 +199,7 @@ export default function OnboardingPage() {
   const cuisineOrigins = cuisines.filter((c) => CUISINE_ORIGINS.has(c));
 
   async function savePreferencesIfAny() {
-    if (selectedNeighborhoods.length === 0 && selectedCuisines.length === 0 && selectedPrice.length === 0) return;
+    if (selectedNeighborhoods.length === 0 && selectedCuisines.length === 0 && selectedPrice === null) return;
     await fetch("/api/profile/preferences", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -269,11 +269,7 @@ export default function OnboardingPage() {
 
         <section className="mb-10">
           <h2 className="text-sm font-medium mb-3" style={{ color: "var(--text)" }}>Typical price range</h2>
-          <div className="flex flex-wrap gap-2">
-            {PRICE_TIERS.map((p) => (
-              <Chip key={p} label={p} active={selectedPrice.includes(p)} onClick={() => toggle(selectedPrice, setSelectedPrice, p)} />
-            ))}
-          </div>
+          <PriceSlider value={selectedPrice} onChange={setSelectedPrice} />
         </section>
 
         <section className="mb-10">

@@ -6,11 +6,11 @@ import SiteHeader from "@/components/SiteHeader";
 import FollowListModal from "@/components/FollowListModal";
 import FollowCounts from "@/components/FollowCounts";
 import Chip from "@/components/Chip";
+import PriceSlider from "@/components/PriceSlider";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { createClient } from "@/lib/supabase/client";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const PRICE_TIERS = ["$", "$$", "$$$", "$$$$"];
 
 interface ProfileData {
   username: string | null;
@@ -20,7 +20,7 @@ interface ProfileData {
   visitedCount: number;
   preferredNeighborhoods: string[];
   preferredCuisines: string[];
-  preferredPrice: string[];
+  preferredPrice: number | null;
 }
 
 export default function ProfilePage() {
@@ -43,7 +43,7 @@ export default function ProfilePage() {
   const [filterOptions, setFilterOptions] = useState<{ neighborhoods: string[]; cuisines: string[] } | null>(null);
   const [draftNeighborhoods, setDraftNeighborhoods] = useState<string[]>([]);
   const [draftCuisines, setDraftCuisines] = useState<string[]>([]);
-  const [draftPrice, setDraftPrice] = useState<string[]>([]);
+  const [draftPrice, setDraftPrice] = useState<number | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -340,12 +340,20 @@ export default function ProfilePage() {
               {!editingPrefs && (
                 <div className="flex flex-col gap-2">
                   {profile.preferredCuisines.length === 0 &&
-                  profile.preferredPrice.length === 0 &&
+                  profile.preferredPrice === null &&
                   profile.preferredNeighborhoods.length === 0 ? (
                     <p className="text-sm" style={{ color: "var(--text-muted)" }}>Not set yet</p>
                   ) : (
                     <div className="flex flex-wrap gap-1.5">
-                      {[...profile.preferredCuisines, ...profile.preferredPrice, ...profile.preferredNeighborhoods].map((v) => (
+                      {profile.preferredPrice !== null && (
+                        <span
+                          className="text-xs font-medium px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+                        >
+                          {profile.preferredPrice >= 100 ? "$100+ per person" : `~$${profile.preferredPrice} per person`}
+                        </span>
+                      )}
+                      {[...profile.preferredCuisines, ...profile.preferredNeighborhoods].map((v) => (
                         <span
                           key={v}
                           className="text-xs font-medium px-2 py-0.5 rounded-full"
@@ -382,11 +390,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <h3 className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Typical price range</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {PRICE_TIERS.map((p) => (
-                        <Chip key={p} label={p} active={draftPrice.includes(p)} onClick={() => toggleDraft(draftPrice, setDraftPrice, p)} />
-                      ))}
-                    </div>
+                    <PriceSlider value={draftPrice} onChange={setDraftPrice} />
                   </div>
                   <div>
                     <h3 className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Neighborhoods</h3>

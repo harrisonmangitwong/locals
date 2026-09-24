@@ -47,7 +47,7 @@ export async function GET() {
     visitedCount: visitedCount ?? 0,
     preferredNeighborhoods: data?.preferred_neighborhoods ?? [],
     preferredCuisines: data?.preferred_cuisines ?? [],
-    preferredPrice: data?.preferred_price ?? [],
+    preferredPrice: data?.preferred_price ?? null,
   });
 }
 

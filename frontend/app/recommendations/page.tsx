@@ -9,6 +9,7 @@ import RequestRestaurantForm from "@/components/RequestRestaurantForm";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import type { Bucket } from "@/lib/ranking";
 import { BOROUGH_NEIGHBORHOODS } from "@/lib/boroughs";
+import { numericPriceToTier } from "@/lib/price";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -173,7 +174,7 @@ function RecommendationsContent() {
         const updates: Record<string, string> = {};
         if (d.preferredNeighborhoods?.[0]) updates.neighborhood = d.preferredNeighborhoods[0];
         if (d.preferredCuisines?.[0]) updates.cuisine = d.preferredCuisines[0];
-        if (d.preferredPrice?.[0]) updates.price = d.preferredPrice[0];
+        if (typeof d.preferredPrice === "number") updates.price = numericPriceToTier(d.preferredPrice);
         if (Object.keys(updates).length > 0) updateParams(updates);
       })
       .catch(() => {});
