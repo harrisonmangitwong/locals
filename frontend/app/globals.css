@@ -250,6 +250,20 @@ body {
   overflow: hidden;
 }
 
+/* ── Chip group collapse ──
+   Unlike .filter-expand, all chips stay in one continuous flex-wrap flow
+   (no separate "visible" vs "hidden" containers), so wrapping never leaves
+   an orphaned chip alone on its own row. Truncation is by height, not item
+   count, so it stays space-efficient at any viewport width. */
+.chip-collapse {
+  max-height: 52px;
+  overflow: hidden;
+  transition: max-height 300ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+.chip-collapse.open {
+  max-height: 640px;
+}
+
 /* ── Hours collapse ── */
 .hours-body {
   display: grid;
@@ -337,6 +351,7 @@ body {
   .fade-in,
   .filter-expand,
   .filter-expand-inner,
+  .chip-collapse,
   .price-slider::-webkit-slider-thumb {
     transition: none !important;
     transform: none !important;

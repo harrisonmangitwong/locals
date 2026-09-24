@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import RestaurantPicker from "@/components/RestaurantPicker";
 import Chip from "@/components/Chip";
@@ -26,7 +26,8 @@ const CUISINE_ORIGINS = new Set([
   "Japanese", "Korean", "Mediterranean", "Mexican", "Middle Eastern", "Peruvian",
   "Thai", "Vietnamese",
 ]);
-const INITIAL_VISIBLE_CHIPS = 8;
+// Matches .chip-collapse's collapsed max-height in globals.css -- one row of chips.
+const CHIP_COLLAPSE_HEIGHT = 52;
 
 interface RestaurantResult {
   restaurant_id: string;
@@ -51,44 +52,47 @@ function ExpandableChipGroup({
   expanded: boolean;
   onToggleExpanded: () => void;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [overflowing, setOverflowing] = useState(false);
+
+  useEffect(() => {
+    function measure() {
+      const el = containerRef.current;
+      if (!el) return;
+      setOverflowing(el.scrollHeight > CHIP_COLLAPSE_HEIGHT + 1);
+    }
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [options]);
+
   if (options.length === 0) return null;
-  const visible = options.slice(0, INITIAL_VISIBLE_CHIPS);
-  const hidden = options.slice(INITIAL_VISIBLE_CHIPS);
 
   return (
     <div className="mb-5 last:mb-0">
       {label && <p className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>{label}</p>}
-      <div className="flex flex-wrap gap-2">
-        {visible.map((o) => (
-          <Chip key={o} label={o} active={selected.includes(o)} onClick={() => onToggle(o)} />
-        ))}
+      <div ref={containerRef} className={`chip-collapse${expanded ? " open" : ""}`}>
+        <div className="flex flex-wrap gap-2">
+          {options.map((o) => (
+            <Chip key={o} label={o} active={selected.includes(o)} onClick={() => onToggle(o)} />
+          ))}
+        </div>
       </div>
-      {hidden.length > 0 && (
-        <>
-          <div className={`filter-expand${expanded ? " open" : ""}`}>
-            <div className="filter-expand-inner">
-              <div className="flex flex-wrap gap-2 pt-2">
-                {hidden.map((o) => (
-                  <Chip key={o} label={o} active={selected.includes(o)} onClick={() => onToggle(o)} />
-                ))}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={onToggleExpanded}
-            className="flex items-center gap-1 text-xs font-medium mt-2 transition-opacity hover:opacity-75"
-            style={{ color: "var(--text-secondary)" }}
+      {overflowing && (
+        <button
+          onClick={onToggleExpanded}
+          className="flex items-center gap-1 text-xs font-medium mt-2 transition-opacity hover:opacity-75"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          {expanded ? "Show fewer" : "Show more"}
+          <svg
+            width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round"
+            style={{ transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}
           >
-            {expanded ? "Show fewer" : `Show ${hidden.length} more`}
-            <svg
-              width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-              strokeLinecap="round" strokeLinejoin="round"
-              style={{ transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-        </>
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
       )}
     </div>
   );
