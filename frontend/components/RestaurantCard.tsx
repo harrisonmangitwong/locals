@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getPhotoUrl } from "@/lib/photoFallback";
-import { ARCHETYPES, isArchetype } from "@/lib/archetypes";
 import { BUCKETS, TAG_LABELS, type Bucket, type Tag } from "@/lib/ranking";
 import RateRestaurantFlow from "./RateRestaurantFlow";
 import SignInPrompt from "./SignInPrompt";
@@ -33,7 +32,6 @@ export interface RestaurantCardProps {
   mapsUrl: string;
   photoUrl?: string;
   price?: string;
-  archetype?: string | null;
   isOpenNow?: boolean | null;
   initialSaved?: boolean;
   initialBucket?: Bucket | null;
@@ -62,7 +60,6 @@ export default function RestaurantCard({
   mapsUrl,
   photoUrl: photoUrlProp,
   price,
-  archetype,
   isOpenNow,
   initialSaved = false,
   initialBucket = null,
@@ -81,7 +78,6 @@ export default function RestaurantCard({
   const [ratePop, setRatePop] = useState(false);
   const [showSavedMsg, setShowSavedMsg] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(photoUrlProp || getPhotoUrl(cuisine));
-  const [showArchetypeInfo, setShowArchetypeInfo] = useState(false);
   const [showRateFlow, setShowRateFlow] = useState(false);
   const { user } = useCurrentUser();
   const [signInReason, setSignInReason] = useState<string | null>(null);
@@ -210,33 +206,6 @@ export default function RestaurantCard({
         <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
           {neighborhood} · {cuisine}{price ? ` · ${price}` : ""}
         </p>
-
-        {isArchetype(archetype) && (
-          <div className="mb-2">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowArchetypeInfo((v) => !v);
-              }}
-              aria-expanded={showArchetypeInfo}
-              className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-opacity hover:opacity-80"
-              style={{ backgroundColor: ARCHETYPES[archetype].bg, color: ARCHETYPES[archetype].color }}
-            >
-              {archetype}
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.7 }}>
-                <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-            </button>
-            <div className={`filter-expand${showArchetypeInfo ? " open" : ""}`}>
-              <div className="filter-expand-inner">
-                <p className="text-xs pt-1.5 leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                  {ARCHETYPES[archetype].description}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="flex items-center gap-1.5 text-sm" aria-label={`Rating: ${rating.toFixed(1)} out of 5 stars`} aria-hidden="false">
           {renderStars()}

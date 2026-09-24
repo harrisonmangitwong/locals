@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ARCHETYPES } from "@/lib/archetypes";
 import SiteHeader from "@/components/SiteHeader";
 
 export default function AboutPage() {
@@ -59,30 +58,6 @@ export default function AboutPage() {
           <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
             The full ranking also weighs review text and location, and refreshes as new data comes in.
           </p>
-        </div>
-
-        {/* What the tags mean */}
-        <div className="mt-10 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
-          <h2 className="font-display text-lg mb-1" style={{ color: "var(--text)" }}>What the tags mean</h2>
-          <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
-            Not every restaurant gets a badge on its card — only the ones that clearly earn one.
-          </p>
-          <div className="space-y-4 rounded-xl p-5" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
-            {(Object.keys(ARCHETYPES) as (keyof typeof ARCHETYPES)[]).map((key, i) => (
-              <div key={key}>
-                {i > 0 && <div className="mb-4" style={{ borderTop: "1px solid var(--border)" }} />}
-                <div className="flex items-start gap-4">
-                  <span
-                    className="text-xs font-medium shrink-0 px-2.5 py-1 rounded-full whitespace-nowrap"
-                    style={{ backgroundColor: ARCHETYPES[key].bg, color: ARCHETYPES[key].color }}
-                  >
-                    {key}
-                  </span>
-                  <div className="text-sm" style={{ color: "var(--text-muted)" }}>{ARCHETYPES[key].description}</div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* CTA */}

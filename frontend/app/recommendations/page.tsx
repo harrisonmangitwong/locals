@@ -6,7 +6,6 @@ import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
 import SiteHeader from "@/components/SiteHeader";
 import RequestRestaurantForm from "@/components/RequestRestaurantForm";
-import { ARCHETYPES, isArchetype, type Archetype } from "@/lib/archetypes";
 import type { Bucket } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -160,7 +159,6 @@ interface Restaurant {
   image_url: string;
   price_midpoint?: number;
   is_open_now?: boolean | null;
-  archetype?: string | null;
   [key: string]: unknown;
 }
 
@@ -183,8 +181,6 @@ function RecommendationsContent() {
   const price = searchParams.get("price") ?? "";
   const search = searchParams.get("search") ?? "";
   const openNow = searchParams.get("open_now") === "1";
-  const archetypeParam = searchParams.get("archetype") ?? "";
-  const archetype: Archetype | "" = isArchetype(archetypeParam) ? archetypeParam : "";
   const page = parseInt(searchParams.get("page") ?? "1", 10);
   const forYou = searchParams.get("for_you") === "1";
 
@@ -201,7 +197,7 @@ function RecommendationsContent() {
   const [followedSaveCounts, setFollowedSaveCounts] = useState<Record<string, number>>({});
   const [filtersExpanded, setFiltersExpanded] = useState(!!(neighborhood || cuisine || price || openNow));
   const activeFilterCount = [neighborhood, cuisine, price, openNow ? "open" : ""].filter(Boolean).length;
-  const hasAnyFilter = activeFilterCount > 0 || !!archetype || !!search;
+  const hasAnyFilter = activeFilterCount > 0 || !!search;
   const forYouEligible = savedIds.size + Object.keys(ratings).length >= 5;
 
   useEffect(() => {
@@ -261,7 +257,6 @@ function RecommendationsContent() {
       if (price) params.set("price", price);
       if (search) params.set("search", search);
       if (openNow) params.set("open_now", "true");
-      if (archetype) params.set("archetype", archetype);
       params.set("page", String(page));
       params.set("page_size", "20");
 
@@ -290,7 +285,7 @@ function RecommendationsContent() {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [neighborhood, cuisine, price, search, openNow, archetype, page, forYou, forYouEligible]);
+  }, [neighborhood, cuisine, price, search, openNow, page, forYou, forYouEligible]);
 
   useEffect(() => {
     fetchData();
@@ -415,28 +410,6 @@ function RecommendationsContent() {
             </button>
           </div>
         )}
-
-        {/* Archetype quick filters */}
-        <div className="flex flex-wrap items-center gap-2 mt-3 mb-1">
-          {(Object.keys(ARCHETYPES) as Archetype[]).map((key) => {
-            const active = archetype === key;
-            return (
-              <button
-                key={key}
-                onClick={() => updateParams({ archetype: active ? "" : key })}
-                aria-pressed={active}
-                className="text-xs font-medium px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-75"
-                style={{
-                  backgroundColor: active ? ARCHETYPES[key].color : ARCHETYPES[key].bg,
-                  color: active ? "#ffffff" : ARCHETYPES[key].color,
-                  border: `1px solid ${active ? ARCHETYPES[key].color : "transparent"}`,
-                }}
-              >
-                {key}
-              </button>
-            );
-          })}
-        </div>
 
         {/* Collapsible filter panel */}
         <div className={`filter-expand${filtersExpanded ? " open" : ""} mb-10`}>
@@ -607,7 +580,6 @@ function RecommendationsContent() {
                     mapsUrl={r.url}
                     photoUrl={r.image_url}
                     price={r.price_midpoint ? (r.price_midpoint <= 15 ? "$" : r.price_midpoint <= 30 ? "$$" : r.price_midpoint <= 60 ? "$$$" : "$$$$") : undefined}
-                    archetype={r.archetype}
                     isOpenNow={r.is_open_now}
                     initialSaved={savedIds.has(r.restaurant_id)}
                     initialBucket={ratings[r.restaurant_id] ?? null}

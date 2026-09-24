@@ -20,7 +20,6 @@ interface Restaurant {
   rank: number;
   image_url: string;
   price_midpoint: number | null;
-  archetype?: string | null;
   [key: string]: unknown;
 }
 
@@ -274,7 +273,6 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
                     rating={r.total_score ?? 0}
                     mapsUrl={r.url}
                     photoUrl={r.image_url}
-                    archetype={r.archetype}
                     followedSaveCount={followedSaveCounts[r.restaurant_id]}
                     price={
                       r.price_midpoint
