@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "frontend/app/globals.css"
+        ],
+        "createdAt": "2026-09-24T16:02:22.192Z",
+        "reason": "Agent: .chip-collapse needs a partial-height reveal (1 row, expand to more); grid-template-rows only supports binary 0<->full collapse, and clip-path would require absolute-positioning the sibling Show-more button -- more complexity than a small, click-triggered, non-perf-critical chip-list animation warrants"
+      }
+    ]
+  }
+}
