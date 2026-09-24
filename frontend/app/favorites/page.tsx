@@ -46,6 +46,7 @@ export default function FavoritesPage() {
   const [copied, setCopied] = useState(false);
   const [ratings, setRatings] = useState<Record<string, Bucket>>({});
   const [followedSaveCounts, setFollowedSaveCounts] = useState<Record<string, number>>({});
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -56,9 +57,14 @@ export default function FavoritesPage() {
     }).catch(() => {});
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/profile").then((r) => r.json()).then((d) => setUsername(d.username ?? null)).catch(() => {});
+  }, [user]);
+
   function handleShareList() {
     if (!user) return;
-    const url = `${window.location.origin}/list/${user.id}`;
+    const url = `${window.location.origin}${username ? `/u/${username}` : `/list/${user.id}`}`;
     if (navigator.share) {
       navigator.share({ title: "My NYC picks on Locals", url }).catch(() => {});
     } else {

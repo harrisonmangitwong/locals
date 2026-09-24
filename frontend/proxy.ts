@@ -9,6 +9,7 @@ export function proxy(req: NextRequest) {
     pathname === "/recommendations" ||
     pathname.startsWith("/restaurant/") ||
     pathname.startsWith("/list/") ||
+    pathname.startsWith("/u/") ||
     pathname === "/favorites" ||
     pathname === "/visited" ||
     pathname.startsWith("/sign-in") ||

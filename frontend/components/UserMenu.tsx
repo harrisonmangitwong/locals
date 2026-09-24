@@ -100,7 +100,28 @@ export default function UserMenu() {
           className="absolute right-0 mt-2 w-56 rounded-xl py-1 z-50 menu-drop"
           style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)" }}
         >
-          <p className="px-4 py-2 text-xs truncate" style={{ color: "var(--text-secondary)" }}>{user.email}</p>
+          <Link
+            href="/profile"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 text-sm transition-opacity hover:opacity-75"
+            style={{ color: "var(--text)" }}
+          >
+            {avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatar} alt="" aria-hidden="true" className="w-6 h-6 rounded-full shrink-0" referrerPolicy="no-referrer" />
+            ) : (
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold shrink-0"
+                style={{ backgroundColor: "var(--accent)", color: "#fff" }}
+              >
+                {name[0]}
+              </div>
+            )}
+            <span className="truncate">View profile</span>
+          </Link>
+
+          <div style={{ borderTop: "1px solid var(--border)" }} className="my-1" />
 
           <Link
             href="/requests"
