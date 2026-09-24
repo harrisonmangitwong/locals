@@ -18,6 +18,7 @@ const RESERVED_USERNAMES = new Set([
   "u",
   "profile",
   "restaurant",
+  "onboarding",
 ]);
 
 export async function GET() {
@@ -28,7 +29,11 @@ export async function GET() {
   const admin = createAdminClient();
 
   const [{ data }, activeLocalIds, { count: savedCount }, { count: visitedCount }] = await Promise.all([
-    admin.from("profiles").select("username, is_private").eq("user_id", user.id).maybeSingle(),
+    admin
+      .from("profiles")
+      .select("username, is_private, preferred_neighborhoods, preferred_cuisines, preferred_price")
+      .eq("user_id", user.id)
+      .maybeSingle(),
     getActiveLocalIds(admin, [user.id]),
     admin.from("saved").select("*", { count: "exact", head: true }).eq("user_id", user.id),
     admin.from("ratings").select("*", { count: "exact", head: true }).eq("user_id", user.id),
@@ -40,6 +45,9 @@ export async function GET() {
     isActiveLocal: activeLocalIds.has(user.id),
     savedCount: savedCount ?? 0,
     visitedCount: visitedCount ?? 0,
+    preferredNeighborhoods: data?.preferred_neighborhoods ?? [],
+    preferredCuisines: data?.preferred_cuisines ?? [],
+    preferredPrice: data?.preferred_price ?? [],
   });
 }
 

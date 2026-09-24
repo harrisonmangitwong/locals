@@ -5,8 +5,12 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import FollowListModal from "@/components/FollowListModal";
 import FollowCounts from "@/components/FollowCounts";
+import Chip from "@/components/Chip";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { createClient } from "@/lib/supabase/client";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const PRICE_TIERS = ["$", "$$", "$$$", "$$$$"];
 
 interface ProfileData {
   username: string | null;
@@ -14,6 +18,9 @@ interface ProfileData {
   isActiveLocal: boolean;
   savedCount: number;
   visitedCount: number;
+  preferredNeighborhoods: string[];
+  preferredCuisines: string[];
+  preferredPrice: string[];
 }
 
 export default function ProfilePage() {
@@ -30,6 +37,13 @@ export default function ProfilePage() {
   const [accountName, setAccountName] = useState<string | null>(null);
   const [accountAvatarUrl, setAccountAvatarUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [editingPrefs, setEditingPrefs] = useState(false);
+  const [savingPrefs, setSavingPrefs] = useState(false);
+  const [prefsError, setPrefsError] = useState<string | null>(null);
+  const [filterOptions, setFilterOptions] = useState<{ neighborhoods: string[]; cuisines: string[] } | null>(null);
+  const [draftNeighborhoods, setDraftNeighborhoods] = useState<string[]>([]);
+  const [draftCuisines, setDraftCuisines] = useState<string[]>([]);
+  const [draftPrice, setDraftPrice] = useState<string[]>([]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -89,6 +103,48 @@ export default function ProfilePage() {
       setError("Something went wrong — try again?");
     } finally {
       setSaving(false);
+    }
+  }
+
+  function startEditingPrefs() {
+    if (!profile) return;
+    setDraftNeighborhoods(profile.preferredNeighborhoods);
+    setDraftCuisines(profile.preferredCuisines);
+    setDraftPrice(profile.preferredPrice);
+    setPrefsError(null);
+    setEditingPrefs(true);
+    if (!filterOptions) {
+      fetch(`${API_BASE}/api/filters`)
+        .then((r) => r.json())
+        .then((d) => setFilterOptions({ neighborhoods: d.neighborhoods ?? [], cuisines: d.cuisines ?? [] }))
+        .catch(() => setFilterOptions({ neighborhoods: [], cuisines: [] }));
+    }
+  }
+
+  function toggleDraft(list: string[], setList: (v: string[]) => void, value: string) {
+    setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
+  }
+
+  async function handleSavePreferences() {
+    setSavingPrefs(true);
+    setPrefsError(null);
+    try {
+      const res = await fetch("/api/profile/preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ neighborhoods: draftNeighborhoods, cuisines: draftCuisines, price: draftPrice }),
+      });
+      if (!res.ok) throw new Error();
+      setProfile((prev) =>
+        prev
+          ? { ...prev, preferredNeighborhoods: draftNeighborhoods, preferredCuisines: draftCuisines, preferredPrice: draftPrice }
+          : prev
+      );
+      setEditingPrefs(false);
+    } catch {
+      setPrefsError("Something went wrong — try again?");
+    } finally {
+      setSavingPrefs(false);
     }
   }
 
@@ -270,6 +326,105 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 </form>
+              )}
+            </div>
+
+            <div>
+              <h2 className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
+                Preferences
+              </h2>
+              <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>
+                Used to seed your recommendations — changeable anytime.
+              </p>
+
+              {!editingPrefs && (
+                <div className="flex flex-col gap-2">
+                  {profile.preferredCuisines.length === 0 &&
+                  profile.preferredPrice.length === 0 &&
+                  profile.preferredNeighborhoods.length === 0 ? (
+                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>Not set yet</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5">
+                      {[...profile.preferredCuisines, ...profile.preferredPrice, ...profile.preferredNeighborhoods].map((v) => (
+                        <span
+                          key={v}
+                          className="text-xs font-medium px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+                        >
+                          {v}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    onClick={startEditingPrefs}
+                    className="text-sm font-medium underline transition-opacity hover:opacity-75 self-start"
+                    style={{ color: "var(--accent-text)" }}
+                  >
+                    Change
+                  </button>
+                </div>
+              )}
+
+              {editingPrefs && (
+                <div className="flex flex-col gap-6 max-w-xl">
+                  <div>
+                    <h3 className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Cuisines</h3>
+                    {!filterOptions ? (
+                      <div className="skeleton h-10 w-full rounded-full" />
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {filterOptions.cuisines.map((c) => (
+                          <Chip key={c} label={c} active={draftCuisines.includes(c)} onClick={() => toggleDraft(draftCuisines, setDraftCuisines, c)} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Typical price range</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {PRICE_TIERS.map((p) => (
+                        <Chip key={p} label={p} active={draftPrice.includes(p)} onClick={() => toggleDraft(draftPrice, setDraftPrice, p)} />
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Neighborhoods</h3>
+                    {!filterOptions ? (
+                      <div className="skeleton h-10 w-full rounded-full" />
+                    ) : (
+                      <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                        {filterOptions.neighborhoods.map((n) => (
+                          <Chip key={n} label={n} active={draftNeighborhoods.includes(n)} onClick={() => toggleDraft(draftNeighborhoods, setDraftNeighborhoods, n)} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {prefsError && (
+                    <p className="text-xs" style={{ color: "var(--accent)" }}>{prefsError}</p>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSavePreferences}
+                      disabled={savingPrefs}
+                      className="cta-btn self-start px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50"
+                    >
+                      {savingPrefs ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingPrefs(false);
+                        setPrefsError(null);
+                      }}
+                      className="text-sm font-medium"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
 

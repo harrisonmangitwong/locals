@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -7,7 +8,7 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/recommendations";
 
   if (code) {
-    const redirectResponse = NextResponse.redirect(`${origin}${next}`);
+    let cookiesToForward: { name: string; value: string; options?: Record<string, unknown> }[] = [];
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,16 +19,30 @@ export async function GET(request: NextRequest) {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              redirectResponse.cookies.set(name, value, options)
-            );
+            cookiesToForward = cookiesToSet;
           },
         },
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Only steer a normal sign-in (no explicit deep-link `next`) toward onboarding --
+      // an explicit next target is respected as-is.
+      let target = next;
+      if (next === "/recommendations" && data.user) {
+        const { data: profile } = await createAdminClient()
+          .from("profiles")
+          .select("onboarding_completed")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+        if (!profile?.onboarding_completed) target = "/onboarding";
+      }
+
+      const redirectResponse = NextResponse.redirect(`${origin}${target}`);
+      cookiesToForward.forEach(({ name, value, options }) =>
+        redirectResponse.cookies.set(name, value, options)
+      );
       return redirectResponse;
     }
   }

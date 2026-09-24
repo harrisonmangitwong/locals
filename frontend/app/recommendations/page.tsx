@@ -6,6 +6,7 @@ import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
 import SiteHeader from "@/components/SiteHeader";
 import RequestRestaurantForm from "@/components/RequestRestaurantForm";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 import type { Bucket } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -199,6 +200,8 @@ function RecommendationsContent() {
   const activeFilterCount = [neighborhood, cuisine, price, openNow ? "open" : ""].filter(Boolean).length;
   const hasAnyFilter = activeFilterCount > 0 || !!search;
   const forYouEligible = savedIds.size + Object.keys(ratings).length >= 5;
+  const { user } = useCurrentUser();
+  const appliedPreferenceDefaults = useRef(false);
 
   useEffect(() => {
     Promise.all([
@@ -211,6 +214,27 @@ function RecommendationsContent() {
       setRatings(map);
     });
   }, []);
+
+  // Fill in blank default filters from declared preferences, once -- never
+  // overrides a filter already present in the URL (e.g. a followed link).
+  useEffect(() => {
+    if (!user || appliedPreferenceDefaults.current) return;
+    if (neighborhood || cuisine || price) {
+      appliedPreferenceDefaults.current = true;
+      return;
+    }
+    appliedPreferenceDefaults.current = true;
+    fetch("/api/profile")
+      .then((r) => r.json())
+      .then((d) => {
+        const updates: Record<string, string> = {};
+        if (d.preferredNeighborhoods?.[0]) updates.neighborhood = d.preferredNeighborhoods[0];
+        if (d.preferredCuisines?.[0]) updates.cuisine = d.preferredCuisines[0];
+        if (d.preferredPrice?.[0]) updates.price = d.preferredPrice[0];
+        if (Object.keys(updates).length > 0) updateParams(updates);
+      })
+      .catch(() => {});
+  }, [user, neighborhood, cuisine, price]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Live search: debounce 350ms, only fire when input differs from current URL param
   useEffect(() => {
