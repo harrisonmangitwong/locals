@@ -5,6 +5,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import FollowListModal from "@/components/FollowListModal";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { createClient } from "@/lib/supabase/client";
 
 interface ProfileData {
   username: string | null;
@@ -22,6 +23,17 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [followCounts, setFollowCounts] = useState<{ followers: number; following: number } | null>(null);
   const [listModalType, setListModalType] = useState<"followers" | "following" | null>(null);
+  const [accountName, setAccountName] = useState<string | null>(null);
+  const [accountAvatarUrl, setAccountAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      const u = data.user;
+      setAccountName(u?.user_metadata?.full_name ?? u?.email ?? null);
+      setAccountAvatarUrl(u?.user_metadata?.avatar_url ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     fetch("/api/profile")
@@ -66,8 +78,7 @@ export default function ProfilePage() {
     }
   }
 
-  const name = user ? "Your account" : "";
-  const avatarLetter = name ? name[0] : "?";
+  const avatarLetter = accountName ? accountName[0].toUpperCase() : "?";
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
@@ -88,12 +99,23 @@ export default function ProfilePage() {
         {!loading && profile && (
           <div className="flex flex-col gap-8">
             <div className="flex items-center gap-4">
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold shrink-0"
-                style={{ backgroundColor: "var(--accent)", color: "#fff" }}
-              >
-                {avatarLetter}
-              </div>
+              {accountAvatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={accountAvatarUrl}
+                  alt=""
+                  aria-hidden="true"
+                  className="w-16 h-16 rounded-full shrink-0"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold shrink-0"
+                  style={{ backgroundColor: "var(--accent)", color: "#fff" }}
+                >
+                  {avatarLetter}
+                </div>
+              )}
               <div className="flex flex-col gap-1">
                 {profile.isActiveLocal && (
                   <span
