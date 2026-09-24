@@ -4,21 +4,21 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import RestaurantPicker from "@/components/RestaurantPicker";
 import Chip from "@/components/Chip";
+import { BOROUGH_NEIGHBORHOODS } from "@/lib/boroughs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const PRICE_TIERS = ["$", "$$", "$$$", "$$$$"];
 
-// The dataset's `cuisine` field mixes national/regional cuisines with meal formats,
-// dish focuses, and dietary tags. Split them into two honest groups instead of one
-// grab-bag list. Anything not in this set (a new scrape category) falls through to
-// "Formats & vibes" rather than being dropped.
+// The dataset's `cuisine` field also includes meal formats (Brunch, Cafe), dish
+// focuses (Pizza, Ramen), and dietary tags (Vegan, Halal) alongside actual
+// cuisines. Onboarding only asks about cuisine proper -- keeping the picker to
+// this set (and dropping the meaningless "Restaurant" value) is what makes it
+// a coherent, answerable question instead of a mixed-bag one.
 const CUISINE_ORIGINS = new Set([
   "American", "Caribbean", "Chinese", "French", "Greek", "Indian", "Italian",
   "Japanese", "Korean", "Mediterranean", "Mexican", "Middle Eastern", "Peruvian",
   "Thai", "Vietnamese",
 ]);
-// Not a real preference signal -- every restaurant is a "Restaurant."
-const EXCLUDED_CUISINE_VALUES = new Set(["Restaurant"]);
 const INITIAL_VISIBLE_CHIPS = 8;
 
 interface RestaurantResult {
@@ -37,7 +37,7 @@ function ExpandableChipGroup({
   expanded,
   onToggleExpanded,
 }: {
-  label: string;
+  label?: string;
   options: string[];
   selected: string[];
   onToggle: (value: string) => void;
@@ -50,7 +50,7 @@ function ExpandableChipGroup({
 
   return (
     <div className="mb-5 last:mb-0">
-      <p className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>{label}</p>
+      {label && <p className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>{label}</p>}
       <div className="flex flex-wrap gap-2">
         {visible.map((o) => (
           <Chip key={o} label={o} active={selected.includes(o)} onClick={() => onToggle(o)} />
@@ -98,8 +98,8 @@ export default function OnboardingPage() {
   const [selectedPrice, setSelectedPrice] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<RestaurantResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [showAllCuisineOrigins, setShowAllCuisineOrigins] = useState(false);
-  const [showAllFormats, setShowAllFormats] = useState(false);
+  const [showAllCuisines, setShowAllCuisines] = useState(false);
+  const [expandedBoroughs, setExpandedBoroughs] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetch(`${API_BASE}/api/filters`)
@@ -116,9 +116,17 @@ export default function OnboardingPage() {
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
   }
 
-  const availableCuisines = cuisines.filter((c) => !EXCLUDED_CUISINE_VALUES.has(c));
-  const cuisineOrigins = availableCuisines.filter((c) => CUISINE_ORIGINS.has(c));
-  const cuisineFormats = availableCuisines.filter((c) => !CUISINE_ORIGINS.has(c));
+  const cuisineOrigins = cuisines.filter((c) => CUISINE_ORIGINS.has(c));
+
+  const neighborhoodSet = new Set(neighborhoods);
+  const boroughGroups = BOROUGH_NEIGHBORHOODS
+    .map((group) => ({
+      borough: group.borough,
+      neighborhoods: group.neighborhoods.filter((n) => neighborhoodSet.has(n)),
+    }))
+    .filter((group) => group.neighborhoods.length > 0);
+  const mappedNeighborhoods = new Set(boroughGroups.flatMap((g) => g.neighborhoods));
+  const unmappedNeighborhoods = neighborhoods.filter((n) => !mappedNeighborhoods.has(n));
 
   async function savePreferencesIfAny() {
     if (selectedNeighborhoods.length === 0 && selectedCuisines.length === 0 && selectedPrice.length === 0) return;
@@ -175,28 +183,17 @@ export default function OnboardingPage() {
         </p>
 
         <section className="mb-10">
-          <h2 className="text-sm font-medium mb-3" style={{ color: "var(--text)" }}>Food you&apos;re into</h2>
+          <h2 className="text-sm font-medium mb-3" style={{ color: "var(--text)" }}>Cuisines you like</h2>
           {loadingOptions ? (
             <div className="skeleton h-10 w-full rounded-full" />
           ) : (
-            <>
-              <ExpandableChipGroup
-                label="Cuisines"
-                options={cuisineOrigins}
-                selected={selectedCuisines}
-                onToggle={(c) => toggle(selectedCuisines, setSelectedCuisines, c)}
-                expanded={showAllCuisineOrigins}
-                onToggleExpanded={() => setShowAllCuisineOrigins((v) => !v)}
-              />
-              <ExpandableChipGroup
-                label="Formats & vibes"
-                options={cuisineFormats}
-                selected={selectedCuisines}
-                onToggle={(c) => toggle(selectedCuisines, setSelectedCuisines, c)}
-                expanded={showAllFormats}
-                onToggleExpanded={() => setShowAllFormats((v) => !v)}
-              />
-            </>
+            <ExpandableChipGroup
+              options={cuisineOrigins}
+              selected={selectedCuisines}
+              onToggle={(c) => toggle(selectedCuisines, setSelectedCuisines, c)}
+              expanded={showAllCuisines}
+              onToggleExpanded={() => setShowAllCuisines((v) => !v)}
+            />
           )}
         </section>
 
@@ -214,11 +211,29 @@ export default function OnboardingPage() {
           {loadingOptions ? (
             <div className="skeleton h-10 w-full rounded-full" />
           ) : (
-            <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-              {neighborhoods.map((n) => (
-                <Chip key={n} label={n} active={selectedNeighborhoods.includes(n)} onClick={() => toggle(selectedNeighborhoods, setSelectedNeighborhoods, n)} />
+            <>
+              {boroughGroups.map((group) => (
+                <ExpandableChipGroup
+                  key={group.borough}
+                  label={group.borough}
+                  options={group.neighborhoods}
+                  selected={selectedNeighborhoods}
+                  onToggle={(n) => toggle(selectedNeighborhoods, setSelectedNeighborhoods, n)}
+                  expanded={!!expandedBoroughs[group.borough]}
+                  onToggleExpanded={() =>
+                    setExpandedBoroughs((prev) => ({ ...prev, [group.borough]: !prev[group.borough] }))
+                  }
+                />
               ))}
-            </div>
+              <ExpandableChipGroup
+                label={unmappedNeighborhoods.length > 0 ? "Other" : undefined}
+                options={unmappedNeighborhoods}
+                selected={selectedNeighborhoods}
+                onToggle={(n) => toggle(selectedNeighborhoods, setSelectedNeighborhoods, n)}
+                expanded={!!expandedBoroughs.Other}
+                onToggleExpanded={() => setExpandedBoroughs((prev) => ({ ...prev, Other: !prev.Other }))}
+              />
+            </>
           )}
         </section>
 
