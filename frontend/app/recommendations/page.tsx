@@ -397,7 +397,19 @@ function RecommendationsContent() {
         {forYouEligible && (
           <div className="flex items-center gap-2 mt-3">
             <button
-              onClick={() => updateParams({ for_you: forYou ? "" : "1" })}
+              onClick={() => updateParams({ for_you: "" })}
+              aria-pressed={!forYou}
+              className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90"
+              style={{
+                backgroundColor: !forYou ? "var(--accent)" : "var(--bg-subtle)",
+                color: !forYou ? "#ffffff" : "var(--text-secondary)",
+                border: `1px solid ${!forYou ? "var(--accent)" : "var(--border)"}`,
+              }}
+            >
+              All restaurants
+            </button>
+            <button
+              onClick={() => updateParams({ for_you: "1" })}
               aria-pressed={forYou}
               className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90"
               style={{
@@ -406,7 +418,7 @@ function RecommendationsContent() {
                 border: `1px solid ${forYou ? "var(--accent)" : "var(--border)"}`,
               }}
             >
-              {forYou ? "For You" : "All restaurants"}
+              For You
             </button>
           </div>
         )}
