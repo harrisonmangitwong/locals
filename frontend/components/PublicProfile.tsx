@@ -5,6 +5,7 @@ import Link from "next/link";
 import RestaurantCard from "@/components/RestaurantCard";
 import SignInPrompt from "@/components/SignInPrompt";
 import FollowListModal from "@/components/FollowListModal";
+import FollowCounts from "@/components/FollowCounts";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 interface Restaurant {
@@ -207,22 +208,11 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
                     {restaurants.length} spot{restaurants.length !== 1 ? "s" : ""} saved on Locals
                   </p>
                   {followCounts && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <button
-                        onClick={() => setListModalType("followers")}
-                        className="transition-opacity hover:opacity-75"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        <strong style={{ color: "var(--text)" }}>{followCounts.followers}</strong> followers
-                      </button>
-                      <button
-                        onClick={() => setListModalType("following")}
-                        className="transition-opacity hover:opacity-75"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        <strong style={{ color: "var(--text)" }}>{followCounts.following}</strong> following
-                      </button>
-                    </div>
+                    <FollowCounts
+                      followers={followCounts.followers}
+                      following={followCounts.following}
+                      onSelect={setListModalType}
+                    />
                   )}
                 </div>
               </div>

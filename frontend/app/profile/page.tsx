@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import FollowListModal from "@/components/FollowListModal";
+import FollowCounts from "@/components/FollowCounts";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { createClient } from "@/lib/supabase/client";
 
@@ -11,12 +12,15 @@ interface ProfileData {
   username: string | null;
   is_private: boolean;
   isActiveLocal: boolean;
+  savedCount: number;
+  visitedCount: number;
 }
 
 export default function ProfilePage() {
   const { user } = useCurrentUser();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [usernameInput, setUsernameInput] = useState("");
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -36,15 +40,24 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
+    loadProfile();
+  }, []);
+
+  function loadProfile() {
+    setLoading(true);
+    setFetchError(false);
     fetch("/api/profile")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load profile");
+        return r.json();
+      })
       .then((d) => {
         setProfile(d);
         setUsernameInput(d.username ?? "");
       })
-      .catch(() => {})
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
-  }, []);
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -96,7 +109,24 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {!loading && profile && (
+        {!loading && fetchError && (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
+              Couldn&apos;t load your profile
+            </p>
+            <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
+              Something went wrong. Try again.
+            </p>
+            <button
+              onClick={loadProfile}
+              className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!loading && !fetchError && profile && (
           <div className="flex flex-col gap-8">
             <div className="flex items-center gap-4">
               {accountAvatarUrl ? (
@@ -117,6 +147,11 @@ export default function ProfilePage() {
                 </div>
               )}
               <div className="flex flex-col gap-1">
+                {accountName && (
+                  <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
+                    Hi, {accountName}
+                  </p>
+                )}
                 {profile.isActiveLocal && (
                   <span
                     className="text-xs font-medium px-2 py-0.5 rounded-full self-start"
@@ -139,8 +174,33 @@ export default function ProfilePage() {
 
             <div>
               <h2 className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
+                On Locals
+              </h2>
+              <div className="flex items-center gap-2 text-sm">
+                <Link
+                  href="/favorites"
+                  className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75"
+                  style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}
+                >
+                  <strong style={{ color: "var(--text)" }}>{profile.savedCount}</strong> saved
+                </Link>
+                <Link
+                  href="/visited"
+                  className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75"
+                  style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}
+                >
+                  <strong style={{ color: "var(--text)" }}>{profile.visitedCount}</strong> visited
+                </Link>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
                 Username
               </h2>
+              <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
+                This becomes your public link — locals-nyc.com/u/{profile.username ?? "yourname"}
+              </p>
               {!editing && (
                 <div className="flex items-center gap-3">
                   <p className="text-sm" style={{ color: profile.username ? "var(--text)" : "var(--text-muted)" }}>
@@ -157,7 +217,9 @@ export default function ProfilePage() {
               )}
               {editing && (
                 <form onSubmit={handleSaveUsername} className="flex flex-col gap-2 max-w-sm">
+                  <label htmlFor="username-input" className="sr-only">Username</label>
                   <input
+                    id="username-input"
                     type="text"
                     value={usernameInput}
                     onChange={(e) => setUsernameInput(e.target.value)}
@@ -199,22 +261,16 @@ export default function ProfilePage() {
 
             {followCounts && (
               <div>
-                <div className="flex items-center gap-4 text-sm">
-                  <button
-                    onClick={() => setListModalType("followers")}
-                    className="transition-opacity hover:opacity-75"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    <strong style={{ color: "var(--text)" }}>{followCounts.followers}</strong> followers
-                  </button>
-                  <button
-                    onClick={() => setListModalType("following")}
-                    className="transition-opacity hover:opacity-75"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    <strong style={{ color: "var(--text)" }}>{followCounts.following}</strong> following
-                  </button>
-                </div>
+                <FollowCounts
+                  followers={followCounts.followers}
+                  following={followCounts.following}
+                  onSelect={setListModalType}
+                />
+                {followCounts.followers === 0 && (
+                  <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+                    You&apos;re one of the first Locals here — invite a friend to follow along.
+                  </p>
+                )}
               </div>
             )}
           </div>

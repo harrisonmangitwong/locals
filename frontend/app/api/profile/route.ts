@@ -27,18 +27,19 @@ export async function GET() {
 
   const admin = createAdminClient();
 
-  const { data } = await admin
-    .from("profiles")
-    .select("username, is_private")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  const activeLocalIds = await getActiveLocalIds(admin, [user.id]);
+  const [{ data }, activeLocalIds, { count: savedCount }, { count: visitedCount }] = await Promise.all([
+    admin.from("profiles").select("username, is_private").eq("user_id", user.id).maybeSingle(),
+    getActiveLocalIds(admin, [user.id]),
+    admin.from("saved").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+    admin.from("ratings").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+  ]);
 
   return NextResponse.json({
     username: data?.username ?? null,
     is_private: data?.is_private ?? false,
     isActiveLocal: activeLocalIds.has(user.id),
+    savedCount: savedCount ?? 0,
+    visitedCount: visitedCount ?? 0,
   });
 }
 
