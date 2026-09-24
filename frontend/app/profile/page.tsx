@@ -29,6 +29,7 @@ export default function ProfilePage() {
   const [listModalType, setListModalType] = useState<"followers" | "following" | null>(null);
   const [accountName, setAccountName] = useState<string | null>(null);
   const [accountAvatarUrl, setAccountAvatarUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -88,6 +89,19 @@ export default function ProfilePage() {
       setError("Something went wrong — try again?");
     } finally {
       setSaving(false);
+    }
+  }
+
+  function handleInvite() {
+    if (!user) return;
+    const url = `${window.location.origin}${profile?.username ? `/u/${profile.username}` : `/list/${user.id}`}`;
+    if (navigator.share) {
+      navigator.share({ title: "Follow me on Locals", url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {});
     }
   }
 
@@ -261,14 +275,27 @@ export default function ProfilePage() {
 
             {followCounts && (
               <div>
-                <FollowCounts
-                  followers={followCounts.followers}
-                  following={followCounts.following}
-                  onSelect={setListModalType}
-                />
+                <div className="flex items-center gap-2 flex-wrap">
+                  <FollowCounts
+                    followers={followCounts.followers}
+                    following={followCounts.following}
+                    onSelect={setListModalType}
+                  />
+                  <button
+                    onClick={handleInvite}
+                    className="flex items-center gap-2 px-4 min-h-[44px] rounded-full text-sm font-medium transition-opacity hover:opacity-75"
+                    style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                    {copied ? "Link copied!" : "Share"}
+                  </button>
+                </div>
                 {followCounts.followers === 0 && (
                   <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
-                    You&apos;re one of the first Locals here — invite a friend to follow along.
+                    You&apos;re one of the first Locals here — share your profile to get followers.
                   </p>
                 )}
               </div>
