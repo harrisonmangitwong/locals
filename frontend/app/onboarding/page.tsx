@@ -4,10 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import RestaurantPicker from "@/components/RestaurantPicker";
 import Chip from "@/components/Chip";
-import { BOROUGH_NEIGHBORHOODS } from "@/lib/boroughs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const PRICE_TIERS = ["$", "$$", "$$$", "$$$$"];
+
+// The 10 neighborhoods with the most restaurants in the live dataset --
+// one-tap picks for people who don't want to type, computed from
+// backend/data.csv rather than guessed.
+const POPULAR_NEIGHBORHOODS = [
+  "West Village", "East Village", "Williamsburg", "Midtown", "Lower East Side",
+  "Flushing", "Greenpoint", "Chelsea", "Murray Hill", "Upper East Side",
+];
 
 // The dataset's `cuisine` field also includes meal formats (Brunch, Cafe), dish
 // focuses (Pizza, Ramen), and dietary tags (Vegan, Halal) alongside actual
@@ -87,6 +94,80 @@ function ExpandableChipGroup({
   );
 }
 
+function NeighborhoodPicker({
+  options,
+  selected,
+  onToggle,
+}: {
+  options: string[];
+  selected: string[];
+  onToggle: (value: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+
+  const popular = POPULAR_NEIGHBORHOODS.filter((n) => options.includes(n));
+  const trimmed = query.trim().toLowerCase();
+  const matches = trimmed
+    ? options.filter((n) => n.toLowerCase().includes(trimmed)).slice(0, 8)
+    : [];
+
+  return (
+    <div>
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          {selected.map((n) => (
+            <button
+              key={n}
+              onClick={() => onToggle(n)}
+              className="flex items-center gap-1.5 text-xs font-medium pl-3 pr-2 py-1 rounded-full transition-opacity hover:opacity-75"
+              style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent-text)" }}
+            >
+              {n}
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <label htmlFor="neighborhood-search" className="sr-only">Search neighborhoods</label>
+      <input
+        id="neighborhood-search"
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search neighborhoods..."
+        className="search-input w-full rounded-lg px-3 py-2.5 text-sm min-h-[44px] mb-3"
+        style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", outline: "none" }}
+      />
+
+      {trimmed ? (
+        matches.length === 0 ? (
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>No matches.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {matches.map((n) => (
+              <Chip key={n} label={n} active={selected.includes(n)} onClick={() => onToggle(n)} />
+            ))}
+          </div>
+        )
+      ) : (
+        popular.length > 0 && (
+          <>
+            <p className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Popular</p>
+            <div className="flex flex-wrap gap-2">
+              {popular.map((n) => (
+                <Chip key={n} label={n} active={selected.includes(n)} onClick={() => onToggle(n)} />
+              ))}
+            </div>
+          </>
+        )
+      )}
+    </div>
+  );
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [neighborhoods, setNeighborhoods] = useState<string[]>([]);
@@ -99,7 +180,6 @@ export default function OnboardingPage() {
   const [favorites, setFavorites] = useState<RestaurantResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [showAllCuisines, setShowAllCuisines] = useState(false);
-  const [expandedBoroughs, setExpandedBoroughs] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetch(`${API_BASE}/api/filters`)
@@ -117,16 +197,6 @@ export default function OnboardingPage() {
   }
 
   const cuisineOrigins = cuisines.filter((c) => CUISINE_ORIGINS.has(c));
-
-  const neighborhoodSet = new Set(neighborhoods);
-  const boroughGroups = BOROUGH_NEIGHBORHOODS
-    .map((group) => ({
-      borough: group.borough,
-      neighborhoods: group.neighborhoods.filter((n) => neighborhoodSet.has(n)),
-    }))
-    .filter((group) => group.neighborhoods.length > 0);
-  const mappedNeighborhoods = new Set(boroughGroups.flatMap((g) => g.neighborhoods));
-  const unmappedNeighborhoods = neighborhoods.filter((n) => !mappedNeighborhoods.has(n));
 
   async function savePreferencesIfAny() {
     if (selectedNeighborhoods.length === 0 && selectedCuisines.length === 0 && selectedPrice.length === 0) return;
@@ -211,29 +281,11 @@ export default function OnboardingPage() {
           {loadingOptions ? (
             <div className="skeleton h-10 w-full rounded-full" />
           ) : (
-            <>
-              {boroughGroups.map((group) => (
-                <ExpandableChipGroup
-                  key={group.borough}
-                  label={group.borough}
-                  options={group.neighborhoods}
-                  selected={selectedNeighborhoods}
-                  onToggle={(n) => toggle(selectedNeighborhoods, setSelectedNeighborhoods, n)}
-                  expanded={!!expandedBoroughs[group.borough]}
-                  onToggleExpanded={() =>
-                    setExpandedBoroughs((prev) => ({ ...prev, [group.borough]: !prev[group.borough] }))
-                  }
-                />
-              ))}
-              <ExpandableChipGroup
-                label={unmappedNeighborhoods.length > 0 ? "Other" : undefined}
-                options={unmappedNeighborhoods}
-                selected={selectedNeighborhoods}
-                onToggle={(n) => toggle(selectedNeighborhoods, setSelectedNeighborhoods, n)}
-                expanded={!!expandedBoroughs.Other}
-                onToggleExpanded={() => setExpandedBoroughs((prev) => ({ ...prev, Other: !prev.Other }))}
-              />
-            </>
+            <NeighborhoodPicker
+              options={neighborhoods}
+              selected={selectedNeighborhoods}
+              onToggle={(n) => toggle(selectedNeighborhoods, setSelectedNeighborhoods, n)}
+            />
           )}
         </section>
 
