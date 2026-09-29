@@ -49,7 +49,7 @@ export default function SiteHeader({ current }: SiteHeaderProps) {
           );
         })}
         {!loading && !user && (
-          <GoogleSignInButton compact label="Sign up" />
+          <GoogleSignInButton compact label="Sign in" />
         )}
         <UserMenu />
       </nav>

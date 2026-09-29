@@ -29,7 +29,7 @@ export default function GoogleSignInButton({
   return (
     <button
       onClick={handleSignIn}
-      className={`flex items-center justify-center rounded-full font-semibold transition-opacity hover:opacity-85 ${compact ? "gap-1.5 px-3 py-1.5 text-xs sm:text-sm" : "gap-3 px-4 py-3 text-sm"} ${className}`}
+      className={`google-signin-btn flex items-center justify-center rounded-full font-semibold ${compact ? "gap-1.5 px-3 py-1.5 text-xs sm:text-sm" : "gap-3 px-4 py-3 text-sm"} ${className}`}
       style={{ backgroundColor: "#ffffff", color: "#3c4043", border: "1px solid #dadce0" }}
     >
       <svg width={iconSize} height={iconSize} viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
