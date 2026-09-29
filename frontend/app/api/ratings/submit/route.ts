@@ -42,5 +42,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to save rating" }, { status: 500 });
   }
 
+  // Saved and visited/rated are mutually exclusive -- marking something
+  // visited always clears any existing bookmark for it.
+  await adminSupabase().from("saved").delete().eq("user_id", user.id).eq("restaurant_id", restaurant_id);
+
   return NextResponse.json({ ok: true });
 }

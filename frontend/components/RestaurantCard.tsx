@@ -151,45 +151,48 @@ export default function RestaurantCard({
             {isOpenNow ? "Open" : "Closed"}
           </span>
         )}
-        {/* Bookmark (save) button + confirmation */}
-        <div className="absolute top-3 right-3 flex items-center gap-1.5">
-          {showSavedMsg && (
-            <span
-              className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
-              onAnimationEnd={() => setShowSavedMsg(false)}
-              style={{ backgroundColor: "var(--success)", color: "#fff", backdropFilter: "blur(4px)" }}
+        {/* Bookmark (save) button + confirmation -- hidden once visited/rated,
+            since saved and visited are mutually exclusive */}
+        {!bucket && (
+          <div className="absolute top-3 right-3 flex items-center gap-1.5">
+            {showSavedMsg && (
+              <span
+                className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
+                onAnimationEnd={() => setShowSavedMsg(false)}
+                style={{ backgroundColor: "var(--success)", color: "#fff", backdropFilter: "blur(4px)" }}
+              >
+                Saved
+              </span>
+            )}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!user) {
+                  setSignInReason("Sign in to save restaurants");
+                  return;
+                }
+                const nowSaved = !saved;
+                setSaved(nowSaved);
+                if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); setShowSavedMsg(true); }
+                if (!nowSaved && onUnsave) onUnsave(restaurantId);
+                toggleSaved(restaurantId, saved).catch(() => setSaved(saved));
+              }}
+              className={`flex items-center justify-center w-11 h-11 rounded-full transition-all duration-150 hover:scale-110 active:scale-95${savePop ? " heart-pop" : ""}`}
+              style={{
+                backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)",
+                backdropFilter: "blur(4px)",
+                cursor: "pointer",
+              }}
+              aria-label={saved ? "Remove from saved" : "Save restaurant"}
             >
-              Saved
-            </span>
-          )}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (!user) {
-                setSignInReason("Sign in to save restaurants");
-                return;
-              }
-              const nowSaved = !saved;
-              setSaved(nowSaved);
-              if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); setShowSavedMsg(true); }
-              if (!nowSaved && onUnsave) onUnsave(restaurantId);
-              toggleSaved(restaurantId, saved).catch(() => setSaved(saved));
-            }}
-            className={`flex items-center justify-center w-11 h-11 rounded-full transition-all duration-150 hover:scale-110 active:scale-95${savePop ? " heart-pop" : ""}`}
-            style={{
-              backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)",
-              backdropFilter: "blur(4px)",
-              cursor: "pointer",
-            }}
-            aria-label={saved ? "Remove from saved" : "Save restaurant"}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
-              fill={saved ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-            </svg>
-          </button>
-        </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
+                fill={saved ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+              </svg>
+            </button>
+          </div>
+        )}
       </Link>
 
       {/* Content */}
@@ -281,6 +284,7 @@ export default function RestaurantCard({
           onComplete={(newBucket) => {
             setShowRateFlow(false);
             setBucket(newBucket);
+            setSaved(false);
             setRatePop(true);
             setTimeout(() => setRatePop(false), 400);
             onRated?.(restaurantId, newBucket);

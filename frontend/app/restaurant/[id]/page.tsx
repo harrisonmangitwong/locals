@@ -8,6 +8,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SignInPrompt from "@/components/SignInPrompt";
 import { getPhotoUrl } from "@/lib/photoFallback";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import type { Bucket } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -165,6 +166,7 @@ export default function RestaurantPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [bucket, setBucket] = useState<Bucket | null>(null);
   const [savePop, setSavePop] = useState(false);
   const [showSavedMsg, setShowSavedMsg] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -205,8 +207,16 @@ export default function RestaurantPage() {
         setSaved((data.ids ?? []).includes(id));
       } catch { /* ignore */ }
     }
+    async function loadRating() {
+      try {
+        const res = await fetch(`/api/ratings?restaurant_id=${id}`);
+        const data = await res.json();
+        setBucket(data.ratings?.[0]?.bucket ?? null);
+      } catch { /* ignore */ }
+    }
     loadRestaurant();
     loadSaved();
+    loadRating();
   }, [id]);
 
   if (loading) {
@@ -257,44 +267,47 @@ export default function RestaurantPage() {
           #{r.rank}
         </span>
 
-        {/* Bookmark + confirmation */}
-        <div className="absolute top-4 right-4 flex items-center gap-1.5">
-          {showSavedMsg && (
-            <span
-              className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
-              onAnimationEnd={() => setShowSavedMsg(false)}
-              style={{ backgroundColor: "var(--success)", color: "#fff", backdropFilter: "blur(4px)" }}
+        {/* Bookmark + confirmation -- hidden once visited/rated, since saved
+            and visited are mutually exclusive */}
+        {!bucket && (
+          <div className="absolute top-4 right-4 flex items-center gap-1.5">
+            {showSavedMsg && (
+              <span
+                className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
+                onAnimationEnd={() => setShowSavedMsg(false)}
+                style={{ backgroundColor: "var(--success)", color: "#fff", backdropFilter: "blur(4px)" }}
+              >
+                Saved
+              </span>
+            )}
+            <button
+              onClick={() => {
+                if (!user) {
+                  setSignInReason("Sign in to save restaurants");
+                  return;
+                }
+                const nowSaved = !saved;
+                setSaved(nowSaved);
+                if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); setShowSavedMsg(true); }
+                fetch("/api/saved", {
+                  method: nowSaved ? "POST" : "DELETE",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ restaurant_id: r.restaurant_id }),
+                }).then((res) => {
+                  if (!res.ok) setSaved(saved);
+                }).catch(() => setSaved(saved));
+              }}
+              className={`heart-btn flex items-center justify-center w-11 h-11 rounded-full${savePop ? " heart-pop" : ""}`}
+              style={{ backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
+              aria-label={saved ? "Remove from saved" : "Save restaurant"}
             >
-              Saved
-            </span>
-          )}
-          <button
-            onClick={() => {
-              if (!user) {
-                setSignInReason("Sign in to save restaurants");
-                return;
-              }
-              const nowSaved = !saved;
-              setSaved(nowSaved);
-              if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); setShowSavedMsg(true); }
-              fetch("/api/saved", {
-                method: nowSaved ? "POST" : "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ restaurant_id: r.restaurant_id }),
-              }).then((res) => {
-                if (!res.ok) setSaved(saved);
-              }).catch(() => setSaved(saved));
-            }}
-            className={`heart-btn flex items-center justify-center w-11 h-11 rounded-full${savePop ? " heart-pop" : ""}`}
-            style={{ backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
-            aria-label={saved ? "Remove from saved" : "Save restaurant"}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
-              fill={saved ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-            </svg>
-          </button>
-        </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
+                fill={saved ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+              </svg>
+            </button>
+          </div>
+        )}
 
         {/* Name + meta overlay */}
         <div className="absolute bottom-0 left-0 right-0 px-5 pb-5" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>

@@ -107,6 +107,12 @@ export default function FavoritesPage() {
     load();
   }, [authLoading, user]);
 
+  // Saved and visited/rated are mutually exclusive -- once something's
+  // rated it drops out of Saved, live (via the ratings map updating from
+  // onRated below) and for any legacy rows from before that rule existed.
+  const visibleRestaurants = restaurants.filter((r) => !ratings[r.restaurant_id]);
+  const showEmptyState = !loading && !fetchError && (empty || visibleRestaurants.length === 0);
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -123,13 +129,13 @@ export default function FavoritesPage() {
             >
               Saved
             </h1>
-            {user && !loading && !empty && (
+            {user && !loading && !showEmptyState && (
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                {restaurants.length} saved spot{restaurants.length !== 1 ? "s" : ""}
+                {visibleRestaurants.length} saved spot{visibleRestaurants.length !== 1 ? "s" : ""}
               </p>
             )}
           </div>
-          {!loading && !empty && user && (
+          {!loading && !showEmptyState && user && (
             <button
               onClick={handleShareList}
               className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-75 min-h-[44px]"
@@ -194,7 +200,7 @@ export default function FavoritesPage() {
         )}
 
         {/* Empty state */}
-        {user && !loading && !fetchError && empty && (
+        {user && showEmptyState && (
           <LockedState
             heading="Nothing saved yet"
             body="When a spot catches your eye, hit the bookmark. It'll be waiting here when you're ready."
@@ -210,9 +216,9 @@ export default function FavoritesPage() {
         )}
 
         {/* Favorites grid */}
-        {!loading && !fetchError && !empty && restaurants.length > 0 && (
+        {!fetchError && !showEmptyState && visibleRestaurants.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {restaurants.map((r, i) => (
+            {visibleRestaurants.map((r, i) => (
               <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
               <RestaurantCard
                 restaurantId={r.restaurant_id}

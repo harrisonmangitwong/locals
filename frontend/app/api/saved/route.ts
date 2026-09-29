@@ -28,6 +28,19 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { restaurant_id } = await req.json();
+
+  // Saved and visited/rated are mutually exclusive -- can't bookmark
+  // something you've already been to and rated.
+  const { data: existingRating } = await adminSupabase()
+    .from("ratings")
+    .select("restaurant_id")
+    .eq("user_id", user.id)
+    .eq("restaurant_id", restaurant_id)
+    .maybeSingle();
+  if (existingRating) {
+    return NextResponse.json({ error: "Already marked as visited" }, { status: 409 });
+  }
+
   await adminSupabase().from("saved").upsert({ user_id: user.id, restaurant_id });
 
   return NextResponse.json({ ok: true });
