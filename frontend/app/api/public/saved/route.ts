@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getActiveLocalIds } from "@/lib/server/activeLocal";
 import { NextRequest, NextResponse } from "next/server";
 
-const API_BASE = process.env.API_URL ?? "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 // GET /api/public/saved?userId=xxx  or  ?username=xxx
 export async function GET(req: NextRequest) {
