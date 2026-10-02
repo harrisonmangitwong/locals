@@ -5,8 +5,10 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import FollowListModal from "@/components/FollowListModal";
 import FollowCounts from "@/components/FollowCounts";
-import Chip from "@/components/Chip";
 import PriceSlider from "@/components/PriceSlider";
+import ExpandableChipGroup from "@/components/ExpandableChipGroup";
+import NeighborhoodPicker from "@/components/NeighborhoodPicker";
+import { CUISINE_ORIGINS } from "@/lib/cuisineOrigins";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { createClient } from "@/lib/supabase/client";
 
@@ -44,6 +46,7 @@ export default function ProfilePage() {
   const [draftNeighborhoods, setDraftNeighborhoods] = useState<string[]>([]);
   const [draftCuisines, setDraftCuisines] = useState<string[]>([]);
   const [draftPrice, setDraftPrice] = useState<number | null>(null);
+  const [showAllCuisines, setShowAllCuisines] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -111,6 +114,7 @@ export default function ProfilePage() {
     setDraftNeighborhoods(profile.preferredNeighborhoods);
     setDraftCuisines(profile.preferredCuisines);
     setDraftPrice(profile.preferredPrice);
+    setShowAllCuisines(false);
     setPrefsError(null);
     setEditingPrefs(true);
     if (!filterOptions) {
@@ -381,11 +385,13 @@ export default function ProfilePage() {
                     {!filterOptions ? (
                       <div className="skeleton h-10 w-full rounded-full" />
                     ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {filterOptions.cuisines.map((c) => (
-                          <Chip key={c} label={c} active={draftCuisines.includes(c)} onClick={() => toggleDraft(draftCuisines, setDraftCuisines, c)} />
-                        ))}
-                      </div>
+                      <ExpandableChipGroup
+                        options={filterOptions.cuisines.filter((c) => CUISINE_ORIGINS.has(c))}
+                        selected={draftCuisines}
+                        onToggle={(c) => toggleDraft(draftCuisines, setDraftCuisines, c)}
+                        expanded={showAllCuisines}
+                        onToggleExpanded={() => setShowAllCuisines((v) => !v)}
+                      />
                     )}
                   </div>
                   <div>
@@ -397,11 +403,11 @@ export default function ProfilePage() {
                     {!filterOptions ? (
                       <div className="skeleton h-10 w-full rounded-full" />
                     ) : (
-                      <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                        {filterOptions.neighborhoods.map((n) => (
-                          <Chip key={n} label={n} active={draftNeighborhoods.includes(n)} onClick={() => toggleDraft(draftNeighborhoods, setDraftNeighborhoods, n)} />
-                        ))}
-                      </div>
+                      <NeighborhoodPicker
+                        options={filterOptions.neighborhoods}
+                        selected={draftNeighborhoods}
+                        onToggle={(n) => toggleDraft(draftNeighborhoods, setDraftNeighborhoods, n)}
+                      />
                     )}
                   </div>
 
