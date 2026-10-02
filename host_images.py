@@ -17,9 +17,13 @@ import time
 import urllib.error
 import urllib.request
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 DATA_CSV = "backend/data.csv"
-SUPABASE_URL = "https://komriwzkkknrsirifgqg.supabase.co"
-SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvbXJpd3pra2tucnNpcmlmZ3FnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTA0NDI0MSwiZXhwIjoyMDk0NjIwMjQxfQ.DgVULmoeKyyIKdnZ-JQNe_4uYHcoKbRAVf4an1ndbdI"
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 BUCKET = "restaurant-photos"
 HEADERS_AUTH = {
     "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
