@@ -14,6 +14,7 @@ import {
   applyComparisonResult,
   type ComparisonState,
 } from "@/lib/ranking";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -52,6 +53,8 @@ export default function RateRestaurantFlow({
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+
+  useBodyScrollLock(true);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -238,7 +241,7 @@ export default function RateRestaurantFlow({
                     key={tag}
                     onClick={() => toggleTag(tag)}
                     aria-pressed={active}
-                    className="text-sm font-medium px-3 py-2 rounded-full transition-all hover:opacity-75"
+                    className="text-sm font-medium px-3 py-2 rounded-full transition-all hover:opacity-75 active:scale-95"
                     style={{
                       backgroundColor: active ? "var(--accent)" : "var(--bg-subtle)",
                       color: active ? "#ffffff" : "var(--text-secondary)",

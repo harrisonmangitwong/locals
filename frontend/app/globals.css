@@ -62,6 +62,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── Native-feeling touch: no gray flash on tap, no double-tap zoom delay ── */
+html {
+  touch-action: manipulation;
+}
+a, button, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ── Card ── */
 .restaurant-card {
   transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);

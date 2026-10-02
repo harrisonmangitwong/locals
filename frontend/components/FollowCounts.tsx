@@ -9,14 +9,14 @@ export default function FollowCounts({ followers, following, onSelect }: FollowC
     <div className="flex items-center gap-2 text-sm">
       <button
         onClick={() => onSelect("followers")}
-        className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75"
+        className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75 active:opacity-60"
         style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}
       >
         <strong style={{ color: "var(--text)" }}>{followers}</strong> followers
       </button>
       <button
         onClick={() => onSelect("following")}
-        className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75"
+        className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75 active:opacity-60"
         style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}
       >
         <strong style={{ color: "var(--text)" }}>{following}</strong> following

@@ -138,7 +138,7 @@ export default function FavoritesPage() {
           {!loading && !showEmptyState && user && (
             <button
               onClick={handleShareList}
-              className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-75 min-h-[44px]"
+              className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-75 active:opacity-60 min-h-[44px]"
               style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -111,7 +111,7 @@ export default function OnboardingPage() {
         <span className="font-display text-xl" style={{ color: "var(--text)" }}>Locals</span>
         <button
           onClick={handleSkip}
-          className="inline-flex items-center min-h-[44px] px-2 text-sm font-medium transition-opacity hover:opacity-75"
+          className="inline-flex items-center min-h-[44px] px-2 text-sm font-medium transition-opacity hover:opacity-75 active:opacity-60"
           style={{ color: "var(--text-muted)" }}
         >
           Skip for now

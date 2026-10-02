@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 interface Person {
   userId: string;
@@ -23,6 +24,8 @@ export default function FollowListModal({ open, onClose, userId, type }: FollowL
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [people, setPeople] = useState<Person[]>([]);
+
+  useBodyScrollLock(open);
 
   useEffect(() => {
     setMounted(true);
@@ -63,7 +66,7 @@ export default function FollowListModal({ open, onClose, userId, type }: FollowL
       onClick={onClose}
     >
       <div
-        className="menu-drop w-full max-w-sm rounded-2xl p-6 max-h-[70vh] overflow-y-auto"
+        className="menu-drop w-full max-w-sm rounded-2xl p-6 max-h-[70vh] overflow-y-auto overscroll-contain"
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "var(--shadow-lg)" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -88,7 +91,7 @@ export default function FollowListModal({ open, onClose, userId, type }: FollowL
                 key={p.userId}
                 href={p.username ? `/u/${p.username}` : `/list/${p.userId}`}
                 onClick={onClose}
-                className="flex items-center gap-3 transition-opacity hover:opacity-75"
+                className="flex items-center gap-3 transition-opacity hover:opacity-75 active:opacity-60"
               >
                 {p.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element

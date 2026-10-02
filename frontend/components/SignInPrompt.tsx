@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import GoogleSignInButton from "./GoogleSignInButton";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 interface SignInPromptProps {
   open: boolean;
@@ -12,6 +13,8 @@ interface SignInPromptProps {
 
 export default function SignInPrompt({ open, onClose, reason }: SignInPromptProps) {
   const [mounted, setMounted] = useState(false);
+
+  useBodyScrollLock(open);
 
   useEffect(() => {
     // Defers portal mounting until after hydration -- document.body isn't
@@ -49,7 +52,7 @@ export default function SignInPrompt({ open, onClose, reason }: SignInPromptProp
         <GoogleSignInButton className="w-full mb-2" />
         <button
           onClick={onClose}
-          className="text-sm font-medium underline"
+          className="text-sm font-medium underline transition-opacity active:opacity-60"
           style={{ color: "var(--text-muted)" }}
         >
           Not now

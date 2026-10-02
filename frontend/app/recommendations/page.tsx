@@ -284,7 +284,7 @@ function RecommendationsContent() {
             />
             <button
               onClick={() => updateParams({ search: searchInput })}
-              className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-75"
+              className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-75 active:opacity-60"
               aria-label="Search"
               style={{ color: "var(--text-muted)" }}
             >
@@ -295,7 +295,7 @@ function RecommendationsContent() {
           </div>
           <button
             onClick={() => setFiltersExpanded((v) => !v)}
-            className="flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-75 whitespace-nowrap min-h-[44px] px-1"
+            className="flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-75 active:opacity-60 whitespace-nowrap min-h-[44px] px-1"
             style={{ color: "var(--text-secondary)" }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -327,7 +327,7 @@ function RecommendationsContent() {
                 setSearchInput("");
                 router.push("/recommendations");
               }}
-              className="text-xs font-medium whitespace-nowrap transition-opacity hover:opacity-75 min-h-[44px] px-2 flex items-center fade-in"
+              className="text-xs font-medium whitespace-nowrap transition-opacity hover:opacity-75 active:opacity-60 min-h-[44px] px-2 flex items-center fade-in"
               style={{ color: "var(--text-muted)" }}
             >
               Clear all
@@ -341,7 +341,7 @@ function RecommendationsContent() {
             <button
               onClick={() => updateParams({ for_you: "" })}
               aria-pressed={!forYou}
-              className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90"
+              className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90 active:opacity-75"
               style={{
                 backgroundColor: !forYou ? "var(--accent)" : "var(--bg-subtle)",
                 color: !forYou ? "#ffffff" : "var(--text-secondary)",
@@ -353,7 +353,7 @@ function RecommendationsContent() {
             <button
               onClick={() => updateParams({ for_you: "1" })}
               aria-pressed={forYou}
-              className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90"
+              className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90 active:opacity-75"
               style={{
                 backgroundColor: forYou ? "var(--accent)" : "var(--bg-subtle)",
                 color: forYou ? "#ffffff" : "var(--text-secondary)",
@@ -508,7 +508,7 @@ function RecommendationsContent() {
             </p>
             <button
               onClick={fetchData}
-              className="mt-3 text-xs font-medium underline transition-opacity hover:opacity-70"
+              className="mt-3 text-xs font-medium underline transition-opacity hover:opacity-70 active:opacity-55"
               style={{ color: "var(--text-muted)" }}
             >
               Try again
@@ -562,7 +562,7 @@ function RecommendationsContent() {
                 setSearchInput("");
                 router.push("/recommendations");
               }}
-              className="text-sm font-medium mb-6 transition-opacity hover:opacity-70"
+              className="text-sm font-medium mb-6 transition-opacity hover:opacity-70 active:opacity-55"
               style={{ color: "var(--accent-text)" }}
             >
               Clear all filters

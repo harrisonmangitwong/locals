@@ -50,7 +50,7 @@ export default function ExpandableChipGroup({
       {overflowing && (
         <button
           onClick={onToggleExpanded}
-          className="flex items-center gap-1 text-xs font-medium mt-2 transition-opacity hover:opacity-75"
+          className="flex items-center gap-1 text-xs font-medium mt-2 transition-opacity hover:opacity-75 active:opacity-60"
           style={{ color: "var(--text-secondary)" }}
         >
           {expanded ? "Show fewer" : "Show more"}

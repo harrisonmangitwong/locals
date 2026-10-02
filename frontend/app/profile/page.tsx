@@ -237,7 +237,7 @@ export default function ProfilePage() {
                 {profile.username && !editing && (
                   <Link
                     href={`/u/${profile.username}`}
-                    className="text-sm transition-opacity hover:opacity-75"
+                    className="text-sm transition-opacity hover:opacity-75 active:opacity-60"
                     style={{ color: "var(--accent-text)" }}
                   >
                     View your public profile →
@@ -253,14 +253,14 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2 text-sm">
                 <Link
                   href="/favorites"
-                  className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75"
+                  className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75 active:opacity-60"
                   style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}
                 >
                   <strong style={{ color: "var(--text)" }}>{profile.savedCount}</strong> saved
                 </Link>
                 <Link
                   href="/visited"
-                  className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75"
+                  className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75 active:opacity-60"
                   style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}
                 >
                   <strong style={{ color: "var(--text)" }}>{profile.visitedCount}</strong> visited
@@ -282,7 +282,7 @@ export default function ProfilePage() {
                   </p>
                   <button
                     onClick={() => setEditing(true)}
-                    className="text-sm font-medium underline transition-opacity hover:opacity-75"
+                    className="text-sm font-medium underline transition-opacity hover:opacity-75 active:opacity-60"
                     style={{ color: "var(--accent-text)" }}
                   >
                     {profile.username ? "Change" : "Choose one"}
@@ -370,7 +370,7 @@ export default function ProfilePage() {
                   )}
                   <button
                     onClick={startEditingPrefs}
-                    className="text-sm font-medium underline transition-opacity hover:opacity-75 self-start"
+                    className="text-sm font-medium underline transition-opacity hover:opacity-75 active:opacity-60 self-start"
                     style={{ color: "var(--accent-text)" }}
                   >
                     Change
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                   />
                   <button
                     onClick={handleInvite}
-                    className="flex items-center gap-2 px-4 min-h-[44px] rounded-full text-sm font-medium transition-opacity hover:opacity-75"
+                    className="flex items-center gap-2 px-4 min-h-[44px] rounded-full text-sm font-medium transition-opacity hover:opacity-75 active:opacity-60"
                     style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

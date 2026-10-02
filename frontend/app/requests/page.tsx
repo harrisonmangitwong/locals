@@ -97,7 +97,7 @@ export default function RequestsPage() {
                 <button
                   onClick={() => respond(r.userId, "decline")}
                   disabled={respondingTo === r.userId}
-                  className="text-xs font-medium px-3 py-2 rounded-full min-h-[44px] transition-opacity hover:opacity-75 disabled:opacity-50"
+                  className="text-xs font-medium px-3 py-2 rounded-full min-h-[44px] transition-opacity hover:opacity-75 active:opacity-60 disabled:opacity-50"
                   style={{ color: "var(--text-secondary)", border: "1px solid var(--border-strong)" }}
                 >
                   Decline
@@ -105,7 +105,7 @@ export default function RequestsPage() {
                 <button
                   onClick={() => respond(r.userId, "accept")}
                   disabled={respondingTo === r.userId}
-                  className="text-xs font-semibold px-3 py-2 rounded-full min-h-[44px] transition-opacity hover:opacity-90 disabled:opacity-50"
+                  className="text-xs font-semibold px-3 py-2 rounded-full min-h-[44px] transition-opacity hover:opacity-90 active:opacity-75 disabled:opacity-50"
                   style={{ backgroundColor: "var(--accent)", color: "#fff" }}
                 >
                   Accept

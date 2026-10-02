@@ -30,7 +30,7 @@ export default function SignInPage() {
 
         <button
           onClick={handleSignIn}
-          className="w-full flex items-center justify-center gap-3 px-6 py-3 rounded-full text-sm font-semibold transition-opacity hover:opacity-80 min-h-[44px]"
+          className="w-full flex items-center justify-center gap-3 px-6 py-3 rounded-full text-sm font-semibold transition-opacity hover:opacity-80 active:opacity-65 min-h-[44px]"
           style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
         >
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">

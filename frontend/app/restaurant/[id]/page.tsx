@@ -104,7 +104,7 @@ function HoursTable({ hoursJson, isOpenNow }: { hoursJson: string; isOpenNow?: b
       <button
         onClick={() => setExpanded(v => !v)}
         aria-expanded={expanded}
-        className="flex items-center gap-2 text-sm font-medium w-full text-left transition-opacity hover:opacity-70"
+        className="flex items-center gap-2 text-sm font-medium w-full text-left transition-opacity hover:opacity-70 active:opacity-55"
         style={{ color: "var(--text)" }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-muted)", flexShrink: 0 }}>
@@ -399,7 +399,7 @@ export default function RestaurantPage() {
           <section style={{ borderTop: "1px solid var(--border)", paddingTop: "2.5rem" }}>
             <button
               onClick={() => setDetailsOpen(v => !v)}
-              className="flex items-center justify-between w-full text-left transition-opacity hover:opacity-70"
+              className="flex items-center justify-between w-full text-left transition-opacity hover:opacity-70 active:opacity-55"
               aria-expanded={detailsOpen}
             >
               <h2 className="font-semibold text-lg" style={{ color: "var(--text)" }}>Address & hours</h2>
@@ -428,7 +428,7 @@ export default function RestaurantPage() {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" style={{ color: "var(--text-muted)" }}>
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.84a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
                       </svg>
-                      <a href={`tel:${r.phone}`} className="transition-opacity hover:opacity-75" style={{ color: "var(--text-secondary)" }}>{r.phone}</a>
+                      <a href={`tel:${r.phone}`} className="transition-opacity hover:opacity-75 active:opacity-60" style={{ color: "var(--text-secondary)" }}>{r.phone}</a>
                     </div>
                   )}
                   {r.website && (
@@ -437,7 +437,7 @@ export default function RestaurantPage() {
                         <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
                       </svg>
-                      <a href={r.website} target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-75 truncate max-w-xs" style={{ color: "var(--accent-text)" }}>
+                      <a href={r.website} target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-75 active:opacity-60 truncate max-w-xs" style={{ color: "var(--accent-text)" }}>
                         {r.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                       </a>
                     </div>
@@ -483,7 +483,7 @@ export default function RestaurantPage() {
             </svg>
             Share
           </button>
-          <Link href="/recommendations" className="text-sm transition-opacity hover:opacity-75 ml-auto min-h-[44px] flex items-center" style={{ color: "var(--text-muted)" }}>
+          <Link href="/recommendations" className="text-sm transition-opacity hover:opacity-75 active:opacity-60 ml-auto min-h-[44px] flex items-center" style={{ color: "var(--text-muted)" }}>
             ← Back
           </Link>
         </div>
