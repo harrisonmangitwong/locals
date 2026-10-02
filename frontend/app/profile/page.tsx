@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import FollowListModal from "@/components/FollowListModal";
@@ -8,11 +8,15 @@ import FollowCounts from "@/components/FollowCounts";
 import PriceSlider from "@/components/PriceSlider";
 import ExpandableChipGroup from "@/components/ExpandableChipGroup";
 import NeighborhoodPicker from "@/components/NeighborhoodPicker";
+import Avatar from "@/components/Avatar";
 import { CUISINE_ORIGINS } from "@/lib/cuisineOrigins";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { createClient } from "@/lib/supabase/client";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const MAX_BIO_LENGTH = 280;
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 interface ProfileData {
   username: string | null;
@@ -23,6 +27,8 @@ interface ProfileData {
   preferredNeighborhoods: string[];
   preferredCuisines: string[];
   preferredPrice: number | null;
+  bio: string | null;
+  avatarUrl: string | null;
 }
 
 export default function ProfilePage() {
@@ -47,6 +53,13 @@ export default function ProfilePage() {
   const [draftCuisines, setDraftCuisines] = useState<string[]>([]);
   const [draftPrice, setDraftPrice] = useState<number | null>(null);
   const [showAllCuisines, setShowAllCuisines] = useState(false);
+  const [editingBio, setEditingBio] = useState(false);
+  const [bioInput, setBioInput] = useState("");
+  const [savingBio, setSavingBio] = useState(false);
+  const [bioError, setBioError] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -109,6 +122,77 @@ export default function ProfilePage() {
     }
   }
 
+  function startEditingBio() {
+    setBioInput(profile?.bio ?? "");
+    setBioError(null);
+    setEditingBio(true);
+  }
+
+  async function handleSaveBio(e: React.FormEvent) {
+    e.preventDefault();
+    setSavingBio(true);
+    setBioError(null);
+    try {
+      const res = await fetch("/api/profile/about", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bio: bioInput.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBioError(data.error ?? "Something went wrong — try again?");
+        return;
+      }
+      setProfile((prev) => (prev ? { ...prev, bio: data.bio } : prev));
+      setEditingBio(false);
+    } catch {
+      setBioError("Something went wrong — try again?");
+    } finally {
+      setSavingBio(false);
+    }
+  }
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user) return;
+    setAvatarError(null);
+
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      setAvatarError("Use a JPEG, PNG, or WebP image.");
+      return;
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      setAvatarError("Image must be under 5MB.");
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const supabase = createClient();
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(`${user.id}/avatar`, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(`${user.id}/avatar`);
+      const avatarUrl = `${urlData.publicUrl}?v=${Date.now()}`;
+
+      const res = await fetch("/api/profile/about", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatar_url: avatarUrl }),
+      });
+      if (!res.ok) throw new Error("Failed to save photo");
+
+      setProfile((prev) => (prev ? { ...prev, avatarUrl } : prev));
+    } catch {
+      setAvatarError("Couldn't upload that photo — try again?");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
   function startEditingPrefs() {
     if (!profile) return;
     setDraftNeighborhoods(profile.preferredNeighborhoods);
@@ -165,8 +249,6 @@ export default function ProfilePage() {
     }
   }
 
-  const avatarLetter = accountName ? accountName[0].toUpperCase() : "?";
-
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader />
@@ -203,23 +285,29 @@ export default function ProfilePage() {
         {!loading && !fetchError && profile && (
           <div className="flex flex-col gap-8">
             <div className="flex items-center gap-4">
-              {accountAvatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={accountAvatarUrl}
-                  alt=""
-                  aria-hidden="true"
-                  className="w-16 h-16 rounded-full shrink-0"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold shrink-0"
-                  style={{ backgroundColor: "var(--accent)", color: "#fff" }}
+              <div className="relative shrink-0">
+                <Avatar url={profile.avatarUrl ?? accountAvatarUrl} name={accountName} size="lg" />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className="absolute -bottom-1 -right-1 flex items-center justify-center w-6 h-6 rounded-full transition-opacity hover:opacity-80 active:opacity-65 disabled:opacity-50"
+                  style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border-strong)", boxShadow: "var(--shadow-sm)" }}
+                  aria-label="Change profile photo"
                 >
-                  {avatarLetter}
-                </div>
-              )}
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-secondary)" }}>
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleAvatarChange}
+                  className="sr-only"
+                />
+              </div>
               <div className="flex flex-col gap-1">
                 {accountName && (
                   <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
@@ -242,6 +330,12 @@ export default function ProfilePage() {
                   >
                     View your public profile →
                   </Link>
+                )}
+                {uploadingAvatar && (
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>Uploading…</p>
+                )}
+                {avatarError && (
+                  <p className="text-xs" style={{ color: "var(--accent)" }}>{avatarError}</p>
                 )}
               </div>
             </div>
@@ -322,6 +416,67 @@ export default function ProfilePage() {
                         setEditing(false);
                         setError(null);
                         setUsernameInput(profile.username ?? "");
+                      }}
+                      className="text-sm font-medium"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+            <div>
+              <h2 className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
+                Bio
+              </h2>
+              {!editingBio && (
+                <div className="flex items-center gap-3">
+                  <p className="text-sm" style={{ color: profile.bio ? "var(--text)" : "var(--text-muted)" }}>
+                    {profile.bio || "Not set yet"}
+                  </p>
+                  <button
+                    onClick={startEditingBio}
+                    className="text-sm font-medium underline transition-opacity hover:opacity-75 active:opacity-60 shrink-0"
+                    style={{ color: "var(--accent-text)" }}
+                  >
+                    {profile.bio ? "Change" : "Add bio"}
+                  </button>
+                </div>
+              )}
+              {editingBio && (
+                <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-sm">
+                  <label htmlFor="bio-input" className="sr-only">Bio</label>
+                  <textarea
+                    id="bio-input"
+                    value={bioInput}
+                    onChange={(e) => setBioInput(e.target.value)}
+                    placeholder="A line about you and how you eat around the city"
+                    maxLength={MAX_BIO_LENGTH}
+                    rows={3}
+                    className="search-input rounded-lg px-3 py-2.5 text-sm resize-none"
+                    style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", outline: "none" }}
+                  />
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                    {bioInput.length}/{MAX_BIO_LENGTH}
+                  </p>
+                  {bioError && (
+                    <p className="text-xs" style={{ color: "var(--accent)" }}>{bioError}</p>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="submit"
+                      disabled={savingBio}
+                      className="cta-btn self-start px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50"
+                    >
+                      {savingBio ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingBio(false);
+                        setBioError(null);
                       }}
                       className="text-sm font-medium"
                       style={{ color: "var(--text-muted)" }}

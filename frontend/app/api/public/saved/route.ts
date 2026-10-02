@@ -27,16 +27,24 @@ export async function GET(req: NextRequest) {
   const { data: userData } = await admin.auth.admin.getUserById(userId);
   const name = userData?.user?.user_metadata?.full_name ?? userData?.user?.email ?? null;
 
+  const { data: aboutRow } = await admin
+    .from("profiles")
+    .select("bio, avatar_url")
+    .eq("user_id", userId)
+    .maybeSingle();
+  const bio = aboutRow?.bio ?? null;
+  const avatarUrl = aboutRow?.avatar_url ?? null;
+
   const { data: savedRows } = await admin
     .from("saved")
     .select("restaurant_id")
     .eq("user_id", userId);
 
   const ids = (savedRows ?? []).map((r) => r.restaurant_id);
-  if (ids.length === 0) return NextResponse.json({ results: [], name, userId });
+  if (ids.length === 0) return NextResponse.json({ results: [], name, userId, bio, avatarUrl });
 
   const res = await fetch(`${API_BASE}/api/restaurants/batch?ids=${ids.join(",")}`);
-  if (!res.ok) return NextResponse.json({ results: [], name, userId });
+  if (!res.ok) return NextResponse.json({ results: [], name, userId, bio, avatarUrl });
   const json = await res.json();
 
   const activeLocalIds = await getActiveLocalIds(admin, [userId]);
@@ -45,6 +53,8 @@ export async function GET(req: NextRequest) {
     results: json.results ?? [],
     name,
     userId,
+    bio,
+    avatarUrl,
     isActiveLocal: activeLocalIds.has(userId),
   });
 }

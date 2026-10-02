@@ -6,6 +6,7 @@ import RestaurantCard from "@/components/RestaurantCard";
 import SignInPrompt from "@/components/SignInPrompt";
 import FollowListModal from "@/components/FollowListModal";
 import FollowCounts from "@/components/FollowCounts";
+import Avatar from "@/components/Avatar";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 interface Restaurant {
@@ -34,6 +35,8 @@ interface PublicProfileProps {
 export default function PublicProfile({ userId: userIdProp, username }: PublicProfileProps) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [ownerName, setOwnerName] = useState<string | null>(null);
+  const [ownerBio, setOwnerBio] = useState<string | null>(null);
+  const [ownerAvatarUrl, setOwnerAvatarUrl] = useState<string | null>(null);
   const [ownerIsActiveLocal, setOwnerIsActiveLocal] = useState(false);
   const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +62,8 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
         setResolvedUserId(d.userId);
         setRestaurants(d.results ?? []);
         setOwnerName(d.name ?? null);
+        setOwnerBio(d.bio ?? null);
+        setOwnerAvatarUrl(d.avatarUrl ?? null);
         setOwnerIsActiveLocal(!!d.isActiveLocal);
         if (!d.results || d.results.length === 0) setNotFound(true);
 
@@ -188,31 +193,39 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
         {!loading && !notFound && resolvedUserId && (
           <>
             <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h1 className="font-display text-3xl line-clamp-2" style={{ color: "var(--text)" }}>
-                    {ownerName ? `${ownerName}'s picks` : "Saved restaurants"}
-                  </h1>
-                  {ownerIsActiveLocal && (
-                    <span
-                      className="text-xs font-medium px-2 py-0.5 rounded-full shrink-0"
-                      style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
-                    >
-                      Active locally
-                    </span>
+              <div className="flex items-start gap-4">
+                <Avatar url={ownerAvatarUrl} name={ownerName} size="lg" />
+                <div>
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <h1 className="font-display text-3xl line-clamp-2" style={{ color: "var(--text)" }}>
+                      {ownerName ? `${ownerName}'s picks` : "Saved restaurants"}
+                    </h1>
+                    {ownerIsActiveLocal && (
+                      <span
+                        className="text-xs font-medium px-2 py-0.5 rounded-full shrink-0"
+                        style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+                      >
+                        Active locally
+                      </span>
+                    )}
+                  </div>
+                  {ownerBio && (
+                    <p className="text-sm mb-2 max-w-md" style={{ color: "var(--text-secondary)" }}>
+                      {ownerBio}
+                    </p>
                   )}
-                </div>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                    {restaurants.length} spot{restaurants.length !== 1 ? "s" : ""} saved on Locals
-                  </p>
-                  {followCounts && (
-                    <FollowCounts
-                      followers={followCounts.followers}
-                      following={followCounts.following}
-                      onSelect={setListModalType}
-                    />
-                  )}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                      {restaurants.length} spot{restaurants.length !== 1 ? "s" : ""} saved on Locals
+                    </p>
+                    {followCounts && (
+                      <FollowCounts
+                        followers={followCounts.followers}
+                        following={followCounts.following}
+                        onSelect={setListModalType}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex-shrink-0 flex items-center gap-2">

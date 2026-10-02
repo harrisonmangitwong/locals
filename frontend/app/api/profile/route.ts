@@ -31,7 +31,7 @@ export async function GET() {
   const [{ data }, activeLocalIds, { count: savedCount }, { count: visitedCount }] = await Promise.all([
     admin
       .from("profiles")
-      .select("username, is_private, preferred_neighborhoods, preferred_cuisines, preferred_price")
+      .select("username, is_private, preferred_neighborhoods, preferred_cuisines, preferred_price, bio, avatar_url")
       .eq("user_id", user.id)
       .maybeSingle(),
     getActiveLocalIds(admin, [user.id]),
@@ -48,6 +48,8 @@ export async function GET() {
     preferredNeighborhoods: data?.preferred_neighborhoods ?? [],
     preferredCuisines: data?.preferred_cuisines ?? [],
     preferredPrice: data?.preferred_price ?? null,
+    bio: data?.bio ?? null,
+    avatarUrl: data?.avatar_url ?? null,
   });
 }
 
