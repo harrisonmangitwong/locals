@@ -193,7 +193,7 @@ export default function RateRestaurantFlow({
 
         {step === "comparison" && compareTarget && (
           <>
-            <h2 className="font-display text-lg mb-4 text-center" style={{ color: "var(--text)" }}>
+            <h2 className="font-semibold text-lg mb-4 text-center" style={{ color: "var(--text)" }}>
               Which did you like more?
             </h2>
             <div className="grid grid-cols-2 gap-3">
@@ -227,7 +227,7 @@ export default function RateRestaurantFlow({
 
         {(step === "tags" || step === "submitting") && bucket && (
           <>
-            <h2 className="font-display text-lg mb-4" style={{ color: "var(--text)" }}>
+            <h2 className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>
               {BUCKETS.find((b) => b.key === bucket)!.prompt}
             </h2>
             <div className="flex flex-wrap gap-2 mb-5">

@@ -328,7 +328,7 @@ export default function RestaurantPage() {
               <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(0,0,0,0.3)", color: "rgba(255,255,255,0.45)" }}>Closed</span>
             )}
           </div>
-          <h1 className="font-display text-2xl sm:text-3xl leading-tight" style={{ color: "#ffffff" }}>{r.name}</h1>
+          <h1 className="font-display text-2xl sm:text-3xl leading-tight line-clamp-2" style={{ color: "#ffffff" }}>{r.name}</h1>
           <div className="flex items-center gap-1.5 mt-1.5">
             <MiniStars rating={r.total_score} />
             <span className="text-sm" style={{ color: "rgba(255,255,255,0.75)" }}>{r.total_score.toFixed(1)}</span>
@@ -342,7 +342,7 @@ export default function RestaurantPage() {
 
         {/* The local take */}
         <section>
-          <h2 className="font-display text-xl mb-3" style={{ color: "var(--text)" }}>The local take</h2>
+          <h2 className="font-semibold text-lg mb-3" style={{ color: "var(--text)" }}>The local take</h2>
 
           <p className="text-base leading-relaxed mb-5" style={{ color: "var(--text)" }}>{verdictText}</p>
           <div className="flex items-center gap-3">
@@ -365,7 +365,7 @@ export default function RestaurantPage() {
         {/* More in neighborhood */}
         {similar.length > 0 && (
           <section style={{ borderTop: "1px solid var(--border)", paddingTop: "2.5rem" }}>
-            <h2 className="font-display text-xl mb-5" style={{ color: "var(--text)" }}>
+            <h2 className="font-semibold text-lg mb-5" style={{ color: "var(--text)" }}>
               More in {r.neighborhood}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -402,7 +402,7 @@ export default function RestaurantPage() {
               className="flex items-center justify-between w-full text-left transition-opacity hover:opacity-70"
               aria-expanded={detailsOpen}
             >
-              <h2 className="font-display text-xl" style={{ color: "var(--text)" }}>Address & hours</h2>
+              <h2 className="font-semibold text-lg" style={{ color: "var(--text)" }}>Address & hours</h2>
               <svg
                 width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
                 strokeLinecap="round" strokeLinejoin="round"

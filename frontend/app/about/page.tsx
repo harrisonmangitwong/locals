@@ -28,11 +28,11 @@ export default function AboutPage() {
 
         {/* How the score works — for the curious */}
         <div className="mt-10 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
-          <h2 className="font-display text-lg mb-1" style={{ color: "var(--text)" }}>How the score works</h2>
+          <h2 className="font-semibold text-lg mb-1" style={{ color: "var(--text)" }}>How the score works</h2>
           <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>Here&apos;s how the ratings work, for the curious.</p>
           <div className="space-y-4 rounded-xl p-5 mb-6" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
             <div className="flex items-start gap-4">
-              <span className="font-display text-xl leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Most</span>
+              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Most</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Geographic concentration</div>
                 <div className="text-sm" style={{ color: "var(--text-muted)" }}>What share of their reviews are for NYC restaurants? Someone who&apos;s reviewed 200 spots worldwide but only 1 in NYC is probably a tourist.</div>
@@ -40,7 +40,7 @@ export default function AboutPage() {
             </div>
             <div style={{ borderTop: "1px solid var(--border)" }} />
             <div className="flex items-start gap-4">
-              <span className="font-display text-xl leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Some</span>
+              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Some</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Review stability</div>
                 <div className="text-sm" style={{ color: "var(--text-muted)" }}>Have they been reviewing NYC spots consistently over time, or just in one burst during a trip?</div>
@@ -48,7 +48,7 @@ export default function AboutPage() {
             </div>
             <div style={{ borderTop: "1px solid var(--border)" }} />
             <div className="flex items-start gap-4">
-              <span className="font-display text-xl leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Minor</span>
+              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Minor</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Local Guide status</div>
                 <div className="text-sm" style={{ color: "var(--text-muted)" }}>Google-verified Local Guides get a small boost.</div>

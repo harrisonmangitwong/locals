@@ -206,7 +206,7 @@ export default function RestaurantCard({
           </h3>
         </Link>
 
-        <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
+        <p className="text-xs mb-2 truncate" style={{ color: "var(--text-secondary)" }}>
           {neighborhood} · {cuisine}{price ? ` · ${price}` : ""}
         </p>
 

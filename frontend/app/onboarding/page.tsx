@@ -122,7 +122,7 @@ export default function OnboardingPage() {
         <h1 className="font-display text-3xl mb-2" style={{ color: "var(--text)" }}>
           A few quick things
         </h1>
-        <p className="text-sm mb-10" style={{ color: "var(--text-muted)" }}>
+        <p className="text-base mb-10" style={{ color: "var(--text-muted)" }}>
           This helps us show you better picks right away, instead of waiting for you to save a bunch of restaurants first. All of it is optional, and changeable anytime from your profile.
         </p>
 

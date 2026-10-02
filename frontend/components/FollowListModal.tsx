@@ -67,7 +67,7 @@ export default function FollowListModal({ open, onClose, userId, type }: FollowL
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "var(--shadow-lg)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-display text-xl mb-4" style={{ color: "var(--text)" }}>
+        <h2 className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>
           {type === "followers" ? "Followers" : "Following"}
         </h2>
 

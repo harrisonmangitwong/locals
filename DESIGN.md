@@ -22,7 +22,7 @@ colors:
 typography:
   display:
     fontFamily: "DM Serif Display, Georgia, serif"
-    fontSize: "clamp(1.5rem, 4vw, 2.25rem)"
+    fontSize: "1.875rem"
     fontWeight: 400
     lineHeight: 1.15
     letterSpacing: "normal"
@@ -115,13 +115,13 @@ Warm and sun-worn — terracotta, cream, and a muted gold accent — deliberatel
 **Character:** An editorial pairing — a classic serif for moments that carry the brand's voice (page titles, the restaurant name on its detail page, "How was [restaurant]?") against a clean humanist sans for everything functional. The serif is never used for body copy or UI chrome; the sans never carries a headline.
 
 ### Hierarchy
-- **Display** (400, `clamp(1.5rem, 4vw, 2.25rem)`, 1.15 line-height, DM Serif Display): page titles and restaurant names — `.font-display`, applied via `text-xl` through `text-4xl` depending on context.
+- **Display** (400, 1.15 line-height, DM Serif Display): a page's own title, a restaurant's own name (including a modal title built directly around it, like "How was [restaurant]?"), or a status headline for an empty, zero-result, or error state ("Nothing saved yet," "No matches found," "Couldn't load your profile") — `.font-display`, sized per context rather than one fixed value: `~1.875rem` (`text-3xl`) is the ordinary baseline for a page title or restaurant name; the homepage hero is a deliberate, singular exception that scales up to `text-7xl` to carry the app's one marketing moment, and the sticky-header wordmark sits smaller at `text-xl`. A generic modal title, an in-page section heading, and metadata never use Display, regardless of size — see the Named Rule below.
 - **Title** (600–700, 1.125–1.25rem): section headings, modal titles, card names.
 - **Body** (400–500, 1rem, 1.5 line-height): descriptions, review text, form copy.
 - **Label** (500–600, 0.75–0.875rem): nav links, buttons, metadata, badges — the workhorse size for most of the interface, since the app is dense with small pieces of trust signal (ratings, counts, tags).
 
 ### Named Rules
-**The One Serif Moment Rule.** DM Serif Display appears only where the brand is speaking directly — a page title or a restaurant's own name — never in a button, a metadata line, or a form field. Its rarity is what keeps it feeling authored rather than decorative.
+**The One Serif Moment Rule.** DM Serif Display appears only where the brand is speaking directly — a page's own title, a restaurant's own name (a modal title that itself names the restaurant, like "How was [restaurant]?", counts), or a status headline for an empty, zero-result, or error state — never in a button, a metadata line, a *generic* modal title, a form field, or an in-page section heading. Its rarity is what keeps it feeling authored rather than decorative; a page using it more than once or twice has stopped following the rule, not found a new exception to it.
 
 ## Layout
 

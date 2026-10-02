@@ -190,7 +190,7 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h1 className="font-display text-3xl" style={{ color: "var(--text)" }}>
+                  <h1 className="font-display text-3xl line-clamp-2" style={{ color: "var(--text)" }}>
                     {ownerName ? `${ownerName}'s picks` : "Saved restaurants"}
                   </h1>
                   {ownerIsActiveLocal && (

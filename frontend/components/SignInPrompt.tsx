@@ -43,7 +43,7 @@ export default function SignInPrompt({ open, onClose, reason }: SignInPromptProp
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "var(--shadow-lg)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-display text-xl mb-5" style={{ color: "var(--text)" }}>
+        <h2 className="font-semibold text-lg mb-5" style={{ color: "var(--text)" }}>
           {reason}
         </h2>
         <GoogleSignInButton className="w-full mb-2" />
