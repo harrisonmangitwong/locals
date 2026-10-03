@@ -263,7 +263,11 @@ export default function RestaurantPage() {
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.1) 75%, transparent 100%)" }} />
 
         {/* Rank badge */}
-        <span className="absolute top-4 left-4 text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
+        <span
+          className="absolute top-4 left-4 text-xs font-bold px-2.5 py-1 rounded-full"
+          style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
+          title="Overall rank across all NYC restaurants, weighted by local ratings"
+        >
           #{r.rank}
         </span>
 
@@ -275,7 +279,7 @@ export default function RestaurantPage() {
               <span
                 className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
                 onAnimationEnd={() => setShowSavedMsg(false)}
-                style={{ backgroundColor: "var(--success)", color: "#fff", backdropFilter: "blur(4px)" }}
+                style={{ backgroundColor: "var(--success-strong)", color: "#fff", backdropFilter: "blur(4px)" }}
               >
                 Saved
               </span>
@@ -302,7 +306,7 @@ export default function RestaurantPage() {
               aria-label={saved ? "Remove from saved" : "Save restaurant"}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
-                fill={saved ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                fill={saved ? "#241f18" : "none"} stroke={saved ? "#241f18" : "#ffffff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
               </svg>
             </button>
@@ -380,7 +384,11 @@ export default function RestaurantPage() {
                       className="object-cover transition-transform duration-[220ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
                       loading="lazy"
                     />
-                    <span className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--accent)", color: "#fff" }}>
+                    <span
+                      className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
+                      title="Overall rank across all NYC restaurants, weighted by local ratings"
+                    >
                       #{s.rank}
                     </span>
                   </div>

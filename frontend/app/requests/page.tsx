@@ -78,7 +78,7 @@ export default function RequestsPage() {
                 ) : (
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0"
-                    style={{ backgroundColor: "var(--accent)", color: "#fff" }}
+                    style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
                   >
                     {r.name[0]}
                   </div>
@@ -106,7 +106,7 @@ export default function RequestsPage() {
                   onClick={() => respond(r.userId, "accept")}
                   disabled={respondingTo === r.userId}
                   className="text-xs font-semibold px-3 py-2 rounded-full min-h-[44px] transition-opacity hover:opacity-90 active:opacity-75 disabled:opacity-50"
-                  style={{ backgroundColor: "var(--accent)", color: "#fff" }}
+                  style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
                 >
                   Accept
                 </button>

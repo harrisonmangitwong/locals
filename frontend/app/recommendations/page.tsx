@@ -134,6 +134,7 @@ function RecommendationsContent() {
   const [error, setError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState(search);
   const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [ratings, setRatings] = useState<Record<string, Bucket>>({});
   const [saveCounts, setSaveCounts] = useState<Record<string, number>>({});
@@ -164,8 +165,12 @@ function RecommendationsContent() {
   }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleNearMe() {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setLocationError("Location isn't supported on this browser.");
+      return;
+    }
     setLocating(true);
+    setLocationError(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const nearest = findNearestNeighborhood(
@@ -176,10 +181,17 @@ function RecommendationsContent() {
         setLocating(false);
         if (nearest) {
           updateParams({ neighborhood: nearest });
+        } else {
+          setLocationError("Couldn't match that to a neighborhood — try picking one instead.");
         }
       },
-      () => {
+      (err) => {
         setLocating(false);
+        setLocationError(
+          err.code === err.PERMISSION_DENIED
+            ? "Location access was denied — try picking a neighborhood instead."
+            : "Couldn't get your location — try again or pick a neighborhood."
+        );
       },
       { timeout: 10000 }
     );
@@ -308,7 +320,7 @@ function RecommendationsContent() {
             {activeFilterCount > 0 && (
               <span
                 className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                style={{ backgroundColor: "var(--accent)", color: "#fff", lineHeight: 1.4 }}
+                style={{ backgroundColor: "var(--accent)", color: "#241f18", lineHeight: 1.4 }}
               >
                 {activeFilterCount}
               </span>
@@ -344,7 +356,7 @@ function RecommendationsContent() {
               className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90 active:opacity-75"
               style={{
                 backgroundColor: !forYou ? "var(--accent)" : "var(--bg-subtle)",
-                color: !forYou ? "#ffffff" : "var(--text-secondary)",
+                color: !forYou ? "#241f18" : "var(--text-secondary)",
                 border: `1px solid ${!forYou ? "var(--accent)" : "var(--border)"}`,
               }}
             >
@@ -356,7 +368,7 @@ function RecommendationsContent() {
               className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90 active:opacity-75"
               style={{
                 backgroundColor: forYou ? "var(--accent)" : "var(--bg-subtle)",
-                color: forYou ? "#ffffff" : "var(--text-secondary)",
+                color: forYou ? "#241f18" : "var(--text-secondary)",
                 border: `1px solid ${forYou ? "var(--accent)" : "var(--border)"}`,
               }}
             >
@@ -413,6 +425,11 @@ function RecommendationsContent() {
                 >
                   {locating ? "Locating..." : "Near me"}
                 </button>
+                {locationError && (
+                  <p className="text-xs w-full" style={{ color: "var(--accent-text)" }}>
+                    {locationError}
+                  </p>
+                )}
               </div>
 
               <label htmlFor="filter-cuisine" className="sr-only">Filter by cuisine</label>
@@ -463,9 +480,9 @@ function RecommendationsContent() {
                 aria-pressed={openNow}
                 className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium whitespace-nowrap transition-colors"
                 style={{
-                  backgroundColor: openNow ? "var(--success)" : "var(--bg-subtle)",
+                  backgroundColor: openNow ? "var(--success-strong)" : "var(--bg-subtle)",
                   color: openNow ? "#ffffff" : "var(--text-secondary)",
-                  border: `1px solid ${openNow ? "var(--success)" : "var(--border)"}`,
+                  border: `1px solid ${openNow ? "var(--success-strong)" : "var(--border)"}`,
                 }}
               >
                 Open now
@@ -474,8 +491,11 @@ function RecommendationsContent() {
           </div>
         </div>
 
-        {/* Loading — skeleton cards */}
-        {loading && (
+        {/* Loading — full skeleton only on the very first load. A filter/search
+            commit on an already-loaded page keeps the existing grid visible
+            (dimmed below) instead of tearing it down, so refining filters
+            reads as "updating," not "reloading." */}
+        {loading && !data && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
@@ -516,9 +536,15 @@ function RecommendationsContent() {
           </div>
         )}
 
-        {/* Restaurant grid */}
-        {!loading && !error && restaurants.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        {/* Restaurant grid -- stays mounted through a refresh (loading && data
+            both true) so an in-place filter change doesn't flash to skeletons;
+            it just dims slightly and ignores pointer events until the new
+            page lands. */}
+        {!error && restaurants.length > 0 && (
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 transition-opacity duration-150"
+            style={loading ? { opacity: 0.5, pointerEvents: "none" } : undefined}
+          >
             {restaurants.map((r, i) => {
               const isFeatured = i === 0 && page === 1;
               return (
@@ -571,9 +597,14 @@ function RecommendationsContent() {
           </div>
         )}
 
-        {/* Pagination */}
-        {!loading && !error && totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 py-4">
+        {/* Pagination -- also stays mounted through a refresh, same reasoning
+            as the grid above (prevents a flash, and ignores clicks mid-fetch
+            to avoid racing requests). */}
+        {!error && totalPages > 1 && (
+          <div
+            className="flex items-center justify-center gap-4 py-4 transition-opacity duration-150"
+            style={loading ? { opacity: 0.5, pointerEvents: "none" } : undefined}
+          >
             {(() => {
               const prevParams = new URLSearchParams(searchParams.toString());
               prevParams.set("page", String(page - 1));
@@ -622,7 +653,7 @@ function RecommendationsContent() {
           </div>
         )}
 
-        {!loading && !error && restaurants.length > 0 && (
+        {!error && restaurants.length > 0 && (
           <div className="flex justify-center py-6">
             <RequestRestaurantForm />
           </div>

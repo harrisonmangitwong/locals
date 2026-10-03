@@ -234,7 +234,7 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
                     onClick={handleFollow}
                     disabled={followBusy}
                     className="px-4 py-2 rounded-full text-sm font-semibold transition-opacity hover:opacity-90 min-h-[44px] disabled:opacity-50"
-                    style={{ backgroundColor: "var(--accent)", color: "#fff" }}
+                    style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
                   >
                     Follow
                   </button>

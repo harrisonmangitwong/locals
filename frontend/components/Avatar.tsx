@@ -30,7 +30,7 @@ export default function Avatar({ url, name, size = "md" }: AvatarProps) {
   return (
     <div
       className={`${box} rounded-full flex items-center justify-center font-semibold shrink-0 ${text}`}
-      style={{ backgroundColor: "var(--accent)", color: "#fff" }}
+      style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
     >
       {letter}
     </div>

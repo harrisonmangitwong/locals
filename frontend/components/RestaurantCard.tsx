@@ -77,6 +77,7 @@ export default function RestaurantCard({
   const [savePop, setSavePop] = useState(false);
   const [ratePop, setRatePop] = useState(false);
   const [showSavedMsg, setShowSavedMsg] = useState(false);
+  const [showSaveError, setShowSaveError] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(photoUrlProp || getPhotoUrl(cuisine));
   const [showRateFlow, setShowRateFlow] = useState(false);
   const { user } = useCurrentUser();
@@ -120,21 +121,28 @@ export default function RestaurantCard({
         border: "1px solid var(--border)",
       }}
     >
-      {/* Photo */}
-      <Link href={`/restaurant/${restaurantId}`} className={`relative overflow-hidden block${featured ? " h-72 sm:h-64" : " h-52 sm:h-48"}`} style={{ flexShrink: 0 }}>
-        <Image
-          src={photoUrl}
-          alt={name}
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="card-photo object-cover"
-          loading="lazy"
-          onError={() => setPhotoUrl(getPhotoUrl(cuisine))}
-        />
+      {/* Photo -- the Link only wraps the image itself (via absolute inset-0)
+          rather than the badges/bookmark button too. A <button> nested inside
+          an <a> is invalid HTML and an accessibility/keyboard-nav risk; this
+          keeps the same visual layout (everything absolutely positioned in
+          this shared wrapper) while making the Link and button true siblings. */}
+      <div className={`relative overflow-hidden${featured ? " h-72 sm:h-64" : " h-52 sm:h-48"}`} style={{ flexShrink: 0 }}>
+        <Link href={`/restaurant/${restaurantId}`} className="absolute inset-0 block">
+          <Image
+            src={photoUrl}
+            alt={name}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="card-photo object-cover"
+            loading="lazy"
+            onError={() => setPhotoUrl(getPhotoUrl(cuisine))}
+          />
+        </Link>
         {/* Rank */}
         <span
           className="absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full"
-          style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
+          style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
+          title="Overall rank across all NYC restaurants, weighted by local ratings"
         >
           #{rankOverride ?? rank}
         </span>
@@ -143,7 +151,7 @@ export default function RestaurantCard({
           <span
             className="absolute bottom-3 left-3 text-xs font-semibold px-2 py-0.5 rounded-full"
             style={{
-              backgroundColor: isOpenNow ? "var(--success)" : "rgba(0,0,0,0.55)",
+              backgroundColor: isOpenNow ? "var(--success-strong)" : "rgba(0,0,0,0.55)",
               color: "#ffffff",
               backdropFilter: "blur(4px)",
             }}
@@ -159,9 +167,18 @@ export default function RestaurantCard({
               <span
                 className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
                 onAnimationEnd={() => setShowSavedMsg(false)}
-                style={{ backgroundColor: "var(--success)", color: "#fff", backdropFilter: "blur(4px)" }}
+                style={{ backgroundColor: "var(--success-strong)", color: "#fff", backdropFilter: "blur(4px)" }}
               >
                 Saved
+              </span>
+            )}
+            {showSaveError && (
+              <span
+                className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
+                onAnimationEnd={() => setShowSaveError(false)}
+                style={{ backgroundColor: "var(--accent)", color: "#241f18", backdropFilter: "blur(4px)" }}
+              >
+                Couldn&apos;t save — try again
               </span>
             )}
             <button
@@ -176,7 +193,10 @@ export default function RestaurantCard({
                 setSaved(nowSaved);
                 if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); setShowSavedMsg(true); }
                 if (!nowSaved && onUnsave) onUnsave(restaurantId);
-                toggleSaved(restaurantId, saved).catch(() => setSaved(saved));
+                toggleSaved(restaurantId, saved).catch(() => {
+                  setSaved(saved);
+                  setShowSaveError(true);
+                });
               }}
               className={`flex items-center justify-center w-11 h-11 rounded-full transition-all duration-150 hover:scale-110 active:scale-95${savePop ? " heart-pop" : ""}`}
               style={{
@@ -187,13 +207,13 @@ export default function RestaurantCard({
               aria-label={saved ? "Remove from saved" : "Save restaurant"}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
-                fill={saved ? "#ffffff" : "none"} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                fill={saved ? "#241f18" : "none"} stroke={saved ? "#241f18" : "#ffffff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
               </svg>
             </button>
           </div>
         )}
-      </Link>
+      </div>
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-4">
@@ -263,7 +283,7 @@ export default function RestaurantCard({
               fill={bucket ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
-            {bucket ? BUCKET_LABELS[bucket] : "Visited"}
+            {bucket ? BUCKET_LABELS[bucket] : "Rate"}
             {bucket && ratingScore != null ? ` · ${ratingScore.toFixed(1)}` : ""}
           </button>
         </div>

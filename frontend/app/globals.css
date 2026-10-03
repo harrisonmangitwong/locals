@@ -24,6 +24,7 @@
   --star-empty: rgba(36,31,24,0.15);
   --success: #2d8a56;
   --success-soft: rgba(45,138,86,0.08);
+  --success-strong: #297a4b;
   --warm: #c98a1f;
   --warm-soft: rgba(201,138,31,0.08);
   color-scheme: light dark;
@@ -54,6 +55,7 @@
     --star-empty: rgba(245,239,224,0.15);
     --success: #3da868;
     --success-soft: rgba(61,168,104,0.10);
+    --success-strong: #297a4b;
     --warm: #e0a73a;
     --warm-soft: rgba(224,167,58,0.12);
   }
