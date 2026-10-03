@@ -2,56 +2,60 @@
 
 /* ── Light mode (primary) ── */
 :root {
-  --bg: #faf8f5;
-  --bg-card: #ffffff;
-  --bg-subtle: #f0ece7;
-  --bg-inset: #e8e4de;
-  --text: #1a1814;
-  --text-secondary: #6b6560;
-  --text-muted: #6f6a64;
-  --accent: #d95030;
-  --accent-hover: #c44528;
-  --accent-soft: rgba(217,80,48,0.08);
-  --accent-text: #c0451f;
-  --border: rgba(26,24,20,0.08);
-  --border-strong: rgba(26,24,20,0.15);
-  --shadow-sm: 0 1px 2px rgba(26,24,20,0.05);
-  --shadow: 0 2px 8px rgba(26,24,20,0.07);
-  --shadow-lg: 0 8px 30px rgba(26,24,20,0.10);
-  --star-fill: #c44d2c;
-  --star-empty: rgba(26,24,20,0.15);
+  --bg: #f7f1e5;
+  --bg-card: #fffdf8;
+  --bg-subtle: #efe6d3;
+  --bg-inset: #e6dabf;
+  --text: #241f18;
+  --text-secondary: #5c5346;
+  --text-muted: #746a5a;
+  --accent: #c98a1f;
+  --accent-hover: #ab7319;
+  --accent-soft: rgba(201,138,31,0.12);
+  --accent-text: #9c6c17;
+  --cta-bg: #bb7f1d;
+  --border: rgba(36,31,24,0.1);
+  --border-strong: rgba(36,31,24,0.18);
+  --shadow-sm: 0 1px 2px rgba(36,31,24,0.06);
+  --shadow: 0 2px 8px rgba(36,31,24,0.09);
+  --shadow-lg: 0 8px 30px rgba(36,31,24,0.14);
+  --shadow-card-hover: 0 20px 48px rgba(36,31,24,0.22);
+  --star-fill: #c98a1f;
+  --star-empty: rgba(36,31,24,0.15);
   --success: #2d8a56;
   --success-soft: rgba(45,138,86,0.08);
-  --warm: #b8860b;
-  --warm-soft: rgba(184,134,11,0.08);
+  --warm: #c98a1f;
+  --warm-soft: rgba(201,138,31,0.08);
   color-scheme: light dark;
 }
 
 /* ── Dark mode ── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1a1814;
-    --bg-card: #252220;
-    --bg-subtle: #2e2b28;
-    --bg-inset: #353230;
-    --text: #f5f0eb;
-    --text-secondary: #9a9590;
-    --text-muted: #8a857f;
-    --accent: #e06b4d;
-    --accent-hover: #c44d2c;
-    --accent-soft: rgba(224,107,77,0.10);
-    --accent-text: #e8845f;
-    --border: rgba(245,240,235,0.08);
-    --border-strong: rgba(245,240,235,0.15);
+    --bg: #1f1a10;
+    --bg-card: #2a2318;
+    --bg-subtle: #332b1d;
+    --bg-inset: #3d3321;
+    --text: #f5efe0;
+    --text-secondary: #b8ac92;
+    --text-muted: #938870;
+    --accent: #e0a73a;
+    --accent-hover: #c99228;
+    --accent-soft: rgba(224,167,58,0.14);
+    --accent-text: #e0a73a;
+    --cta-bg: #d19930;
+    --border: rgba(245,239,224,0.1);
+    --border-strong: rgba(245,239,224,0.18);
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.15);
     --shadow: 0 2px 8px rgba(0,0,0,0.20);
     --shadow-lg: 0 8px 30px rgba(0,0,0,0.30);
-    --star-fill: #e06b4d;
-    --star-empty: rgba(245,240,235,0.15);
+    --shadow-card-hover: 0 20px 48px rgba(0,0,0,0.45);
+    --star-fill: #e0a73a;
+    --star-empty: rgba(245,239,224,0.15);
     --success: #3da868;
     --success-soft: rgba(61,168,104,0.10);
-    --warm: #d4a017;
-    --warm-soft: rgba(212,160,23,0.10);
+    --warm: #e0a73a;
+    --warm-soft: rgba(224,167,58,0.12);
   }
 }
 
@@ -76,7 +80,7 @@ a, button, [role="button"] {
 }
 .restaurant-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .restaurant-card .card-photo {
@@ -137,17 +141,28 @@ a, button, [role="button"] {
   animation: heart-pop 400ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* ── CTA press ── */
+/* ── CTA press ──
+   Background is a dedicated shade (--cta-bg, not --accent directly): a touch
+   richer/deeper than --accent for more visual weight, still bright enough
+   that dark ink text clears 4.5:1 comfortably in both themes -- better
+   contrast AND more presence than white text on --accent-hover ever had.
+   The ink color is a fixed hex (not var(--text)) since it must stay dark
+   in both themes -- the CTA chip itself is designed to be bright in both. */
 .cta-btn {
-  background-color: var(--accent);
-  color: #ffffff;
+  background-color: var(--cta-bg, var(--accent));
+  color: #241f18;
   transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 100ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 44px;
 }
 .cta-btn:hover {
-  background-color: var(--accent-hover);
   box-shadow: var(--shadow);
   transform: translateY(-1px) scale(1.03);
+}
+.cta-btn:hover svg {
+  transform: translateX(2px);
+}
+.cta-btn svg {
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .cta-btn:active {
   transform: translateY(1px) scale(1);
@@ -158,7 +173,7 @@ a, button, [role="button"] {
   transition: box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .google-signin-btn:hover {
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow), 0 0 0 2px var(--accent-soft);
   transform: translateY(-1px);
 }
 .google-signin-btn:active {
@@ -415,8 +430,10 @@ a, button, [role="button"] {
   outline-offset: 2px;
 }
 
-/* ── Serif display font ── */
+/* ── Display font ── */
 .font-display {
-  font-family: var(--font-dm-serif, "DM Serif Display"), Georgia, serif;
-  line-height: 1.15;
+  font-family: var(--font-display-face, "Bricolage Grotesque"), system-ui, sans-serif;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
 }

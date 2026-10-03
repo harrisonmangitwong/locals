@@ -25,7 +25,7 @@ export default function SiteHeader({ current }: SiteHeaderProps) {
   return (
     <header
       className="sticky top-0 z-50 flex items-center justify-between px-6 py-4"
-      style={{ backgroundColor: "var(--bg)", borderBottom: "1px solid var(--border)" }}
+      style={{ backgroundColor: "var(--bg-subtle)", boxShadow: "var(--shadow-sm)" }}
     >
       <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>
         Locals
@@ -39,10 +39,10 @@ export default function SiteHeader({ current }: SiteHeaderProps) {
               href={item.href}
               className={
                 active
-                  ? "text-xs sm:text-sm font-medium"
+                  ? "text-xs sm:text-sm font-semibold"
                   : `text-xs sm:text-sm transition-colors hover:opacity-75${item.key === "about" ? " hidden sm:inline" : ""}`
               }
-              style={{ color: active ? "var(--text)" : "var(--text-secondary)" }}
+              style={{ color: active ? "var(--accent-text)" : "var(--text-secondary)" }}
             >
               {item.label}
             </Link>
