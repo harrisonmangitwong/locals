@@ -90,6 +90,20 @@ a, button, [role="button"] {
   transform: scale(1.03);
 }
 
+/* On touch devices there's no real :hover, so the same lift/shadow/zoom is
+   triggered by scroll position instead (via IntersectionObserver toggling
+   .in-view -- see useScrollActive in lib/). Scoped to (hover: none) so it
+   never doubles up with real mouse hover on desktop. */
+@media (hover: none) {
+  .restaurant-card.in-view {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+  }
+  .restaurant-card.in-view .card-photo {
+    transform: scale(1.03);
+  }
+}
+
 /* ── Scrollbar ── */
 .hide-scrollbar {
   -ms-overflow-style: none;

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { getPhotoUrl } from "@/lib/photoFallback";
+import { useScrollActive } from "@/lib/useScrollActive";
 
 export interface ProofCardItem {
   name: string;
@@ -18,10 +19,12 @@ export interface ProofCardItem {
 // needs to initialize from it once -- no effect required to keep them in sync.
 export default function ProofCard({ item }: { item: ProofCardItem }) {
   const [photoUrl, setPhotoUrl] = useState(item.imageUrl);
+  const { ref, active } = useScrollActive<HTMLDivElement>(0.6);
 
   return (
     <div
-      className="restaurant-card flex flex-col overflow-hidden max-w-xs"
+      ref={ref}
+      className={`restaurant-card flex flex-col overflow-hidden max-w-xs${active ? " in-view" : ""}`}
       style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", boxShadow: "var(--shadow)", border: "1px solid var(--border)" }}
     >
       <div className="relative overflow-hidden h-32">
