@@ -93,7 +93,9 @@ a, button, [role="button"] {
 /* On touch devices there's no real :hover, so the same lift/shadow/zoom is
    triggered by scroll position instead (via IntersectionObserver toggling
    .in-view -- see useScrollActive in lib/). Scoped to (hover: none) so it
-   never doubles up with real mouse hover on desktop. */
+   never doubles up with real mouse hover on desktop. This is the fallback
+   for browsers without scroll-driven-animation support (below) -- a binary
+   snap rather than a continuous scroll-linked motion. */
 @media (hover: none) {
   .restaurant-card.in-view {
     transform: translateY(-4px);
@@ -102,6 +104,40 @@ a, button, [role="button"] {
   .restaurant-card.in-view .card-photo {
     transform: scale(1.03);
   }
+}
+
+/* Where supported (Safari 18+, Chrome/Edge), replace the JS-driven snap
+   above with a true scroll-linked animation: progress is tied directly to
+   the card's position in the viewport, runs on the compositor thread (not
+   React), and eases continuously instead of popping at a threshold -- this
+   is what makes native scroll effects feel fluid rather than triggered. */
+@media (hover: none) {
+  @supports (animation-timeline: view()) {
+    /* CSS animations override normal declarations in the cascade regardless
+       of specificity, so this supersedes the .in-view rule above for every
+       browser that reaches this block -- the JS class still gets toggled
+       (useScrollActive keeps running) but has nothing left to control. */
+    .restaurant-card {
+      animation: card-scroll-lift linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 35%;
+    }
+    .restaurant-card .card-photo {
+      animation: card-scroll-zoom linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 35%;
+    }
+  }
+}
+
+@keyframes card-scroll-lift {
+  0%, 100% { transform: translateY(0); box-shadow: var(--shadow); }
+  50%, 85% { transform: translateY(-4px); box-shadow: var(--shadow-card-hover); }
+}
+
+@keyframes card-scroll-zoom {
+  0%, 100% { transform: scale(1); }
+  50%, 85% { transform: scale(1.03); }
 }
 
 /* ── Scrollbar ── */
