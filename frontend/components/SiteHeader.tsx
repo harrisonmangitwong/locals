@@ -25,7 +25,7 @@ export default function SiteHeader({ current }: SiteHeaderProps) {
   return (
     <header
       className="sticky top-0 z-50 flex items-center justify-between px-6 py-4"
-      style={{ backgroundColor: "var(--bg-subtle)", boxShadow: "var(--shadow-sm)" }}
+      style={{ backgroundColor: "var(--bg)", boxShadow: "var(--shadow-sm)" }}
     >
       <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>
         Locals
