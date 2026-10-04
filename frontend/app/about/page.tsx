@@ -1,5 +1,8 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import ProofCard from "@/components/ProofCard";
+import { REVIEW_COUNT_LABEL } from "@/lib/stats";
+import { PROOF_EXAMPLES } from "@/lib/proofExamples";
 
 export default function AboutPage() {
   return (
@@ -19,10 +22,10 @@ export default function AboutPage() {
             I came back to NYC and realized the same problem exists here, just at a bigger
             scale. Ratings aren&apos;t wrong exactly, they&apos;re just not weighted by who&apos;s
             doing the rating — a local who&apos;s eaten there 20 times and a tourist who visited
-            once shouldn&apos;t count the same. So I scraped 48,000+ NYC reviews and built
+            once shouldn&apos;t count the same. So I scraped {REVIEW_COUNT_LABEL} NYC reviews and built
             Locals to fix that.
           </p>
-          <p>Hope you enjoy :)</p>
+          <p>Hope it helps you find somewhere good.</p>
           <p style={{ color: "var(--text-muted)" }}>- Harrison</p>
         </div>
 
@@ -32,32 +35,35 @@ export default function AboutPage() {
           <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>Here&apos;s how the ratings work, for the curious.</p>
           <div className="space-y-4 rounded-xl p-5 mb-6" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
             <div className="flex items-start gap-4">
-              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Most</span>
+              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--text)" }}>Most</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Geographic concentration</div>
-                <div className="text-sm" style={{ color: "var(--text-muted)" }}>What share of their reviews are for NYC restaurants? Someone who&apos;s reviewed 200 spots worldwide but only 1 in NYC is probably a tourist.</div>
+                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>What share of their reviews are for NYC restaurants? Someone who&apos;s reviewed 200 spots worldwide but only 1 in NYC is probably a tourist.</div>
               </div>
             </div>
             <div style={{ borderTop: "1px solid var(--border)" }} />
             <div className="flex items-start gap-4">
-              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Some</span>
+              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--text)" }}>Some</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Review stability</div>
-                <div className="text-sm" style={{ color: "var(--text-muted)" }}>Have they been reviewing NYC spots consistently over time, or just in one burst during a trip?</div>
+                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Have they been reviewing NYC spots consistently over time, or just in one burst during a trip?</div>
               </div>
             </div>
             <div style={{ borderTop: "1px solid var(--border)" }} />
             <div className="flex items-start gap-4">
-              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--warm)" }}>Minor</span>
+              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--text)" }}>Minor</span>
               <div>
                 <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Local Guide status</div>
-                <div className="text-sm" style={{ color: "var(--text-muted)" }}>Google-verified Local Guides get a small boost.</div>
+                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Google-verified Local Guides get a small boost.</div>
               </div>
             </div>
           </div>
-          <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+          <p className="text-sm leading-relaxed mb-8" style={{ color: "var(--text-muted)" }}>
             The full ranking also weighs review text and location, and refreshes as new data comes in.
           </p>
+
+          <p className="text-sm font-medium mb-3" style={{ color: "var(--text)" }}>What that looks like on a real restaurant:</p>
+          <ProofCard item={PROOF_EXAMPLES[0]} />
         </div>
 
         {/* CTA */}
@@ -70,8 +76,8 @@ export default function AboutPage() {
           </Link>
           <p className="text-sm mt-4" style={{ color: "var(--text-muted)" }}>
             Know a spot we&apos;re missing?{" "}
-            <Link href="/recommendations" className="font-medium transition-opacity hover:opacity-75 active:opacity-60" style={{ color: "var(--accent-text)" }}>
-              Browse and tell us
+            <Link href="/recommendations#request-restaurant" className="font-medium transition-opacity hover:opacity-75 active:opacity-60" style={{ color: "var(--accent-text)" }}>
+              Tell us
             </Link>
             .
           </p>

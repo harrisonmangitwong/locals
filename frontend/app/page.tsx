@@ -1,44 +1,15 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import ProofCard from "@/components/ProofCard";
+import { REVIEW_COUNT_LABEL, RESTAURANT_POOL_LABEL } from "@/lib/stats";
+import { PROOF_EXAMPLES as FEATURED } from "@/lib/proofExamples";
 
-// Real examples for the homepage's trust proof-point -- a curated, static
-// pick (not a live fetch), same batch-pipeline philosophy as the rest of the
-// product. Every restaurant photo in this dataset is a ~408px-wide Google
-// Places thumbnail, so a single full-bleed hero blows them up 3x+ and turns
-// soft. A 3-up grid at roughly card width renders each one near its native
+// Every restaurant photo in this dataset is a ~408px-wide Google Places
+// thumbnail, so a single full-bleed hero blows them up 3x+ and turns soft.
+// A 3-up grid at roughly card width renders each one near its native
 // resolution instead (this is exactly the card-grid layout the rest of the
-// app already uses these same images at). These are the three largest
-// local-vs-tourist rating gaps in backend/data.csv among restaurants both
-// sides still rate 4.0+ (so the gap is "locals love it a bit more," not
-// "tourists think it's bad") -- checked by looking at each actual photo, not
-// just its data row. Revisit if a future data refresh changes these numbers.
-const FEATURED = [
-  {
-    name: "Yopcity Restaurant",
-    neighborhood: "Belmont",
-    cuisine: "American",
-    imageUrl: "https://komriwzkkknrsirifgqg.supabase.co/storage/v1/object/public/restaurant-photos/r_243c5d.jpg",
-    localRating: 4.5,
-    touristRating: 4.1,
-  },
-  {
-    name: "Grandma’s Dumpling House",
-    neighborhood: "Tribeca",
-    cuisine: "Chinese",
-    imageUrl: "https://komriwzkkknrsirifgqg.supabase.co/storage/v1/object/public/restaurant-photos/r_7a662f.jpg",
-    localRating: 4.7,
-    touristRating: 4.4,
-  },
-  {
-    name: "Veselka Williamsburg",
-    neighborhood: "Williamsburg",
-    cuisine: "Ukrainian",
-    imageUrl: "https://komriwzkkknrsirifgqg.supabase.co/storage/v1/object/public/restaurant-photos/r_742cf1.jpg",
-    localRating: 4.6,
-    touristRating: 4.3,
-  },
-];
+// app already uses these same images at). See lib/proofExamples.ts for how
+// these three were picked.
 
 // Slight alternating horizontal offset per card -- a loose, stacked-photos
 // feel instead of a rigid list, echoing the asymmetry of the hero split.
@@ -75,7 +46,7 @@ export default function Home() {
             </svg>
           </Link>
           <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>
-            73,000+ reviews across 2,000+ NYC restaurants, filtered for locals.
+            {REVIEW_COUNT_LABEL} reviews across {RESTAURANT_POOL_LABEL} NYC restaurants, filtered for locals.
           </p>
         </div>
 

@@ -246,6 +246,17 @@ function RecommendationsContent() {
     return () => { abortRef.current?.abort(); };
   }, [fetchData]);
 
+  // The request-restaurant form only exists once the grid has rendered
+  // (it's conditionally mounted below the results), so a plain #hash in the
+  // URL is already gone by the time the browser would normally auto-scroll
+  // to it on load -- scroll to it manually once loading finishes.
+  useEffect(() => {
+    if (loading || !window.location.hash) return;
+    const id = window.location.hash.slice(1);
+    const el = document.getElementById(id);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [loading]);
+
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
     for (const [key, value] of Object.entries(updates)) {
@@ -593,7 +604,9 @@ function RecommendationsContent() {
             >
               Clear all filters
             </button>
-            <RequestRestaurantForm />
+            <div id="request-restaurant">
+              <RequestRestaurantForm />
+            </div>
           </div>
         )}
 
@@ -654,7 +667,7 @@ function RecommendationsContent() {
         )}
 
         {!error && restaurants.length > 0 && (
-          <div className="flex justify-center py-6">
+          <div id="request-restaurant" className="flex justify-center py-6">
             <RequestRestaurantForm />
           </div>
         )}
