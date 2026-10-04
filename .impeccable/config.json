@@ -10,7 +10,7 @@
           "frontend/app/globals.css"
         ],
         "createdAt": "2026-09-24T16:02:22.192Z",
-        "reason": "Agent: .chip-collapse needs a partial-height reveal (1 row, expand to more); grid-template-rows only supports binary 0<->full collapse, and clip-path would require absolute-positioning the sibling Show-more button -- more complexity than a small, click-triggered, non-perf-critical chip-list animation warrants"
+        "reason": "Agent: .chip-collapse (line ~350) truncates a continuous flex-wrap chip list by pixel height; the grid-template-rows technique used by sibling .filter-expand/.hours-body collapses only works for a single collapsing row, not a reflowing wrapped list (see comment at globals.css:342-346). Pre-existing pattern predating this session, single user-triggered toggle, not a hot path."
       }
     ]
   }

@@ -24,3 +24,21 @@ export function getPhotoUrl(cuisine: string, width = 400, quality = 65): string 
   const photoId = CUISINE_PHOTO_MAP[cuisine] ?? DEFAULT_PHOTO;
   return `https://images.unsplash.com/${photoId}?w=${width}&q=${quality}&auto=format&fit=crop`;
 }
+
+/**
+ * Prefers the real, full-resolution Google photo (scraped into
+ * extra_image_urls, typically ~1920x1080) over the small mirrored
+ * copy in image_url (often ~400x300) -- the mirror was never meant
+ * to be stretched full-bleed and pixelates badly at hero/card sizes.
+ */
+export function pickHeroPhoto(imageUrl?: string | null, extraImageUrlsJson?: string | null): string | undefined {
+  if (extraImageUrlsJson) {
+    try {
+      const parsed = JSON.parse(extraImageUrlsJson);
+      if (Array.isArray(parsed) && typeof parsed[0] === "string" && parsed[0]) return parsed[0];
+    } catch {
+      /* fall through to the mirrored copy */
+    }
+  }
+  return imageUrl || undefined;
+}

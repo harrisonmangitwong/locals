@@ -3,27 +3,39 @@
 Enriches data.csv with structured review themes extracted via Claude API.
 Adds a `review_themes` column with JSON: {loved, criticisms, regulars}
 
+Review selection is weighted toward local reviewers (Google Local Guides,
+reviewers with a longer history) rather than just the most-liked reviews --
+pulled fresh from data/raw_apify_data.json, not the already-trimmed
+top_reviews column (which is sorted by likes, not localness).
+
 Usage: python enrich_reviews.py
+Requires ANTHROPIC_API_KEY (in the environment or the repo-root .env).
 Resumes automatically from checkpoint if interrupted.
 """
 
 import csv
 import json
-import os
+import sys
 import time
 from pathlib import Path
 from pydantic import BaseModel
+from dotenv import load_dotenv
 import anthropic
 
+load_dotenv(Path(__file__).parent.parent / ".env")
+
 DATA_CSV = Path(__file__).parent / "data.csv"
+RAW_APIFY_JSON = Path(__file__).parent.parent / "data" / "raw_apify_data.json"
 OUT_CSV = Path(__file__).parent / "data_enriched.csv"
 CHECKPOINT = Path(__file__).parent / "enrich_checkpoint.json"
+
+MAX_REVIEWS_PER_RESTAURANT = 15
 
 
 class ReviewThemes(BaseModel):
     loved: list[str]        # 2-4 commonly loved dishes or aspects
-    criticisms: list[str]   # 1-3 recurring criticisms (empty list if none)
-    regulars: str           # one sentence: what keeps regulars coming back
+    criticisms: list[str]   # 1-3 recurring criticisms, corroborated by multiple reviews (empty list if none)
+    regulars: str           # one sentence on what keeps people coming back
 
 
 def load_checkpoint() -> dict[str, str]:
@@ -36,25 +48,52 @@ def save_checkpoint(done: dict[str, str]):
     CHECKPOINT.write_text(json.dumps(done))
 
 
+def load_apify_map() -> dict[str, dict]:
+    with open(RAW_APIFY_JSON) as f:
+        apify_list = json.load(f)
+    apify_map: dict[str, dict] = {}
+    for rec in apify_list:
+        pid = rec.get("placeId") or rec.get("inputPlaceId")
+        if pid:
+            apify_map[pid] = rec
+    return apify_map
+
+
+def select_local_reviews(apify_record: dict, max_reviews: int = MAX_REVIEWS_PER_RESTAURANT) -> list[dict]:
+    """Prioritizes Local Guides and reviewers with a longer review history
+    over whatever Google/Apify happened to surface as 'top' -- the point of
+    this feature is to summarize what locals say, not what's most-liked."""
+    candidates = [r for r in apify_record.get("reviews", []) if (r.get("text") or "").strip()]
+    candidates.sort(
+        key=lambda r: (bool(r.get("isLocalGuide")), r.get("reviewerNumberOfReviews") or 0),
+        reverse=True,
+    )
+    return candidates[:max_reviews]
+
+
 def extract_themes(client: anthropic.Anthropic, name: str, cuisine: str, reviews: list[dict]) -> ReviewThemes | None:
     review_text = "\n".join(
-        f"- ({r['rating']}★) {r['text']}"
+        f"- ({r.get('stars') or r.get('rating') or '?'}★) {r['text']}"
         for r in reviews
-        if r.get("text", "").strip()
+        if (r.get("text") or "").strip()
     )
     if not review_text.strip():
         return None
 
     prompt = f"""Restaurant: {name} ({cuisine})
 
-Reviews:
+Reviews from local reviewers:
 {review_text}
 
-Extract structured themes from these reviews. Be specific and concrete — name actual dishes when mentioned, quote real patterns. Keep each item brief (3–8 words).
+Extract structured themes from these reviews. Be specific and concrete -- name actual dishes when mentioned, quote real patterns you see across multiple reviews. Never invent a dish or claim that isn't actually in the text above.
+
+- loved: 2-4 commonly loved dishes or aspects, 3-8 words each.
+- criticisms: 1-3 recurring criticisms that show up in MULTIPLE reviews, not a single reviewer's one-off complaint -- a single outlier complaint (even a serious one) does not belong here. Empty list if nothing recurs.
+- regulars: one natural sentence on what keeps people coming back -- plain, conversational language, like a friend telling you why a place is worth it. Do not use the words "locals," "regulars," or "tourists" in this sentence; lead with the dish or reason itself (e.g. "The crab fried rice and the weekend brunch line are the draw.").
 """
 
     response = client.messages.parse(
-        model="claude-opus-4-8",
+        model="claude-sonnet-5-5",
         max_tokens=512,
         messages=[{"role": "user", "content": prompt}],
         output_format=ReviewThemes,
@@ -64,6 +103,7 @@ Extract structured themes from these reviews. Be specific and concrete — name 
 
 def main():
     client = anthropic.Anthropic()
+    apify_map = load_apify_map()
 
     # Load existing data
     with open(DATA_CSV, newline="", encoding="utf-8") as f:
@@ -75,7 +115,7 @@ def main():
         fieldnames = list(fieldnames) + ["review_themes"]
 
     done = load_checkpoint()
-    to_process = [r for r in rows if r["restaurant_id"] not in done and r.get("top_reviews")]
+    to_process = [r for r in rows if r["restaurant_id"] not in done and r.get("google_place_id") in apify_map]
     total = len(rows)
     already_done = len(done)
 
@@ -85,9 +125,8 @@ def main():
         rid = row["restaurant_id"]
         name = row["name"]
 
-        try:
-            reviews = json.loads(row["top_reviews"])
-        except (json.JSONDecodeError, KeyError):
+        reviews = select_local_reviews(apify_map[row["google_place_id"]])
+        if not reviews:
             done[rid] = ""
             continue
 
@@ -97,6 +136,14 @@ def main():
             themes = extract_themes(client, name, row.get("cuisine", ""), reviews)
             done[rid] = json.dumps(themes.model_dump()) if themes else ""
             print("✓")
+        except anthropic.AuthenticationError as e:
+            # Fatal and identical for every remaining restaurant -- stop
+            # immediately instead of burning through the whole list marking
+            # everything "done" with no real data (and poisoning the
+            # checkpoint so a later retry would silently skip them all).
+            print(f"\nAuthentication failed: {e}")
+            print("Fix ANTHROPIC_API_KEY and re-run -- nothing from this run was checkpointed or billed.")
+            sys.exit(1)
         except anthropic.RateLimitError:
             print("rate limited — waiting 60s")
             time.sleep(60)
@@ -104,6 +151,10 @@ def main():
                 themes = extract_themes(client, name, row.get("cuisine", ""), reviews)
                 done[rid] = json.dumps(themes.model_dump()) if themes else ""
                 print("✓ (retry)")
+            except anthropic.AuthenticationError as e:
+                print(f"\nAuthentication failed: {e}")
+                print("Fix ANTHROPIC_API_KEY and re-run -- nothing from this run was checkpointed or billed.")
+                sys.exit(1)
             except Exception as e:
                 print(f"failed: {e}")
                 done[rid] = ""

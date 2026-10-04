@@ -34,12 +34,44 @@ def get_extra_images(row):
     urls = [u for u in apify_for(row).get("imageUrls", []) if u][:5]
     return json.dumps(urls) if urls else None
 
+_COMMON_ENGLISH_WORDS = {
+    "the", "and", "was", "is", "for", "with", "very", "this", "that", "it",
+    "in", "on", "to", "of", "a", "we", "i", "my", "our", "had", "were",
+    "good", "great", "food", "service", "place", "staff", "amazing", "love",
+    "loved", "best", "nice", "friendly", "recommend", "delicious", "really",
+    "definitely", "so", "but", "not", "would", "will", "go", "went", "came",
+}
+
+
+def _is_mostly_english(text: str) -> bool:
+    """Cheap, dependency-free language filter. ASCII-ratio alone isn't
+    enough -- Spanish, Polish, French etc. are also mostly ASCII -- so this
+    also requires a few common English words to actually show up, not just
+    Latin characters."""
+    if not text:
+        return False
+    ascii_chars = sum(1 for c in text if ord(c) < 128)
+    if ascii_chars / len(text) < 0.85:
+        return False
+    words = [w.strip(".,!?()\"'").lower() for w in text.split()]
+    if len(words) < 4:
+        return True  # too short to judge reliably either way; ASCII check already passed
+    return sum(1 for w in words if w in _COMMON_ENGLISH_WORDS) >= 2
+
+
 def get_top_reviews(row):
-    reviews = [r for r in apify_for(row).get("reviews", []) if r.get("text")]
-    reviews.sort(key=lambda r: r.get("likesCount", 0), reverse=True)
-    top = reviews[:3]
-    if not top:
+    candidates = [r for r in apify_for(row).get("reviews", []) if r.get("text") and _is_mostly_english(r["text"])]
+    if not candidates:
         return None
+    # Prefer local guides, then prefer short, complete reviews over long
+    # paragraphs -- nobody reads a 6-sentence quote on a page built for a
+    # fast decision. The 40-char floor skips throwaway one-liners ("great!")
+    # that don't actually say anything; fall back to all candidates if
+    # nothing clears it.
+    substantial = [r for r in candidates if len(r.get("text") or "") >= 40]
+    pool = substantial if substantial else candidates
+    pool.sort(key=lambda r: (not bool(r.get("isLocalGuide")), len(r.get("text") or "")))
+    top = pool[:3]
     return json.dumps([
         {"text": r["text"], "rating": r.get("stars") or r.get("rating") or 5,
          "author": r.get("name", "Local"), "published": r.get("publishAt", "")}

@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SiteHeader from "@/components/SiteHeader";
 import SignInPrompt from "@/components/SignInPrompt";
-import { getPhotoUrl } from "@/lib/photoFallback";
+import { getPhotoUrl, pickHeroPhoto } from "@/lib/photoFallback";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import type { Bucket } from "@/lib/ranking";
 
@@ -33,6 +33,7 @@ interface RestaurantDetail {
   website?: string;
   opening_hours?: string;
   top_reviews?: string;
+  extra_image_urls?: string;
   is_open_now?: boolean | null;
   price_midpoint?: number | null;
   archetype?: string | null;
@@ -175,6 +176,7 @@ export default function RestaurantPage() {
   const [similar, setSimilar] = useState<SimilarRestaurant[]>([]);
   const { user } = useCurrentUser();
   const [signInReason, setSignInReason] = useState<string | null>(null);
+  const [heroTier, setHeroTier] = useState(0);
 
   useEffect(() => {
     async function loadRestaurant() {
@@ -183,6 +185,7 @@ export default function RestaurantPage() {
         if (!res.ok) throw new Error(`${res.status}`);
         const data = await res.json();
         setRestaurant(data);
+        setHeroTier(0);
 
         // Fetch similar restaurants once we have neighborhood + cuisine
         try {
@@ -260,7 +263,15 @@ export default function RestaurantPage() {
   }
 
   const r = restaurant;
-  const heroUrl = r.image_url || getPhotoUrl(r.cuisine, 1200, 80);
+  // Tiered so a pixelated hero never happens silently: prefer the real,
+  // full-resolution Google photo; fall back to the small mirrored copy,
+  // then the cuisine stock photo, only if each prior tier fails to load.
+  const heroCandidates = [
+    pickHeroPhoto(r.image_url, r.extra_image_urls as string | undefined),
+    r.image_url,
+    getPhotoUrl(r.cuisine, 1200, 80),
+  ].filter((u): u is string => !!u);
+  const heroUrl = heroCandidates[Math.min(heroTier, heroCandidates.length - 1)];
 
   const price = priceLabel(r.price_midpoint);
   const verdictText = getVerdict(r.local_weighted_rating ?? 0, r.tourist_weighted_rating ?? 0);
@@ -274,9 +285,26 @@ export default function RestaurantPage() {
       {/* Header */}
       <SiteHeader />
 
-      {/* Hero */}
-      <div className="relative w-full overflow-hidden" style={{ height: "clamp(260px, 40vw, 420px)" }}>
-        <Image src={heroUrl} alt={r.name} fill sizes="100vw" className="object-cover" priority />
+      {/* Hero -- the real photo's native resolution (~400px wide) can't cover
+          this full-bleed width without visibly pixelating, so a soft blur
+          disguises the upscale as a deliberate stylistic choice instead of
+          a technical defect. Still the one real photo of this restaurant,
+          no stock or AI-generated imagery. Blur scales with viewport width
+          because the upscale factor does too (barely any at mobile widths
+          close to the source's native ~400px, much more on a wide desktop
+          hero) -- a fixed blur amount looked right on mobile but left
+          visible blockiness on wider screens. */}
+      <div className="relative w-full overflow-hidden" style={{ height: "clamp(260px, 40vw, 420px)", backgroundColor: "var(--bg-inset)" }}>
+        <Image
+          src={heroUrl}
+          alt={r.name}
+          fill
+          sizes="100vw"
+          className="object-cover"
+          style={{ filter: "blur(clamp(4px, 1.3vw, 24px))", transform: "scale(1.1)" }}
+          priority
+          onError={() => setHeroTier((t) => Math.min(t + 1, heroCandidates.length - 1))}
+        />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.1) 75%, transparent 100%)" }} />
 
         {/* Rank badge */}
