@@ -99,9 +99,6 @@ export default function Home() {
       >
         <div>
           <span className="font-display text-lg" style={{ color: "var(--text)" }}>Locals</span>
-          <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-            Built on real NYC reviews, not tourist hype.
-          </p>
         </div>
         <nav className="flex items-center gap-5">
           <Link href="/recommendations" className="text-sm transition-opacity hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
