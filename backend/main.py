@@ -79,8 +79,18 @@ def _is_open_now(opening_hours_json: Optional[str]) -> Optional[bool]:
             return False
         if "24 hours" in low:
             return True
-        parts = re.split(r"\s+to\s+|\u2013|\u2014|-", h, maxsplit=1)
-        if len(parts) == 2:
+
+        # Some venues list split shifts for the same day, e.g.
+        # "12 to 3 PM, 5 to 10 PM" (lunch, dinner). Evaluate every
+        # comma-separated range and treat "open" as falling inside any of them.
+        any_range_parsed = False
+        for segment in h.split(","):
+            segment = segment.strip()
+            if not segment:
+                continue
+            parts = re.split(r"\s+to\s+|\u2013|\u2014|-", segment, maxsplit=1)
+            if len(parts) != 2:
+                continue
             open_str, close_str = parts[0].strip(), parts[1].strip()
             # Inherit AM/PM from close time if open time lacks it (e.g. "5 to 11:30 PM")
             if not re.search(r"am|pm", open_str, re.IGNORECASE):
@@ -89,11 +99,16 @@ def _is_open_now(opening_hours_json: Optional[str]) -> Optional[bool]:
                     open_str = f"{open_str} {period_m.group(1)}"
             open_min = _parse_time_str(open_str)
             close_min = _parse_time_str(close_str)
-            if open_min is not None and close_min is not None:
-                if close_min <= open_min:
-                    return current_min >= open_min or current_min < close_min
-                return open_min <= current_min < close_min
-        return None
+            if open_min is None or close_min is None:
+                continue
+            any_range_parsed = True
+            if close_min <= open_min:
+                if current_min >= open_min or current_min < close_min:
+                    return True
+            else:
+                if open_min <= current_min < close_min:
+                    return True
+        return False if any_range_parsed else None
     return None
 
 
