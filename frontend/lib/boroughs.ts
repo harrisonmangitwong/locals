@@ -33,7 +33,7 @@ export const BOROUGH_NEIGHBORHOODS: { borough: string; neighborhoods: string[] }
       "Hollis Hills", "Howard Beach", "Jackson Heights", "Jamaica", "Kew Gardens",
       "Long Island City", "Ozone Park", "Queens", "Queens Village", "Rego Park",
       "Richmond Hill", "Ridgewood", "Rockaway Beach", "Rockaway Park",
-      "Rosedale", "South Ozone Park", "St. Albans", "Sunnyside",
+      "Rosedale", "Seaside", "South Ozone Park", "St. Albans", "Sunnyside",
       "Woodhaven", "Woodside",
     ],
   },
@@ -45,13 +45,7 @@ export const BOROUGH_NEIGHBORHOODS: { borough: string; neighborhoods: string[] }
       "University Heights", "West Bronx",
     ],
   },
-  {
-    borough: "Staten Island",
-    neighborhoods: [
-      "Arden Heights", "Bay Terrace", "Dongan Hills", "Eltingville",
-      "Fort Wadsworth", "Great Kills", "Lighthouse Hill", "Mid Island",
-      "Midland Beach", "New Dorp", "New Dorp Beach", "Port Richmond",
-      "Richmond", "Rosebank", "Seaside", "Stapleton Heights", "Staten Island",
-    ],
-  },
+  // Staten Island is intentionally excluded -- the product covers the
+  // other four boroughs only (backend/main.py filters it out by ZIP code
+  // at the data layer, so no Staten Island restaurant is ever served).
 ];

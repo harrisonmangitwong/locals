@@ -116,9 +116,21 @@ def _is_open_now(opening_hours_json: Optional[str]) -> Optional[bool]:
 # Data loading
 # ---------------------------------------------------------------------------
 
+def _is_staten_island_zip(postal_code) -> bool:
+    # Every Staten Island ZIP starts with 103 (10301-10314). Neighborhood
+    # name is not reliable for this -- "Seaside" is used for both a Staten
+    # Island neighborhood and a Rockaway Park (Queens) spot in this data,
+    # which a name-based filter would have wrongly excluded.
+    try:
+        return str(int(postal_code)).startswith("103")
+    except (ValueError, TypeError):
+        return False
+
+
 def load_data() -> pd.DataFrame:
     df = pd.read_csv(CSV_PATH)
     df = df.replace([np.inf, -np.inf], np.nan)
+    df = df[~df["postal_code"].apply(_is_staten_island_zip)].reset_index(drop=True)
     df = df.sort_values("p_safe_pick", ascending=False).reset_index(drop=True)
     df["rank"] = df.index + 1
 
