@@ -34,17 +34,17 @@ interface RestaurantDetail {
   opening_hours?: string;
   top_reviews?: string;
   extra_image_urls?: string;
+  review_themes?: string;
   is_open_now?: boolean | null;
   price_midpoint?: number | null;
   archetype?: string | null;
   [key: string]: unknown;
 }
 
-interface ReviewQuote {
-  text: string;
-  rating: number;
-  author: string;
-  published: string;
+interface ReviewThemes {
+  standout_dishes: string[];
+  vibe_and_service: string[];
+  wait_time_note: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -73,16 +73,17 @@ function friendlyDetailError(err: string | null): string {
   return "Something went wrong — try going back and refreshing.";
 }
 
-function parseTopReviews(json: string | undefined): ReviewQuote[] {
-  if (!json) return [];
+function parseReviewThemes(json: string | undefined): ReviewThemes | null {
+  if (!json) return null;
   try {
     const parsed = JSON.parse(json);
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter((r) => typeof r?.text === "string" && r.text.trim().length > 0)
-      .slice(0, 3);
+    const dishes = Array.isArray(parsed?.standout_dishes) ? parsed.standout_dishes.filter((d: unknown) => typeof d === "string" && d.trim()) : [];
+    const vibe = Array.isArray(parsed?.vibe_and_service) ? parsed.vibe_and_service.filter((v: unknown) => typeof v === "string" && v.trim()) : [];
+    const waitNote = typeof parsed?.wait_time_note === "string" && parsed.wait_time_note.trim() ? parsed.wait_time_note : null;
+    if (dishes.length === 0 && vibe.length === 0 && !waitNote) return null;
+    return { standout_dishes: dishes, vibe_and_service: vibe, wait_time_note: waitNote };
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -276,7 +277,7 @@ export default function RestaurantPage() {
   const price = priceLabel(r.price_midpoint);
   const verdictText = getVerdict(r.local_weighted_rating ?? 0, r.tourist_weighted_rating ?? 0);
   const hasMoreDetails = !!(r.phone || r.website || r.opening_hours);
-  const reviews = parseTopReviews(r.top_reviews as string | undefined);
+  const themes = parseReviewThemes(r.review_themes as string | undefined);
   const todayEntry = getTodayEntry(r.opening_hours as string | undefined);
 
   return (
@@ -454,23 +455,44 @@ export default function RestaurantPage() {
           </div>
         </section>
 
-        {/* What locals are saying */}
-        {reviews.length > 0 && (
+        {/* What people are saying */}
+        {themes && (
           <section style={{ borderTop: "1px solid var(--border)", paddingTop: "2.5rem" }}>
-            <h2 className="font-semibold text-lg mb-5" style={{ color: "var(--text)" }}>What locals are saying</h2>
-            <div className="space-y-5">
-              {reviews.map((rev, i) => (
-                <blockquote key={i}>
-                  <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>&ldquo;{rev.text}&rdquo;</p>
-                  <footer className="flex items-center gap-2 mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-                    <MiniStars rating={rev.rating} />
-                    <span className="font-medium" style={{ color: "var(--text-secondary)" }}>{rev.author}</span>
-                    <span>·</span>
-                    <span>{rev.published}</span>
-                  </footer>
-                </blockquote>
-              ))}
-            </div>
+            <h2 className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>What people are saying</h2>
+
+            {themes.standout_dishes.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Popular dishes</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {themes.standout_dishes.map((dish, i) => (
+                    <span
+                      key={i}
+                      className="text-xs font-medium px-2.5 py-1 rounded-full"
+                      style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent-text)" }}
+                    >
+                      {dish}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {themes.vibe_and_service.length > 0 && (
+              <ul className="space-y-1 mb-3">
+                {themes.vibe_and_service.map((item, i) => (
+                  <li key={i} className="text-sm leading-relaxed flex gap-2" style={{ color: "var(--text-secondary)" }}>
+                    <span style={{ color: "var(--text-muted)" }}>·</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {themes.wait_time_note && (
+              <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                {themes.wait_time_note}
+              </p>
+            )}
           </section>
         )}
 

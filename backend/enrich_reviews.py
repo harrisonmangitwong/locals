@@ -33,9 +33,9 @@ MAX_REVIEWS_PER_RESTAURANT = 15
 
 
 class ReviewThemes(BaseModel):
-    loved: list[str]        # 2-4 commonly loved dishes or aspects
-    criticisms: list[str]   # 1-3 recurring criticisms, corroborated by multiple reviews (empty list if none)
-    regulars: str           # one sentence on what keeps people coming back
+    standout_dishes: list[str]       # 2-4 specific dishes/drinks people consistently praise -- food only
+    vibe_and_service: list[str]      # 1-3 non-food reasons it's worth going (atmosphere, service, value, specific touches) -- never a dish
+    wait_time_note: str | None       # one practical sentence on wait times/reservations, only if reviews actually say enough to know; null otherwise
 
 
 def load_checkpoint() -> dict[str, str]:
@@ -85,16 +85,25 @@ def extract_themes(client: anthropic.Anthropic, name: str, cuisine: str, reviews
 Reviews from local reviewers:
 {review_text}
 
-Extract structured themes from these reviews. Be specific and concrete -- name actual dishes when mentioned, quote real patterns you see across multiple reviews. Never invent a dish or claim that isn't actually in the text above.
+Extract structured themes from these reviews. Be specific and concrete -- name actual dishes when mentioned, quote real patterns you see across multiple reviews. Never invent a dish, claim, or detail that isn't actually in the text above. This is about what's GOOD here and what's practically useful to know -- not a review of what's bad.
 
-- loved: 2-4 commonly loved dishes or aspects, 3-8 words each.
-- criticisms: 1-3 recurring criticisms that show up in MULTIPLE reviews, not a single reviewer's one-off complaint -- a single outlier complaint (even a serious one) does not belong here. Empty list if nothing recurs.
-- regulars: one natural sentence on what keeps people coming back -- plain, conversational language, like a friend telling you why a place is worth it. Do not use the words "locals," "regulars," or "tourists" in this sentence; lead with the dish or reason itself (e.g. "The crab fried rice and the weekend brunch line are the draw.").
+- standout_dishes: 2-4 specific dishes or drinks multiple reviews praise by name, 3-8 words each. Food and drink only -- nothing about service or atmosphere here. Empty list if no specific dish comes up more than once.
+- vibe_and_service: 1-3 non-food reasons people say it's worth going -- atmosphere, service, a specific staff mention, value, a detail like "great for groups" or "good for a date." Never a dish. Empty list if reviews don't really talk about this.
+- wait_time_note: ONE practical, plain-language sentence about wait times or reservations, only if multiple reviews actually give you enough to say something concrete (e.g. "Walk-ins get seated fast on weekdays, but expect a wait on weekend nights without a reservation."). Use null if reviews don't say enough to know this reliably -- do not guess or generalize from one review.
+
+Write in plain, conversational language, like a friend telling you why a place is worth it -- not marketing copy. Do not use the words "locals," "regulars," or "tourists" anywhere in your answer.
 """
 
     response = client.messages.parse(
         model="claude-sonnet-5-5",
-        max_tokens=512,
+        max_tokens=700,
+        # This model "thinks" by default even for plain non-tool-use calls,
+        # which otherwise burns the whole max_tokens budget on invisible
+        # reasoning and leaves no room for the actual structured output.
+        # "between_tools" is this model's actual way to turn that off (its
+        # own 400 error names this exact value -- "disabled" doesn't exist
+        # here, unlike older Claude models).
+        thinking={"type": "between_tools"},
         messages=[{"role": "user", "content": prompt}],
         output_format=ReviewThemes,
     )
