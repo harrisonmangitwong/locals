@@ -10,7 +10,7 @@ interface RequestRestaurantFormProps {
 }
 
 export default function RequestRestaurantForm({
-  triggerLabel = "Don't see a restaurant here? Tell us",
+  triggerLabel = "Missing a spot or got feedback? Tell us",
   className = "",
 }: RequestRestaurantFormProps) {
   const [open, setOpen] = useState(false);
@@ -67,24 +67,24 @@ export default function RequestRestaurantForm({
       <div className={`filter-expand${open ? " open" : ""}`}>
         <div className="filter-expand-inner">
           <form onSubmit={handleSubmit} className="pt-3 flex flex-col gap-2 max-w-sm text-left">
-            <label htmlFor="req-name" className="sr-only">Restaurant name</label>
+            <label htmlFor="req-name" className="sr-only">Restaurant name or feedback</label>
             <input
               id="req-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Restaurant name"
+              placeholder="Restaurant name or feedback"
               maxLength={200}
               required
               className="search-input rounded-lg px-3 py-2.5 text-sm min-h-[44px]"
               style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", outline: "none" }}
             />
-            <label htmlFor="req-note" className="sr-only">Neighborhood or other details</label>
+            <label htmlFor="req-note" className="sr-only">More details</label>
             <textarea
               id="req-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Neighborhood, cross street, anything that helps us find it (optional)"
+              placeholder="Any more details? (optional)"
               maxLength={500}
               rows={2}
               className="search-input rounded-lg px-3 py-2.5 text-sm resize-none"

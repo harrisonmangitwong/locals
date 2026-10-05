@@ -4,7 +4,26 @@ import ProofCard from "@/components/ProofCard";
 import { REVIEW_COUNT_LABEL } from "@/lib/stats";
 import { PROOF_EXAMPLES } from "@/lib/proofExamples";
 
-export default function AboutPage() {
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// Live count, not hardcoded -- a stale "374 restaurants" is exactly the
+// class of bug the 48k/73k review-count mismatch was. Revalidates hourly,
+// matching the product's own batch-pipeline cadence rather than refetching
+// on every request. Falls back to a vaguer phrase if the backend is ever
+// unreachable at render time, rather than failing the whole page.
+async function getRestaurantCount(): Promise<number | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/recommendations?page_size=1`, { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data.total === "number" ? data.total : null;
+  } catch {
+    return null;
+  }
+}
+
+export default async function AboutPage() {
+  const restaurantCount = await getRestaurantCount();
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader current="about" />
@@ -15,15 +34,20 @@ export default function AboutPage() {
         <div className="space-y-5 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
           <p>
             A few months ago I was traveling through Asia, trying to find good places to eat.
-            Google, Yelp, Instagram, TikTok — didn&apos;t matter which app, every restaurant
+            Google, Yelp, Instagram, TikTok. Didn&apos;t matter which app, every restaurant
             had nearly identical ratings. No way to tell what was actually worth going to.
           </p>
           <p>
             I came back to NYC and realized the same problem exists here, just at a bigger
             scale. Ratings aren&apos;t wrong exactly, they&apos;re just not weighted by who&apos;s
-            doing the rating — a local who&apos;s eaten there 20 times and a tourist who visited
-            once shouldn&apos;t count the same. So I scraped {REVIEW_COUNT_LABEL} NYC reviews and built
-            Locals to fix that.
+            doing the rating. A local who&apos;s eaten there 20 times and a tourist who visited
+            once shouldn&apos;t count the same. So I pulled together {REVIEW_COUNT_LABEL} NYC
+            reviews and built Locals to fix that.
+          </p>
+          <p>
+            Right now that covers{" "}
+            {restaurantCount ? <>{restaurantCount.toLocaleString()} restaurants</> : "restaurants"} across
+            Manhattan, Brooklyn, Queens, and the Bronx, with new spots added regularly.
           </p>
           <p>Hope it helps you find somewhere good.</p>
           <p style={{ color: "var(--text-muted)" }}>- Harrison</p>
@@ -75,7 +99,7 @@ export default function AboutPage() {
             Browse recommendations
           </Link>
           <p className="text-sm mt-4" style={{ color: "var(--text-muted)" }}>
-            Know a spot we&apos;re missing?{" "}
+            Missing a spot, found a bug, or have feedback?{" "}
             <Link href="/recommendations#request-restaurant" className="font-medium transition-opacity hover:opacity-75 active:opacity-60" style={{ color: "var(--accent-text)" }}>
               Tell us
             </Link>
