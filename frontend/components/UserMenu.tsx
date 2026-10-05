@@ -4,12 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import FindPeopleModal from "./FindPeopleModal";
 
 export default function UserMenu() {
   const [user, setUser] = useState<User | null>(null);
   const [open, setOpen] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [requestCount, setRequestCount] = useState(0);
+  const [findPeopleOpen, setFindPeopleOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -121,6 +123,18 @@ export default function UserMenu() {
             <span className="truncate">View profile</span>
           </Link>
 
+          <button
+            role="menuitem"
+            onClick={() => { setOpen(false); setFindPeopleOpen(true); }}
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm transition-opacity hover:opacity-75"
+            style={{ color: "var(--text)" }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" style={{ color: "var(--text-muted)" }}>
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Find people
+          </button>
+
           <div style={{ borderTop: "1px solid var(--border)" }} className="my-1" />
 
           <Link
@@ -172,6 +186,7 @@ export default function UserMenu() {
           </button>
         </div>
       )}
+      <FindPeopleModal open={findPeopleOpen} onClose={() => setFindPeopleOpen(false)} />
     </div>
   );
 }
