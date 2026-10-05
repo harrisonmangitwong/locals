@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { getActiveLocalIds } from "@/lib/server/activeLocal";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -29,11 +30,41 @@ export async function GET(req: NextRequest) {
 
   const { data: aboutRow } = await admin
     .from("profiles")
-    .select("bio, avatar_url")
+    .select("bio, avatar_url, is_private")
     .eq("user_id", userId)
     .maybeSingle();
   const bio = aboutRow?.bio ?? null;
   const avatarUrl = aboutRow?.avatar_url ?? null;
+  const isPrivate = aboutRow?.is_private ?? false;
+
+  // The privacy toggle previously only gated the follow *button* (instant
+  // accept vs. a pending request) -- this endpoint returned the full saved
+  // list to anyone who hit it regardless of approval status. The actual
+  // boundary belongs here: owner or an accepted follower sees the list,
+  // everyone else gets identity info (name/bio/avatar, so they know who
+  // they're looking at) but not the content.
+  let canViewContent = !isPrivate;
+  if (!canViewContent) {
+    const viewerClient = await createClient();
+    const { data: { user: viewer } } = await viewerClient.auth.getUser();
+    if (viewer) {
+      if (viewer.id === userId) {
+        canViewContent = true;
+      } else {
+        const { data: followRow } = await admin
+          .from("follows")
+          .select("status")
+          .eq("follower_id", viewer.id)
+          .eq("following_id", userId)
+          .maybeSingle();
+        canViewContent = followRow?.status === "accepted";
+      }
+    }
+  }
+
+  if (!canViewContent) {
+    return NextResponse.json({ results: [], name, userId, bio, avatarUrl, isPrivate: true });
+  }
 
   const { data: savedRows } = await admin
     .from("saved")
@@ -41,10 +72,10 @@ export async function GET(req: NextRequest) {
     .eq("user_id", userId);
 
   const ids = (savedRows ?? []).map((r) => r.restaurant_id);
-  if (ids.length === 0) return NextResponse.json({ results: [], name, userId, bio, avatarUrl });
+  if (ids.length === 0) return NextResponse.json({ results: [], name, userId, bio, avatarUrl, isPrivate });
 
   const res = await fetch(`${API_BASE}/api/restaurants/batch?ids=${ids.join(",")}`);
-  if (!res.ok) return NextResponse.json({ results: [], name, userId, bio, avatarUrl });
+  if (!res.ok) return NextResponse.json({ results: [], name, userId, bio, avatarUrl, isPrivate });
   const json = await res.json();
 
   const activeLocalIds = await getActiveLocalIds(admin, [userId]);
@@ -55,6 +86,7 @@ export async function GET(req: NextRequest) {
     userId,
     bio,
     avatarUrl,
+    isPrivate,
     isActiveLocal: activeLocalIds.has(userId),
   });
 }

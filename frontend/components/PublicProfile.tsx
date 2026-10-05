@@ -38,6 +38,7 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
   const [ownerBio, setOwnerBio] = useState<string | null>(null);
   const [ownerAvatarUrl, setOwnerAvatarUrl] = useState<string | null>(null);
   const [ownerIsActiveLocal, setOwnerIsActiveLocal] = useState(false);
+  const [ownerIsPrivate, setOwnerIsPrivate] = useState(false);
   const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -65,7 +66,7 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
         setOwnerBio(d.bio ?? null);
         setOwnerAvatarUrl(d.avatarUrl ?? null);
         setOwnerIsActiveLocal(!!d.isActiveLocal);
-        if (!d.results || d.results.length === 0) setNotFound(true);
+        setOwnerIsPrivate(!!d.isPrivate);
 
         const ids = (d.results ?? []).map((r: Restaurant) => r.restaurant_id).join(",");
         if (ids) {
@@ -139,6 +140,13 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
     }
   }
 
+  // The API already withholds the actual saved list for a private profile
+  // unless the viewer is the owner or an accepted follower -- this just
+  // decides which message to show in its place. followStatus starts null
+  // while its own fetch is in flight, which correctly falls through to
+  // "gated" (the safe default) rather than briefly showing content.
+  const isGated = ownerIsPrivate && followStatus !== "self" && followStatus !== "accepted";
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       {/* Topbar */}
@@ -176,10 +184,10 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
         {!loading && notFound && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
-              No saved restaurants
+              Couldn&apos;t find that profile
             </p>
             <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
-              This list is empty or doesn&apos;t exist.
+              This link may be out of date.
             </p>
             <Link
               href="/recommendations"
@@ -215,9 +223,11 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
                     </p>
                   )}
                   <div className="flex items-center gap-3 flex-wrap">
-                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                      {restaurants.length} spot{restaurants.length !== 1 ? "s" : ""} saved on Locals
-                    </p>
+                    {!isGated && (
+                      <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                        {restaurants.length} spot{restaurants.length !== 1 ? "s" : ""} saved on Locals
+                      </p>
+                    )}
                     {followCounts && (
                       <FollowCounts
                         followers={followCounts.followers}
@@ -273,32 +283,52 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {restaurants.map((r, i) => (
-                <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
-                  <RestaurantCard
-                    restaurantId={r.restaurant_id}
-                    rank={r.rank}
-                    name={r.name}
-                    neighborhood={r.neighborhood}
-                    cuisine={r.cuisine}
-                    reviews={r.review_count ?? r.num_reviews ?? 0}
-                    rating={r.total_score ?? 0}
-                    mapsUrl={r.url}
-                    photoUrl={r.image_url}
-                    followedSaveCount={followedSaveCounts[r.restaurant_id]}
-                    price={
-                      r.price_midpoint
-                        ? r.price_midpoint <= 15 ? "$"
-                        : r.price_midpoint <= 30 ? "$$"
-                        : r.price_midpoint <= 60 ? "$$$"
-                        : "$$$$"
-                        : undefined
-                    }
-                  />
-                </div>
-              ))}
-            </div>
+            {isGated ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-muted)" }} className="mb-3">
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>This account is private</p>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                  Follow {ownerName ?? "them"} to see their saved spots.
+                </p>
+              </div>
+            ) : restaurants.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>No saved restaurants yet</p>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                  {ownerName ?? "They"} haven&apos;t saved anything on Locals yet.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {restaurants.map((r, i) => (
+                  <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
+                    <RestaurantCard
+                      restaurantId={r.restaurant_id}
+                      rank={r.rank}
+                      name={r.name}
+                      neighborhood={r.neighborhood}
+                      cuisine={r.cuisine}
+                      reviews={r.review_count ?? r.num_reviews ?? 0}
+                      rating={r.total_score ?? 0}
+                      mapsUrl={r.url}
+                      photoUrl={r.image_url}
+                      followedSaveCount={followedSaveCounts[r.restaurant_id]}
+                      price={
+                        r.price_midpoint
+                          ? r.price_midpoint <= 15 ? "$"
+                          : r.price_midpoint <= 30 ? "$$"
+                          : r.price_midpoint <= 60 ? "$$$"
+                          : "$$$$"
+                          : undefined
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </main>
