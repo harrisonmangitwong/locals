@@ -37,13 +37,9 @@ export default function Home() {
 
           <Link
             href="/recommendations"
-            className="cta-btn inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold"
+            className="cta-btn inline-flex items-center gap-2 px-8 py-4 rounded-xl text-base font-semibold"
           >
-            Find restaurants
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
+            Browse the picks
           </Link>
           <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>
             {REVIEW_COUNT_LABEL} reviews across {RESTAURANT_POOL_LABEL} NYC restaurants, filtered for locals.
