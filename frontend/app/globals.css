@@ -13,10 +13,9 @@
   --accent-hover: #ab7319;
   --accent-soft: rgba(201,138,31,0.12);
   --accent-text: #9c6c17;
-  --cta-bg-top: #6b674a;
-  --cta-bg-bottom: #4f4b35;
+  --cta-bg: #55503a;
+  --cta-bg-hover: #413d2c;
   --cta-text: #f3ece0;
-  --cta-shadow: 0 3px 9px rgba(30,28,18,0.32);
   --border: rgba(36,31,24,0.1);
   --border-strong: rgba(36,31,24,0.18);
   --shadow-sm: 0 1px 2px rgba(36,31,24,0.06);
@@ -47,10 +46,9 @@
     --accent-hover: #c99228;
     --accent-soft: rgba(224,167,58,0.14);
     --accent-text: #e0a73a;
-    --cta-bg-top: #7a7556;
-    --cta-bg-bottom: #58543c;
+    --cta-bg: #6f6a4f;
+    --cta-bg-hover: #5c5840;
     --cta-text: #f5efe0;
-    --cta-shadow: 0 3px 10px rgba(10,9,5,0.5);
     --border: rgba(245,239,224,0.1);
     --border-strong: rgba(245,239,224,0.18);
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.15);
@@ -200,23 +198,52 @@ a, button, [role="button"] {
 }
 
 /* ── CTA press ──
-   A dedicated muted olive (--cta-bg-top/bottom), distinct from --accent's
-   amber everywhere else -- deliberately NOT the bright/flat amber chip this
-   used to be. Depth (gradient + shadow) is baked in at rest, not earned on
-   hover, because a flat fill read as dull/lifeless; hover only adds lift on
-   top of that. Text is a fixed light cream (not var(--text)) since the
-   olive is dark enough in both themes to need light text, unlike the old
-   bright-amber chip which needed dark ink. */
+   A dedicated muted olive (--cta-bg), distinct from --accent's amber
+   everywhere else. Flat at rest, same as every other surface in this
+   system (cards, pagination) -- a gradient + shadow baked in at rest was
+   tried and read as a pop-up-ad "Claim Now" button, not an app CTA. Shadow
+   and the color shift to --cta-bg-hover are earned on hover only. Text is
+   a fixed light cream (not var(--text)) since the olive is dark enough in
+   both themes to need light text, unlike the old bright-amber chip which
+   needed dark ink. */
 .cta-btn {
-  background-image: linear-gradient(to bottom, var(--cta-bg-top), var(--cta-bg-bottom));
+  background-color: var(--cta-bg);
   color: var(--cta-text);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, var(--cta-shadow);
-  transition: box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 100ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 100ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 44px;
 }
 .cta-btn:hover {
-  box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, var(--cta-shadow), var(--shadow);
+  background-color: var(--cta-bg-hover);
+  box-shadow: var(--shadow);
   transform: translateY(-1px) scale(1.03);
+}
+
+/* ── Filter pill (toggle-style buttons, e.g. "All restaurants" / "For You") ──
+   Colors live entirely in these classes, not inline style -- an inline
+   backgroundColor always wins over a class-based :hover rule regardless of
+   specificity tricks, which is why a first attempt at this hover state
+   silently did nothing. */
+.filter-pill {
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.filter-pill.is-active {
+  background-color: var(--accent);
+  color: #241f18;
+  border: 1px solid var(--accent);
+}
+.filter-pill.is-active:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+.filter-pill:not(.is-active) {
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.filter-pill:not(.is-active):hover {
+  background-color: var(--bg-inset);
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 .cta-btn:hover svg {
   transform: translateX(2px);

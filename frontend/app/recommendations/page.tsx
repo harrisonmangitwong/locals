@@ -364,24 +364,14 @@ function RecommendationsContent() {
             <button
               onClick={() => updateParams({ for_you: "" })}
               aria-pressed={!forYou}
-              className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90 active:opacity-75"
-              style={{
-                backgroundColor: !forYou ? "var(--accent)" : "var(--bg-subtle)",
-                color: !forYou ? "#241f18" : "var(--text-secondary)",
-                border: `1px solid ${!forYou ? "var(--accent)" : "var(--border)"}`,
-              }}
+              className={`filter-pill text-xs font-semibold px-3 py-2 rounded-full min-h-[44px] flex items-center active:scale-95${!forYou ? " is-active" : ""}`}
             >
               All restaurants
             </button>
             <button
               onClick={() => updateParams({ for_you: "1" })}
               aria-pressed={forYou}
-              className="text-xs font-semibold px-3 py-2 rounded-full transition-all duration-150 min-h-[44px] flex items-center hover:opacity-90 active:opacity-75"
-              style={{
-                backgroundColor: forYou ? "var(--accent)" : "var(--bg-subtle)",
-                color: forYou ? "#241f18" : "var(--text-secondary)",
-                border: `1px solid ${forYou ? "var(--accent)" : "var(--border)"}`,
-              }}
+              className={`filter-pill text-xs font-semibold px-3 py-2 rounded-full min-h-[44px] flex items-center active:scale-95${forYou ? " is-active" : ""}`}
             >
               For You
             </button>
