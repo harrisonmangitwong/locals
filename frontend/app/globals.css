@@ -54,8 +54,9 @@
   --diner-cta-shadow: 0 3px 10px rgba(42,33,24,0.22);
   --diner-card-bg: #faf6ec;
   --diner-bg-highlight: rgba(255,250,232,0.85);
-  --diner-status: #4f8a24;
+  --diner-status: #356814;
   --diner-status-glow: none;
+  --diner-status-tag-shadow: none;
 }
 
 /* ── Dark mode ── */
@@ -106,6 +107,7 @@
     --diner-bg-highlight: rgba(255,150,60,0.08);
     --diner-status: #4ade80;
     --diner-status-glow: 0 0 6px rgba(74,222,128,0.8), 0 0 14px rgba(74,222,128,0.5);
+    --diner-status-tag-shadow: 0 0 14px rgba(74,222,128,0.18) inset, 0 0 10px rgba(74,222,128,0.2);
   }
 }
 
@@ -596,13 +598,15 @@ a, button, [role="button"] {
   gap: 8px;
   font-family: var(--font-diner-data, "Space Grotesk"), system-ui, sans-serif;
   font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  color: var(--diner-ink-muted);
-  border: 1px solid var(--diner-ink-muted);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--diner-status);
+  border: 1.5px solid var(--diner-status);
   border-radius: 999px;
-  padding: 6px 14px;
-  opacity: 0.9;
+  padding: 6px 16px;
+  text-shadow: var(--diner-status-glow);
+  box-shadow: var(--diner-status-tag-shadow);
 }
 .diner-open-dot {
   width: 6px;
