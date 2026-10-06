@@ -635,7 +635,7 @@ a, button, [role="button"] {
   align-items: center;
   min-height: 44px;
   padding: 0 28px;
-  border-radius: 10px;
+  border-radius: 999px;
   font-size: 16px;
   font-weight: 600;
   background-color: var(--diner-cta-bg);
