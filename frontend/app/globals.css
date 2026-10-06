@@ -13,8 +13,8 @@
   --accent-hover: #ab7319;
   --accent-soft: rgba(201,138,31,0.12);
   --accent-text: #9c6c17;
-  --cta-bg: #55503a;
-  --cta-bg-hover: #413d2c;
+  --cta-bg: #b54c0e;
+  --cta-bg-hover: #933d0b;
   --cta-text: #f3ece0;
   --border: rgba(36,31,24,0.1);
   --border-strong: rgba(36,31,24,0.18);
@@ -73,8 +73,8 @@
     --accent-hover: #c99228;
     --accent-soft: rgba(224,167,58,0.14);
     --accent-text: #e0a73a;
-    --cta-bg: #6f6a4f;
-    --cta-bg-hover: #5c5840;
+    --cta-bg: #b54c0e;
+    --cta-bg-hover: #9c3e0a;
     --cta-text: #f5efe0;
     --border: rgba(245,239,224,0.1);
     --border-strong: rgba(245,239,224,0.18);
@@ -244,14 +244,19 @@ a, button, [role="button"] {
 }
 
 /* ── CTA press ──
-   A dedicated muted olive (--cta-bg), distinct from --accent's amber
-   everywhere else. Flat at rest, same as every other surface in this
-   system (cards, pagination) -- a gradient + shadow baked in at rest was
-   tried and read as a pop-up-ad "Claim Now" button, not an app CTA. Shadow
+   Orange (--cta-bg), matching the homepage diner hero's action color --
+   was a muted olive before the diner-counter redesign; unified to orange
+   so the one site-wide "action" color is consistent with the hero instead
+   of three different button languages across the app (amber accent chips,
+   olive CTA, orange hero CTA). Flat at rest, same as every other surface
+   in this system (cards, pagination) -- a gradient + shadow baked in at
+   rest was tried early in the diner build and read as a pop-up-ad
+   "Claim Now" button, not an app CTA; that finding holds here too. Shadow
    and the color shift to --cta-bg-hover are earned on hover only. Text is
-   a fixed light cream (not var(--text)) since the olive is dark enough in
-   both themes to need light text, unlike the old bright-amber chip which
-   needed dark ink. */
+   a fixed light cream (not var(--text)) since the orange is dark enough in
+   both themes to need light text -- computed contrast: 4.47:1 (light) /
+   4.57:1 (dark) text-on-button, both above the 4.5:1 floor for this size
+   of button text, plus 4.66:1 / 3.3:1 button-vs-page-background. */
 .cta-btn {
   background-color: var(--cta-bg);
   color: var(--cta-text);
