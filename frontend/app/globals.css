@@ -579,6 +579,31 @@ a, button, [role="button"] {
   mask-image: linear-gradient(to bottom, transparent, black 70%);
   pointer-events: none;
 }
+/* A diegetic status badge (a lit "OPEN" sign), not a generic template
+   eyebrow -- kept to the hero's two-color rule: neutral ink for the pill
+   itself, the one orange (--diner-cta-border, same as the CTA) only on the
+   live-status dot. */
+.diner-open-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-diner-data, "Space Grotesk"), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--diner-ink-muted);
+  border: 1px solid var(--diner-ink-muted);
+  border-radius: 999px;
+  padding: 6px 14px;
+  opacity: 0.9;
+}
+.diner-open-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--diner-cta-border);
+  box-shadow: var(--diner-cta-glow);
+}
 .diner-headline {
   font-family: var(--font-diner-display, "Fredoka"), system-ui, sans-serif;
   font-weight: 700;

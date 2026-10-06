@@ -15,6 +15,10 @@ export default function Home() {
       <section id="main-content" className="diner-hero flex-1 flex items-center">
         <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-16 flex flex-col md:flex-row gap-12 md:gap-16 md:items-center">
           <div className="flex-1">
+            <div className="diner-open-tag mb-5">
+              <span className="diner-open-dot" />
+              Open &middot; deciding now
+            </div>
             <h1 className="diner-headline text-5xl sm:text-6xl md:text-7xl mb-6">
               Let&apos;s eat.
             </h1>
