@@ -54,6 +54,8 @@
   --diner-cta-shadow: 0 3px 10px rgba(42,33,24,0.22);
   --diner-card-bg: #faf6ec;
   --diner-bg-highlight: rgba(255,250,232,0.85);
+  --diner-status: #4f8a24;
+  --diner-status-glow: none;
 }
 
 /* ── Dark mode ── */
@@ -102,6 +104,8 @@
     --diner-cta-shadow: 0 0 16px rgba(255,122,53,0.24) inset, 0 0 14px rgba(255,122,53,0.28);
     --diner-card-bg: #f7f0e0;
     --diner-bg-highlight: rgba(255,150,60,0.08);
+    --diner-status: #4ade80;
+    --diner-status-glow: 0 0 6px rgba(74,222,128,0.8), 0 0 14px rgba(74,222,128,0.5);
   }
 }
 
@@ -580,9 +584,12 @@ a, button, [role="button"] {
   pointer-events: none;
 }
 /* A diegetic status badge (a lit "OPEN" sign), not a generic template
-   eyebrow -- kept to the hero's two-color rule: neutral ink for the pill
-   itself, the one orange (--diner-cta-border, same as the CTA) only on the
-   live-status dot. */
+   eyebrow -- neutral ink for the pill itself. The dot is a third, narrow
+   color exception (--diner-status, green): open/go is a real-world
+   convention real diner signs use, and it keeps "live status" visually
+   distinct from "the one action" (orange, the CTA) instead of conflating
+   both under the same hue. Scoped to just this 6px dot -- not used
+   anywhere else in the hero. */
 .diner-open-tag {
   display: inline-flex;
   align-items: center;
@@ -601,8 +608,8 @@ a, button, [role="button"] {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--diner-cta-border);
-  box-shadow: var(--diner-cta-glow);
+  background: var(--diner-status);
+  box-shadow: var(--diner-status-glow);
 }
 .diner-headline {
   font-family: var(--font-diner-display, "Fredoka"), system-ui, sans-serif;
