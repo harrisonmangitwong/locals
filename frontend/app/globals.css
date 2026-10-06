@@ -643,20 +643,36 @@ a, button, [role="button"] {
 /* Reveal-on-hover/scroll: the two cards overlap at rest (the back card is
    half-covered), so each needs a way to come fully into view. Real :hover
    on desktop; the app's existing useScrollActive .in-view toggle stands in
-   for touch, same mechanism .restaurant-card already uses elsewhere. Only
-   the back card (--right, last-child) needs to translate clear of the
-   overlap -- the front card is never covered, it just lifts. */
-.diner-card--left:hover,
-.diner-card--left.in-view {
+   for touch, same mechanism .restaurant-card already uses elsewhere -- and,
+   like that pattern, .in-view's styling is scoped to (hover: none). The
+   hook adds the class on every device regardless, so without that media
+   scope .in-view would fire the instant the hero loads (the cards start
+   inside the first viewport) and the "revealed" state would just be
+   permanent on desktop, leaving nothing for :hover to change -- exactly
+   the "it's static" bug this fixes. Only the back card (--right,
+   last-child) needs to translate clear of the overlap -- the front card is
+   never covered, it just lifts. */
+.diner-card--left:hover {
   transform: translateY(-6px) rotate(-1deg);
   z-index: 10;
   box-shadow: 0 16px 32px rgba(0,0,0,0.32);
 }
-.diner-card--right:hover,
-.diner-card--right.in-view {
+.diner-card--right:hover {
   transform: translate(18px, -6px) rotate(1deg);
   z-index: 10;
   box-shadow: 0 16px 32px rgba(0,0,0,0.32);
+}
+@media (hover: none) {
+  .diner-card--left.in-view {
+    transform: translateY(-6px) rotate(-1deg);
+    z-index: 10;
+    box-shadow: 0 16px 32px rgba(0,0,0,0.32);
+  }
+  .diner-card--right.in-view {
+    transform: translate(18px, -6px) rotate(1deg);
+    z-index: 10;
+    box-shadow: 0 16px 32px rgba(0,0,0,0.32);
+  }
 }
 .diner-card-badge {
   font-family: var(--font-diner-data, "Space Grotesk"), system-ui, sans-serif;
