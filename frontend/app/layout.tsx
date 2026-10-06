@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Bricolage_Grotesque } from "next/font/google";
+import { Plus_Jakarta_Sans, Bricolage_Grotesque, Fredoka, Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -13,6 +13,22 @@ const displayFont = Bricolage_Grotesque({
   weight: ["700", "800"],
   subsets: ["latin"],
   variable: "--font-display-face",
+});
+
+// Homepage hero only -- the diner-neon headline voice (see the diner-hero
+// CSS and page.tsx's surface brief), deliberately distinct from the app's
+// own-world display face above.
+const dinerFont = Fredoka({
+  weight: ["600", "700"],
+  subsets: ["latin"],
+  variable: "--font-diner-display",
+});
+
+// Homepage hero only -- ticket/data labels (ratings, badges, footer stat).
+const dinerMono = Space_Grotesk({
+  weight: ["500", "600"],
+  subsets: ["latin"],
+  variable: "--font-diner-data",
 });
 
 export const metadata: Metadata = {
@@ -40,7 +56,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${plusJakarta.variable} ${displayFont.variable} h-full antialiased`}>
+    <html lang="en" className={`${plusJakarta.variable} ${displayFont.variable} ${dinerFont.variable} ${dinerMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <a href="#main-content" className="skip-nav">Skip to main content</a>
         {children}

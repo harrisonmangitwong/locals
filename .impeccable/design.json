@@ -1,20 +1,20 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-23T00:00:00Z",
+  "generatedAt": "2026-10-06T00:00:00Z",
   "title": "Design System: Locals",
   "extensions": {
     "colorMeta": {
-      "sunbaked-terracotta": {
+      "warm-amber": {
         "role": "primary",
-        "displayName": "Sunbaked Terracotta",
-        "canonical": "#d95030",
-        "tonalRamp": ["oklch(20% 0.08 30)", "oklch(30% 0.12 30)", "oklch(40% 0.15 30)", "oklch(50% 0.18 30)", "oklch(58% 0.18 35)", "oklch(68% 0.15 35)", "oklch(80% 0.10 35)", "oklch(92% 0.04 35)"]
+        "displayName": "Warm Amber",
+        "canonical": "#c98a1f",
+        "tonalRamp": ["oklch(20% 0.06 75)", "oklch(30% 0.09 75)", "oklch(40% 0.11 75)", "oklch(50% 0.13 75)", "oklch(58% 0.14 75)", "oklch(70% 0.11 75)", "oklch(82% 0.07 75)", "oklch(93% 0.03 75)"]
       },
-      "muted-gold": {
+      "cta-olive": {
         "role": "secondary",
-        "displayName": "Muted Gold",
-        "canonical": "#b8860b",
-        "tonalRamp": ["oklch(20% 0.05 80)", "oklch(32% 0.08 80)", "oklch(44% 0.10 80)", "oklch(55% 0.12 80)", "oklch(60% 0.13 80)", "oklch(72% 0.10 80)", "oklch(84% 0.07 80)", "oklch(94% 0.03 80)"]
+        "displayName": "CTA Olive",
+        "canonical": "#55503a",
+        "tonalRamp": ["oklch(14% 0.02 95)", "oklch(24% 0.03 95)", "oklch(34% 0.03 95)", "oklch(42% 0.03 95)", "oklch(48% 0.03 95)", "oklch(60% 0.03 95)", "oklch(75% 0.02 95)", "oklch(90% 0.01 95)"]
       },
       "confirmation-green": {
         "role": "tertiary",
@@ -22,34 +22,35 @@
         "canonical": "#2d8a56",
         "tonalRamp": ["oklch(18% 0.05 155)", "oklch(28% 0.08 155)", "oklch(38% 0.10 155)", "oklch(48% 0.12 155)", "oklch(53% 0.12 155)", "oklch(65% 0.10 155)", "oklch(78% 0.07 155)", "oklch(92% 0.03 155)"]
       },
-      "warm-cream": {
+      "bg-warm": {
         "role": "neutral",
-        "displayName": "Warm Cream",
-        "canonical": "#faf8f5",
-        "tonalRamp": ["oklch(15% 0.01 50)", "oklch(28% 0.01 50)", "oklch(42% 0.01 50)", "oklch(55% 0.01 50)", "oklch(68% 0.01 50)", "oklch(80% 0.008 50)", "oklch(90% 0.006 50)", "oklch(97% 0.005 50)"]
+        "displayName": "Warm Background",
+        "canonical": "#f7f1e5",
+        "tonalRamp": ["oklch(15% 0.01 70)", "oklch(28% 0.01 70)", "oklch(42% 0.01 70)", "oklch(55% 0.01 70)", "oklch(68% 0.01 70)", "oklch(80% 0.008 70)", "oklch(90% 0.006 70)", "oklch(97% 0.005 70)"]
       },
       "ink": {
         "role": "neutral",
         "displayName": "Ink",
-        "canonical": "#1a1814",
-        "tonalRamp": ["oklch(12% 0.01 50)", "oklch(22% 0.01 50)", "oklch(32% 0.01 50)", "oklch(42% 0.01 50)", "oklch(55% 0.008 50)", "oklch(68% 0.006 50)", "oklch(82% 0.005 50)", "oklch(95% 0.003 50)"]
+        "canonical": "#241f18",
+        "tonalRamp": ["oklch(12% 0.01 60)", "oklch(22% 0.01 60)", "oklch(32% 0.01 60)", "oklch(42% 0.01 60)", "oklch(55% 0.008 60)", "oklch(68% 0.006 60)", "oklch(82% 0.005 60)", "oklch(95% 0.003 60)"]
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Page titles and restaurant names only -- the one serif moment, never body copy or UI chrome." },
-      "body": { "displayName": "Body", "purpose": "All functional text: descriptions, forms, nav, buttons, metadata." }
+      "display": { "displayName": "Display", "purpose": "Page headlines and status-headline moments only -- Bricolage Grotesque 800, never body copy or UI chrome." },
+      "body": { "displayName": "Body", "purpose": "All functional text: descriptions, forms, nav, buttons, metadata -- Plus Jakarta Sans." }
     },
     "shadows": [
-      { "name": "ambient", "value": "0 1px 2px rgba(26,24,20,0.05)", "purpose": "Quietest resting elevation, rarely used alone." },
-      { "name": "standard", "value": "0 2px 8px rgba(26,24,20,0.07)", "purpose": "Default depth for buttons and cards that carry some rest-state shadow." },
-      { "name": "lifted", "value": "0 8px 30px rgba(26,24,20,0.10)", "purpose": "Hover/active state -- modals, dropdowns, a hovered restaurant card." }
+      { "name": "shadow-sm", "value": "0 1px 2px rgba(36,31,24,0.06)", "purpose": "Quietest resting elevation, rarely used alone." },
+      { "name": "shadow", "value": "0 2px 8px rgba(36,31,24,0.09)", "purpose": "Default depth for buttons and surfaces that carry some rest-state shadow (price-slider thumb)." },
+      { "name": "shadow-lg", "value": "0 8px 30px rgba(36,31,24,0.14)", "purpose": "Modals and dropdowns." },
+      { "name": "shadow-card-hover", "value": "0 20px 48px rgba(36,31,24,0.22)", "purpose": "The hovered/in-view restaurant card specifically." }
     ],
     "motion": [
-      { "name": "ease-confident", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Interaction feedback -- card hover lift, photo zoom, confident deceleration with no overshoot." },
-      { "name": "ease-entrance", "value": "cubic-bezier(0.25, 1, 0.5, 1)", "purpose": "Authored entrance animations -- card stagger-in, modal drop-in, bar fill, save confirmation." },
-      { "name": "duration-immediate", "value": "150ms", "purpose": "Icon buttons, links, filter controls -- direct feedback to a click or hover." },
+      { "name": "ease-confident", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Interaction feedback -- card hover lift, photo zoom, filter/page-btn hover, confident deceleration with no overshoot." },
+      { "name": "ease-entrance", "value": "cubic-bezier(0.25, 1, 0.5, 1)", "purpose": "Authored entrance animations -- card stagger-in, modal drop-in (.menu-drop), bar fill, save-confirm pill." },
+      { "name": "duration-immediate", "value": "150ms", "purpose": "Icon buttons, links, filter controls, CTA hover -- direct feedback to a click or hover." },
       { "name": "duration-card", "value": "180ms", "purpose": "Restaurant card hover lift." },
-      { "name": "duration-photo", "value": "220ms", "purpose": "Restaurant card photo hover-zoom -- tuned to move together with the card's own 180ms lift, not lag behind it." }
+      { "name": "duration-photo", "value": "220ms", "purpose": "Restaurant card photo hover-zoom -- tuned to move together with the card's own 180ms lift." }
     ],
     "breakpoints": [
       { "name": "sm", "value": "640px" },
@@ -59,93 +60,87 @@
   },
   "components": [
     {
-      "name": "Primary Button",
+      "name": "Primary CTA Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Filled terracotta pill button -- the only button style with a persistent background fill.",
-      "html": "<button class=\"ds-btn-primary\">Sign in</button>",
-      "css": ".ds-btn-primary { background: var(--accent, #d95030); color: #fff; font-weight: 600; font-size: 0.875rem; padding: 12px 24px; border-radius: 9999px; border: none; min-height: 44px; transition: background-color 150ms ease, transform 100ms ease, box-shadow 150ms ease; } .ds-btn-primary:hover { background: var(--accent-hover, #c44528); box-shadow: 0 2px 8px rgba(26,24,20,0.07); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid var(--accent, #d95030); outline-offset: 2px; }"
+      "description": "Flat olive pill CTA -- distinct from the amber accent used everywhere else; shadow and lift are earned on hover only.",
+      "html": "<button class=\"ds-btn-primary\">Browse the picks</button>",
+      "css": ".ds-btn-primary { background: var(--cta-bg, #55503a); color: var(--cta-text, #f3ece0); font-weight: 600; font-size: 0.875rem; padding: 0 24px; min-height: 44px; border-radius: 9999px; border: none; transition: background-color 150ms cubic-bezier(0.16,1,0.3,1), transform 100ms cubic-bezier(0.16,1,0.3,1), box-shadow 150ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-primary:hover { background: var(--cta-bg-hover, #413d2c); box-shadow: 0 2px 8px rgba(36,31,24,0.09); transform: translateY(-1px) scale(1.03); } .ds-btn-primary:active { transform: translateY(1px) scale(1); } .ds-btn-primary:focus-visible { outline: 2px solid var(--accent, #c98a1f); outline-offset: 2px; }"
     },
     {
-      "name": "Secondary Button (Google sign-in)",
-      "kind": "button",
-      "refersTo": "button-secondary",
-      "description": "White pill button borrowing Google's own brand colors -- the one deliberate exception to the app's own palette.",
-      "html": "<button class=\"ds-btn-google\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 18 18\"><path fill=\"#4285F4\" d=\"M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z\"/><path fill=\"#34A853\" d=\"M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.859-3.048.859-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z\"/><path fill=\"#FBBC05\" d=\"M3.964 10.706A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.038l3.007-2.332z\"/><path fill=\"#EA4335\" d=\"M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z\"/></svg>Sign in with Google</button>",
-      "css": ".ds-btn-google { display: inline-flex; align-items: center; justify-content: center; gap: 12px; background: #ffffff; color: #3c4043; font-weight: 600; font-size: 0.875rem; padding: 12px 16px; border-radius: 9999px; border: 1px solid #dadce0; transition: opacity 150ms ease; } .ds-btn-google:hover { opacity: 0.85; }"
+      "name": "Filter Pill (toggle)",
+      "kind": "chip",
+      "refersTo": "filter-pill-active",
+      "description": "Toggle-style control (e.g. 'All restaurants' / 'For You'); active state fills with the amber accent, inactive sits on subtle sand.",
+      "html": "<button class=\"ds-filter-pill ds-is-active\">For You</button>",
+      "css": ".ds-filter-pill { font-size: 0.8125rem; font-weight: 500; padding: 8px 16px; border-radius: 9999px; border: 1px solid transparent; transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease; } .ds-filter-pill.ds-is-active { background: var(--accent, #c98a1f); color: #241f18; border-color: var(--accent, #c98a1f); } .ds-filter-pill.ds-is-active:hover { background: var(--accent-hover, #ab7319); border-color: var(--accent-hover, #ab7319); } .ds-filter-pill:not(.ds-is-active) { background: var(--bg-subtle, #efe6d3); color: var(--text-secondary, #5c5346); border-color: var(--border, rgba(36,31,24,0.1)); } .ds-filter-pill:not(.ds-is-active):hover { background: var(--bg-inset, #e6dabf); border-color: var(--border-strong, rgba(36,31,24,0.18)); color: var(--text, #241f18); }"
     },
     {
       "name": "Restaurant Card",
       "kind": "card",
       "refersTo": "card-restaurant",
-      "description": "Photography-first card: flat at rest, lifts with shadow and a subtle photo zoom on hover.",
+      "description": "Photography-first card: flat at rest, lifts with --shadow-card-hover and a subtle photo zoom on hover/in-view.",
       "html": "<div class=\"ds-card\"><div class=\"ds-card-photo-wrap\"><img class=\"ds-card-photo\" src=\"\" alt=\"\"/></div><div class=\"ds-card-body\"><h3 class=\"ds-card-title\">Restaurant Name</h3><p class=\"ds-card-meta\">Neighborhood &middot; Cuisine &middot; $$</p></div></div>",
-      "css": ".ds-card { background: var(--bg-card, #fff); border: 1px solid var(--border, rgba(26,24,20,0.08)); border-radius: 16px; overflow: hidden; transition: transform 180ms cubic-bezier(0.16,1,0.3,1), box-shadow 180ms cubic-bezier(0.16,1,0.3,1); } .ds-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(26,24,20,0.10); } .ds-card-photo-wrap { overflow: hidden; height: 200px; } .ds-card-photo { width: 100%; height: 100%; object-fit: cover; transition: transform 220ms cubic-bezier(0.16,1,0.3,1); } .ds-card:hover .ds-card-photo { transform: scale(1.03); } .ds-card-body { padding: 16px; } .ds-card-title { font-weight: 600; font-size: 1rem; color: var(--text, #1a1814); margin-bottom: 8px; } .ds-card-meta { font-size: 0.75rem; color: var(--text-secondary, #6b6560); }"
-    },
-    {
-      "name": "Archetype Chip",
-      "kind": "chip",
-      "refersTo": "chip-archetype",
-      "description": "Earned badge, not decoration -- only appears when the restaurant clears a real quantile rule.",
-      "html": "<button class=\"ds-chip\">Hidden Gem</button>",
-      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 500; padding: 2px 10px; border-radius: 9999px; background: rgba(217,80,48,0.08); color: #c0451f; border: none; transition: opacity 150ms ease; } .ds-chip:hover { opacity: 0.8; }"
+      "css": ".ds-card { background: var(--bg-card, #fffdf8); border: 1px solid var(--border, rgba(36,31,24,0.1)); border-radius: 16px; overflow: hidden; transition: transform 180ms cubic-bezier(0.16,1,0.3,1), box-shadow 180ms cubic-bezier(0.16,1,0.3,1); } .ds-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(36,31,24,0.22); } .ds-card-photo-wrap { overflow: hidden; height: 200px; } .ds-card-photo { width: 100%; height: 100%; object-fit: cover; transition: transform 220ms cubic-bezier(0.16,1,0.3,1); } .ds-card:hover .ds-card-photo { transform: scale(1.03); } .ds-card-body { padding: 16px; } .ds-card-title { font-weight: 600; font-size: 1rem; color: var(--text, #241f18); margin-bottom: 8px; } .ds-card-meta { font-size: 0.75rem; color: var(--text-secondary, #5c5346); }"
     },
     {
       "name": "Search Input",
       "kind": "input",
       "refersTo": "input-search",
-      "description": "Warm-sand field with an accent focus ring, no default browser outline.",
+      "description": "Warm-sand field with an amber focus ring, no default browser outline.",
       "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search restaurants...\"/>",
-      "css": ".ds-input { width: 100%; background: var(--bg-subtle, #f0ece7); color: var(--text, #1a1814); border: 1px solid var(--border, rgba(26,24,20,0.08)); border-radius: 8px; padding: 10px 16px; font-size: 0.875rem; outline: none; transition: border-color 150ms ease, box-shadow 150ms ease; } .ds-input:focus { border-color: var(--accent, #d95030); box-shadow: 0 0 0 3px rgba(217,80,48,0.08); }"
+      "css": ".ds-input { width: 100%; background: var(--bg-subtle, #efe6d3); color: var(--text, #241f18); border: 1px solid var(--border, rgba(36,31,24,0.1)); border-radius: 8px; padding: 10px 16px; font-size: 0.875rem; outline: none; transition: border-color 150ms ease, box-shadow 150ms ease; } .ds-input:focus { border-color: var(--accent, #c98a1f); box-shadow: 0 0 0 3px rgba(201,138,31,0.12); }"
     },
     {
       "name": "Site Header",
       "kind": "nav",
       "refersTo": "nav-header",
-      "description": "Sticky nav; active page carries weight and color, never an underline or pill mark. Signed-out visitors see a persistent Google sign-up pill after the nav links.",
+      "description": "Sticky nav; active page carries weight and color, never an underline or pill mark.",
       "html": "<header class=\"ds-nav\"><span class=\"ds-nav-logo\">Locals</span><nav class=\"ds-nav-links\"><a class=\"ds-nav-link ds-nav-link-active\" href=\"#\">Recs</a><a class=\"ds-nav-link\" href=\"#\">Saved</a><a class=\"ds-nav-link\" href=\"#\">Visited</a><a class=\"ds-nav-link\" href=\"#\">About</a></nav></header>",
-      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: var(--bg, #faf8f5); border-bottom: 1px solid var(--border, rgba(26,24,20,0.08)); position: sticky; top: 0; } .ds-nav-logo { font-family: 'DM Serif Display', Georgia, serif; font-size: 1.25rem; color: var(--text, #1a1814); } .ds-nav-links { display: flex; align-items: center; gap: 24px; } .ds-nav-link { font-size: 0.875rem; color: var(--text-secondary, #6b6560); text-decoration: none; transition: opacity 150ms ease; } .ds-nav-link:hover { opacity: 0.75; } .ds-nav-link-active { font-weight: 500; color: var(--text, #1a1814); }"
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: var(--bg, #f7f1e5); border-bottom: 1px solid var(--border, rgba(36,31,24,0.1)); position: sticky; top: 0; } .ds-nav-logo { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 1.25rem; color: var(--text, #241f18); } .ds-nav-links { display: flex; align-items: center; gap: 24px; } .ds-nav-link { font-size: 0.875rem; color: var(--text-secondary, #5c5346); text-decoration: none; transition: opacity 150ms ease; } .ds-nav-link:hover { opacity: 0.75; } .ds-nav-link-active { font-weight: 500; color: var(--text, #241f18); }"
     },
     {
       "name": "Modal / Flow Overlay",
       "kind": "custom",
       "refersTo": "modal-overlay",
-      "description": "Shared construction for every modal in the app (rating flow, sign-in prompt, account dropdown) -- portal-rendered, one authored entrance keyframe.",
-      "html": "<div class=\"ds-modal-backdrop\"><div class=\"ds-modal-card\"><h2 class=\"ds-modal-title\">Sign in to save restaurants</h2><button class=\"ds-btn-google\">Sign in with Google</button></div></div>",
-      "css": ".ds-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 16px; } .ds-modal-card { width: 100%; max-width: 24rem; background: var(--bg-card, #fff); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(26,24,20,0.10); animation: ds-modal-drop 150ms cubic-bezier(0.25,1,0.5,1) both; } @keyframes ds-modal-drop { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } } .ds-modal-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 1.25rem; color: var(--text, #1a1814); margin-bottom: 20px; }"
+      "description": "Shared construction for every modal in the app (rating flow, sign-in prompt, Find People, Follow List) -- portal-rendered, one authored entrance keyframe (.menu-drop).",
+      "html": "<div class=\"ds-modal-backdrop\"><div class=\"ds-modal-card\"><h2 class=\"ds-modal-title\">Find people</h2></div></div>",
+      "css": ".ds-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 16px; } .ds-modal-card { width: 100%; max-width: 24rem; background: var(--bg-card, #fffdf8); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(36,31,24,0.14); animation: ds-menu-drop 150ms cubic-bezier(0.25,1,0.5,1) both; transform-origin: top right; } @keyframes ds-menu-drop { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } } .ds-modal-title { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 1.125rem; color: var(--text, #241f18); margin-bottom: 20px; }"
     }
   ],
   "narrative": {
     "northStar": "The Corner Table",
-    "overview": "Locals is built around the feeling of the seat a regular always gets at their neighborhood spot -- warm, familiar, quietly earned rather than announced. The system leans editorial (The Infatuation, Eater) over platform-generic: photography carries the argument, type sets the tone, and chrome stays out of the way. Every trust signal on the page -- an archetype badge, a localness bar, a \"locals rate it 4.4 vs. tourists' 3.8\" verdict -- is treated as something that was earned through a real, inspectable rule, never applied as decoration. The palette is warm and sun-worn (terracotta, cream, muted gold) rather than the cool, saturated primaries of a typical consumer-app template, and it explicitly rejects Yelp and TripAdvisor's registers: no gradient text, no glassmorphism, no badges that don't mean something specific. Depth is used sparingly and only in response to interaction -- the interface is flat by default and only lifts when a person is actually engaging with it.",
+    "overview": "Locals is built around the feeling of the seat a regular always gets at their neighborhood spot -- warm, familiar, quietly earned rather than announced. The system leans editorial (The Infatuation, Eater) over platform-generic: photography carries the argument, type sets the tone, and chrome stays out of the way. Every trust signal on the page -- an archetype badge, a localness bar, a \"locals rate it 4.4 vs. tourists' 3.8\" verdict -- is treated as something earned through a real, inspectable rule, never applied as decoration. The site-wide palette is warm amber-and-cream, with a separate, deliberately muted olive reserved for the one primary call-to-action -- a correction from an earlier bright-accent CTA that read as a pop-up ad. It explicitly rejects Yelp/TripAdvisor registers: no gradient text, no glassmorphism, no badges that don't mean something specific. Depth is used sparingly and only in response to interaction -- flat by default, lifting only when someone is actually engaging with it. One surface breaks from this system on purpose: the homepage hero runs its own \"24-hour diner counter\" visual world, documented separately as a scoped exception, not a system-wide change.",
     "keyCharacteristics": [
       "Photography-first card grid; the food photo is the hero, the UI frames it",
-      "Warm, sun-worn palette (terracotta / cream / muted gold) instead of platform-generic primaries",
-      "Serif display type (DM Serif Display) paired with a humanist sans body (Plus Jakarta Sans)",
-      "Pill-shaped buttons and tags throughout; no sharp corners anywhere in the system",
+      "Warm amber/cream site-wide palette, with a distinct muted-olive CTA color reserved for the one primary action",
+      "Bricolage Grotesque (display, 700/800) paired with Plus Jakarta Sans (body) -- a bold geometric sans pairing, not a serif",
+      "Shape language is mixed, not absolute: full pills for buttons/tags/avatars; rounded-xl/2xl rectangles for cards and modals -- both native",
       "Flat-at-rest surfaces that gain shadow and lift only on hover/interaction",
       "Every badge, score, and verdict traces back to a real computed rule, never decoration"
     ],
     "rules": [
-      { "name": "The One Accent Rule", "body": "Sunbaked Terracotta is the only color allowed to mean \"act here.\" Muted Gold and Confirmation Green each carry one narrow, specific meaning and never substitute for the primary accent.", "section": "colors" },
-      { "name": "The Dark-Mode Warmth Rule", "body": "Dark mode is not a desaturated inversion -- every warm hue shifts brighter and slightly more saturated to stay warm under low light rather than going cold and gray.", "section": "colors" },
-      { "name": "The One Serif Moment Rule", "body": "DM Serif Display appears only where the brand is speaking directly -- a page title or a restaurant's own name -- never in a button, a metadata line, or a form field.", "section": "typography" },
-      { "name": "The Earned Shadow Rule", "body": "Shadow only appears in response to state -- hover, focus, an open dropdown. A surface that shows the same shadow whether or not anyone is touching it is a mistake, not a stylistic choice.", "section": "elevation" },
-      { "name": "The No Sharp Corners Rule", "body": "Every rectangle in the interface is rounded at 8px or more; every action (button, tag, chip) is a full pill. A 0px-radius rectangle reads as a spreadsheet, not a neighborhood.", "section": "shapes" }
+      { "name": "The CTA-Is-Not-The-Accent Rule", "body": "The primary call-to-action button uses its own dedicated olive, never the amber accent color -- the two are visually and semantically distinct roles, confirmed by the code's own comment after an earlier bright-amber CTA was rejected.", "section": "colors" },
+      { "name": "The Dark-Mode Warmth Rule", "body": "Dark mode is not a desaturated inversion -- every warm hue shifts brighter and more saturated (amber #c98a1f -> #e0a73a) to stay warm under low light rather than going cold and gray.", "section": "colors" },
+      { "name": "The Display-Is-Rare Rule", "body": "Bricolage Grotesque at 800 weight is reserved for a page's own headline moment -- it does not appear in buttons, metadata, form fields, or routine section labels.", "section": "typography" },
+      { "name": "The Earned Shadow Rule", "body": "Shadow only appears in response to state -- hover, scroll-into-view, an open dropdown. A surface that shows --shadow-card-hover or --shadow-lg whether or not anyone is touching it is a mistake, not a stylistic choice.", "section": "elevation" },
+      { "name": "The Role-Based Radius Rule", "body": "Radius is assigned by what a shape is, not by one blanket invariant: an action a person taps is a full pill; a container that holds content is a rounded rectangle at 8-16px. Both forms are native to the shipped system.", "section": "shapes" }
     ],
     "dos": [
-      "Do keep the photo as the largest, first thing a person sees on any card or detail page -- UI elements frame it, they never sit on top of it in a way that obscures it.",
-      "Do use the full pill radius (9999px) for every button, tag, and badge; use 8-16px for every rectangular container.",
-      "Do let shadow and lift communicate interactivity -- apply the Lifted shadow only on hover/active states, never at rest.",
+      "Do keep the photo as the largest, first thing a person sees on any card or detail page.",
+      "Do use the full pill radius (9999px) for buttons, tags, chips, and avatars; use 8-16px for rectangular containers (cards, modals, inputs) -- both are native, pick by component role, not by a single rule.",
+      "Do let shadow and lift communicate interactivity -- apply --shadow-card-hover/--shadow-lg only on hover/active/in-view states, never at rest.",
       "Do back every badge, score, or \"verdict\" sentence with a real, recomputable rule against the live dataset.",
-      "Do respect prefers-reduced-motion by disabling transform/transition/animation app-wide, not just the large ones."
+      "Do respect prefers-reduced-motion by disabling transform/transition/animation app-wide.",
+      "Do keep the primary CTA's color (olive) distinct from the amber accent used everywhere else."
     ],
     "donts": [
       "Don't use gradient text for emphasis -- weight and size carry emphasis in this system.",
-      "Don't add glassmorphism or blur-as-decoration; the one backdrop blur in the system exists to keep small white text legible over a busy photo, not for atmosphere.",
-      "Don't introduce a second saturated accent color for a new feature -- Muted Gold and Confirmation Green are already spoken for.",
-      "Don't use bounce or elastic easing on any transition; every authored motion in this system decelerates confidently and never overshoots.",
-      "Don't show an archetype badge, \"verified,\" or trust indicator that isn't backed by an inspectable rule -- an empty state (no badge at all) is correct and expected for most restaurants."
+      "Don't add glassmorphism or blur-as-decoration.",
+      "Don't give a CTA button a gradient or a shadow at rest -- the earlier gradient-plus-shadow CTA read as a pop-up ad, not an app action.",
+      "Don't use bounce or elastic easing on any transition; motion decelerates confidently and never overshoots.",
+      "Don't show an archetype badge, \"verified,\" or trust indicator that isn't backed by an inspectable rule.",
+      "Don't reuse the homepage hero's amber-glow/orange-neon diner-counter treatment, Fredoka/Space Grotesk fonts, or checkerboard-floor motif anywhere outside that one surface -- it is a scoped exception, not a system-wide addition."
     ]
   }
 }

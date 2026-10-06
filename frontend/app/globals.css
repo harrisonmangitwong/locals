@@ -30,6 +30,30 @@
   --warm: #c98a1f;
   --warm-soft: rgba(201,138,31,0.08);
   color-scheme: light dark;
+
+  /* Homepage hero only -- a 24-hour diner counter, day shift. Same two
+     functional roles as dark mode (amber = headline/brand, orange = the
+     one CTA action), just lit by daylight instead of neon: solid fills,
+     no glow. See .diner-hero below and the page.tsx surface brief.
+     Colors picked (and computed, not eyeballed) for real contrast: an
+     early pass reused --accent directly on a darker counter tan and
+     measured 1.79:1 on the headline, 3.44:1 on the CTA text -- both
+     real failures, not close calls. This palette is deeper amber / lighter
+     ground specifically to clear 3:1 (large headline text) and 4.5:1
+     (body text, CTA text) against the counter background. */
+  --diner-bg: #f3ecd9;
+  --diner-bg-floor: #e3d4ac;
+  --diner-ink: #241f18;
+  --diner-ink-muted: #4e4230;
+  --diner-headline: #96640d;
+  --diner-headline-glow: none;
+  --diner-cta-bg: #b54c0e;
+  --diner-cta-border: #b54c0e;
+  --diner-cta-ink: #fff8ee;
+  --diner-cta-glow: none;
+  --diner-cta-shadow: 0 3px 10px rgba(42,33,24,0.22);
+  --diner-card-bg: #faf6ec;
+  --diner-bg-highlight: rgba(255,250,232,0.85);
 }
 
 /* ── Dark mode ── */
@@ -62,6 +86,22 @@
     --success-strong: #297a4b;
     --warm: #e0a73a;
     --warm-soft: rgba(224,167,58,0.12);
+
+    /* Homepage hero, night shift -- same two functional roles as light
+       mode, lit by neon instead of sun: glow replaces fill-only. */
+    --diner-bg: #1a1310;
+    --diner-bg-floor: #241a14;
+    --diner-ink: #f5efe0;
+    --diner-ink-muted: #a08a6e;
+    --diner-headline: #ffb648;
+    --diner-headline-glow: 0 0 6px rgba(255,182,72,0.85), 0 0 18px rgba(255,182,72,0.55), 0 0 42px rgba(255,140,40,0.32);
+    --diner-cta-bg: transparent;
+    --diner-cta-border: #ff7a35;
+    --diner-cta-ink: #ffb189;
+    --diner-cta-glow: 0 0 8px rgba(255,122,53,0.65);
+    --diner-cta-shadow: 0 0 16px rgba(255,122,53,0.24) inset, 0 0 14px rgba(255,122,53,0.28);
+    --diner-card-bg: #f7f0e0;
+    --diner-bg-highlight: rgba(255,150,60,0.08);
   }
 }
 
@@ -463,6 +503,8 @@ a, button, [role="button"] {
   .filter-expand-inner,
   .chip-collapse,
   .google-signin-btn,
+  .diner-cta-btn,
+  .diner-card,
   .price-slider::-webkit-slider-thumb {
     transition: none !important;
     transform: none !important;
@@ -509,4 +551,140 @@ a, button, [role="button"] {
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.01em;
+}
+
+/* ── Homepage hero: the diner counter ──
+   A 24-hour NYC diner, not another boutique-editorial food app. Day shift
+   (light mode) is a sunlit laminate counter; night shift (dark mode) is
+   the same counter lit by neon -- same structure and hues throughout
+   (--diner-* tokens), glow is the only thing that changes. Color is
+   rationed to exactly two roles: amber is the headline/brand mark, orange
+   is the one CTA action -- never decorative elsewhere. See the page.tsx
+   surface brief for the full direction contract. */
+.diner-hero {
+  background-color: var(--diner-bg);
+  background-image: radial-gradient(ellipse 60% 50% at 30% 15%, var(--diner-bg-highlight), transparent 70%);
+  position: relative;
+  overflow: hidden;
+}
+.diner-hero::before {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0; height: 30%;
+  background-image:
+    linear-gradient(45deg, var(--diner-bg-floor) 25%, transparent 25%), linear-gradient(-45deg, var(--diner-bg-floor) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--diner-bg-floor) 75%), linear-gradient(-45deg, transparent 75%, var(--diner-bg-floor) 75%);
+  background-size: 46px 46px;
+  background-position: 0 0, 0 23px, 23px -23px, -23px 0px;
+  opacity: 0.45;
+  mask-image: linear-gradient(to bottom, transparent, black 70%);
+  pointer-events: none;
+}
+.diner-headline {
+  font-family: var(--font-diner-display, "Fredoka"), system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--diner-headline);
+  text-shadow: var(--diner-headline-glow);
+}
+.diner-sub {
+  color: var(--diner-ink-muted);
+}
+.diner-cta-btn {
+  font-family: var(--font-diner-data, "Space Grotesk"), system-ui, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 28px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: var(--diner-cta-bg);
+  border: 1.5px solid var(--diner-cta-border);
+  color: var(--diner-cta-ink);
+  text-shadow: var(--diner-cta-glow);
+  box-shadow: var(--diner-cta-shadow);
+  transition: transform 100ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.diner-cta-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+.diner-cta-btn:active {
+  transform: translateY(1px) scale(1);
+}
+.diner-footer-stat {
+  font-family: var(--font-diner-data, "Space Grotesk"), system-ui, sans-serif;
+  color: var(--diner-ink-muted);
+  display: block;
+  width: fit-content;
+  padding-top: 10px;
+  border-top: 1px dashed var(--diner-ink-muted);
+  opacity: 0.85;
+}
+
+.diner-cards {
+  display: flex;
+}
+.diner-card {
+  width: clamp(138px, 40vw, 220px);
+  background: var(--diner-card-bg);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+  flex-shrink: 0;
+  min-width: 0;
+}
+.diner-card {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.diner-card--left { transform: rotate(-1deg); }
+.diner-card--right { transform: rotate(1deg); }
+.diner-card:first-child { z-index: 2; }
+.diner-card:last-child { z-index: 1; margin-left: -8px; }
+
+/* Reveal-on-hover/scroll: the two cards overlap at rest (the back card is
+   half-covered), so each needs a way to come fully into view. Real :hover
+   on desktop; the app's existing useScrollActive .in-view toggle stands in
+   for touch, same mechanism .restaurant-card already uses elsewhere. Only
+   the back card (--right, last-child) needs to translate clear of the
+   overlap -- the front card is never covered, it just lifts. */
+.diner-card--left:hover,
+.diner-card--left.in-view {
+  transform: translateY(-6px) rotate(-1deg);
+  z-index: 10;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.32);
+}
+.diner-card--right:hover,
+.diner-card--right.in-view {
+  transform: translate(18px, -6px) rotate(1deg);
+  z-index: 10;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.32);
+}
+.diner-card-badge {
+  font-family: var(--font-diner-data, "Space Grotesk"), system-ui, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  /* Fixed ink, not --diner-cta-border: orange is reserved for the CTA
+     action only (see .diner-hero's own comment) -- this card sits on a
+     fixed light laminate in both themes, same reasoning as the two rules
+     below, so a theme token isn't needed here either. */
+  color: #6b5d45;
+  margin: 10px 0 6px;
+}
+.diner-card-name {
+  font-family: var(--font-diner-data, "Space Grotesk"), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 12.5px;
+  color: #241f18;
+  margin-bottom: 6px;
+}
+.diner-card-ratings {
+  font-family: var(--font-diner-data, "Space Grotesk"), system-ui, sans-serif;
+  font-size: 11.5px;
+  color: #4a3d28;
+}
+.diner-card-ratings b {
+  color: #241f18;
 }

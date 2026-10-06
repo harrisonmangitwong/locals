@@ -1,60 +1,39 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import ProofCard from "@/components/ProofCard";
+import DinerProofCard from "@/components/DinerProofCard";
 import { REVIEW_COUNT_LABEL, RESTAURANT_POOL_LABEL } from "@/lib/stats";
 import { PROOF_EXAMPLES as FEATURED } from "@/lib/proofExamples";
-
-// Every restaurant photo in this dataset is a ~408px-wide Google Places
-// thumbnail, so a single full-bleed hero blows them up 3x+ and turns soft.
-// A 3-up grid at roughly card width renders each one near its native
-// resolution instead (this is exactly the card-grid layout the rest of the
-// app already uses these same images at). See lib/proofExamples.ts for how
-// these three were picked.
-
-// Slight alternating horizontal offset per card -- a loose, stacked-photos
-// feel instead of a rigid list, echoing the asymmetry of the hero split.
-const CARD_OFFSET = ["", "sm:ml-8", "sm:ml-4"];
 
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader />
 
-      {/* Hero -- the proof strip beside the pitch demonstrates the product
-          immediately, instead of requiring a scroll to see it work. */}
-      <section
-        id="main-content"
-        className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 grid md:grid-cols-[1.1fr_1fr] gap-12 md:gap-16 items-start"
-      >
-        <div>
-          <h1 className="font-display text-5xl sm:text-6xl md:text-7xl mb-6" style={{ color: "var(--text)" }}>
-            Let&apos;s eat.
-          </h1>
+      {/* Hero -- a 24-hour NYC diner counter, not another editorial food
+          page. Day shift in light mode, neon night shift in dark mode; see
+          .diner-hero in globals.css and this page's surface brief. */}
+      <section id="main-content" className="diner-hero flex-1 flex items-center">
+        <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-16 flex flex-col md:flex-row gap-12 md:gap-16 md:items-center">
+          <div className="flex-1">
+            <h1 className="diner-headline text-5xl sm:text-6xl md:text-7xl mb-6">
+              Let&apos;s eat.
+            </h1>
 
-          <p className="text-lg sm:text-xl max-w-md mb-10 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-            Ranking NYC&apos;s restaurants by who actually eats here, not just by star ratings.
-          </p>
+            <p className="diner-sub text-lg sm:text-xl max-w-md mb-10 leading-relaxed">
+              Ranking NYC&apos;s restaurants by who actually eats here, not just by star ratings.
+            </p>
 
-          <Link
-            href="/recommendations"
-            className="cta-btn inline-flex items-center gap-2 px-8 py-4 rounded-xl text-base font-semibold"
-          >
-            Browse the picks
-          </Link>
-          <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>
-            {REVIEW_COUNT_LABEL} reviews across {RESTAURANT_POOL_LABEL} NYC restaurants, filtered for locals.
-          </p>
-        </div>
+            <Link href="/recommendations" className="diner-cta-btn">
+              Browse the picks
+            </Link>
+            <p className="diner-footer-stat mt-6 text-xs uppercase tracking-wide">
+              {REVIEW_COUNT_LABEL} reviews &middot; {RESTAURANT_POOL_LABEL} NYC restaurants, filtered for locals
+            </p>
+          </div>
 
-        <div className="rounded-3xl p-5 sm:p-6" style={{ backgroundColor: "var(--accent-soft)" }}>
-          <p className="text-sm font-medium mb-4" style={{ color: "var(--text-secondary)" }}>
-            Some examples where local ratings are higher
-          </p>
-          <div className="flex flex-col gap-4">
-            {FEATURED.map((item, i) => (
-              <div key={item.name} className={CARD_OFFSET[i]}>
-                <ProofCard item={item} />
-              </div>
+          <div className="diner-cards min-w-0">
+            {FEATURED.slice(0, 2).map((item, i) => (
+              <DinerProofCard key={item.name} item={item} rotate={i === 0 ? "left" : "right"} />
             ))}
           </div>
         </div>
