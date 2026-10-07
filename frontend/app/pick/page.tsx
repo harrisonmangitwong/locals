@@ -58,13 +58,12 @@ function PickPhoto({ c, sizes, className }: { c: Candidate; sizes: string; class
   );
 }
 
-function ChoiceCard({ c, onChoose, still }: { c: Candidate; onChoose: () => void; still?: boolean }) {
+function ChoiceCard({ c, onChoose, still, state }: { c: Candidate; onChoose: () => void; still?: boolean; state?: "chosen" | "passed" }) {
   return (
     <button
       onClick={onChoose}
       aria-label={`Choose ${c.name}`}
-      className="pick-choice w-full text-left rounded-2xl overflow-hidden flex flex-col"
-      style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}
+      className={`pick-choice w-full text-left rounded-2xl overflow-hidden flex flex-col${state ? ` is-${state}` : ""}`}
     >
       <div className="relative">
         <PickPhoto c={c} sizes="(max-width: 768px) 100vw, 480px" className="h-36 md:h-56" />
@@ -116,6 +115,9 @@ export default function PickPage() {
   const [rounds, setRounds] = useState(1);
   const [result, setResult] = useState<Candidate | null>(null);
   const [runnerUp, setRunnerUp] = useState<Candidate | null>(null);
+  // Which side was just tapped (true = left/champ); held briefly so the
+  // choice registers visually before the next pair slides in.
+  const [picked, setPicked] = useState<boolean | null>(null);
 
   // Location: asked once on arrival; neighborhood picker if declined or if
   // they're planning for somewhere other than where they're standing.
@@ -213,6 +215,15 @@ export default function PickPage() {
   }
 
   function choose(keepChamp: boolean) {
+    if (!champ || !queue.length || picked !== null) return;
+    setPicked(keepChamp);
+    setTimeout(() => {
+      setPicked(null);
+      advance(keepChamp);
+    }, 260);
+  }
+
+  function advance(keepChamp: boolean) {
     if (!champ || !queue.length) return;
     const [challenger, ...rest] = queue;
     const winner = keepChamp ? champ : challenger;
@@ -470,9 +481,9 @@ export default function PickPage() {
             )}
             <h1 className="font-display text-2xl sm:text-3xl mb-4">Which sounds better tonight?</h1>
             <div className="grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-3 md:gap-5 items-stretch">
-              <ChoiceCard key={champ.restaurant_id} c={champ} onChoose={() => choose(true)} still={round > 1} />
+              <ChoiceCard key={champ.restaurant_id} c={champ} onChoose={() => choose(true)} still={round > 1} state={picked === null ? undefined : picked ? "chosen" : "passed"} />
               <span className="font-display text-sm text-center self-center" style={{ color: "var(--text-muted)" }} aria-hidden="true">OR</span>
-              <ChoiceCard key={queue[0].restaurant_id} c={queue[0]} onChoose={() => choose(false)} />
+              <ChoiceCard key={queue[0].restaurant_id} c={queue[0]} onChoose={() => choose(false)} state={picked === null ? undefined : picked ? "passed" : "chosen"} />
             </div>
           </main>
           <div className="sticky bottom-0 w-full" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
