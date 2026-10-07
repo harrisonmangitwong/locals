@@ -94,6 +94,8 @@ export default function PickPage() {
   const [location, setLocation] = useState<Location>(null);
   const [locStatus, setLocStatus] = useState<"asking" | "granted" | "denied">("asking");
   const [manualHood, setManualHood] = useState("");
+  const [deviceLocation, setDeviceLocation] = useState<Location>(null);
+  const [pickingHood, setPickingHood] = useState(false);
 
   const [cuisineOptions, setCuisineOptions] = useState<string[]>([]);
   const [cuisines, setCuisines] = useState<Set<string>>(new Set());
@@ -115,7 +117,8 @@ export default function PickPage() {
   const [result, setResult] = useState<Candidate | null>(null);
   const [runnerUp, setRunnerUp] = useState<Candidate | null>(null);
 
-  // Location: asked once on arrival; neighborhood picker if declined.
+  // Location: asked once on arrival; neighborhood picker if declined or if
+  // they're planning for somewhere other than where they're standing.
   useEffect(() => {
     if (!navigator.geolocation) {
       setLocStatus("denied");
@@ -125,11 +128,13 @@ export default function PickPage() {
       (pos) => {
         // Rounded to ~100m before it leaves the device; it's only used
         // for this search and never stored.
-        setLocation({
+        const here = {
           lat: Math.round(pos.coords.latitude * 1000) / 1000,
           lng: Math.round(pos.coords.longitude * 1000) / 1000,
           label: "Near you",
-        });
+        };
+        setDeviceLocation(here);
+        setLocation(here);
         setLocStatus("granted");
       },
       () => setLocStatus("denied"),
@@ -267,6 +272,15 @@ export default function PickPage() {
                     <span>{location.label}</span>
                   </>
                 )}
+                {locStatus === "granted" && !pickingHood && (
+                  <button
+                    onClick={() => setPickingHood(true)}
+                    className="font-semibold underline underline-offset-4 min-h-[44px] -my-3 px-1 transition-opacity hover:opacity-75"
+                    style={{ color: "var(--text)" }}
+                  >
+                    Change
+                  </button>
+                )}
                 {locStatus !== "asking" && (
                   <>
                     {location && <span aria-hidden="true">·</span>}
@@ -276,7 +290,7 @@ export default function PickPage() {
                 )}
               </div>
 
-              {locStatus === "denied" && (
+              {(locStatus === "denied" || pickingHood) && (
                 <div className="mt-3">
                   <label htmlFor="pick-hood" className="block text-sm font-semibold mb-1.5">Where are you?</label>
                   <select
@@ -285,13 +299,18 @@ export default function PickPage() {
                     onChange={(e) => {
                       const name = e.target.value;
                       setManualHood(name);
+                      if (name === "" && deviceLocation) {
+                        setLocation(deviceLocation);
+                        setPickingHood(false);
+                        return;
+                      }
                       const c = NEIGHBORHOOD_COORDS[name];
                       setLocation(c ? { lat: c[0], lng: c[1], label: `Near ${name}` } : null);
                     }}
                     className="filter-control w-full rounded-lg px-3 py-3 text-sm font-medium cursor-pointer"
                     style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", colorScheme: "light dark" }}
                   >
-                    <option value="">Anywhere in NYC</option>
+                    <option value="">{deviceLocation ? "My current location" : "Anywhere in NYC"}</option>
                     {Object.keys(NEIGHBORHOOD_COORDS).sort().map((n) => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </div>
