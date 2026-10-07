@@ -6,8 +6,9 @@ scrapes only those, so Apify credits are never spent re-fetching details/
 reviews for a restaurant already on file.
 
 Two-pass, to control cost:
-  1. discover_place_ids() — cheap search-only pass (no detail page, no
-     reviews) across the existing SEARCH_TERMS, all five boroughs.
+  1. discover_places() — cheap search-only pass (no detail page, no
+     reviews) across the existing SEARCH_TERMS, one search per served
+     borough (Manhattan, Brooklyn, Queens, Bronx -- never Staten Island).
   2. Compare against data/restaurants.csv's google_place_id column; only
      genuinely new places move on to the expensive pass.
   3. scrape_by_place_ids() — full detail + review scrape, targeted at
@@ -31,7 +32,9 @@ from apify_client import ApifyClient
 from dotenv import load_dotenv
 
 from scrape_google_maps import (
-    discover_place_ids,
+    SERVED_BOROUGH_LOCATIONS,
+    discover_places,
+    in_scope,
     scrape_by_place_ids,
     build_restaurants_df,
     build_reviews_df,
@@ -62,7 +65,13 @@ def main():
 
     client = ApifyClient(token)
 
-    discovered = discover_place_ids(client)
+    # One search per served borough (5 each = the old 20 NYC-wide, same
+    # cost) so Staten Island is never searched; in_scope() drops anything
+    # that bleeds across a borough line before the paid full scrape.
+    items: list[dict] = []
+    for location in SERVED_BOROUGH_LOCATIONS:
+        items += discover_places(client, max_per_search=5, location=location)
+    discovered = {i["placeId"] for i in items if i.get("placeId") and in_scope(i)}
     new_ids = list(discovered - known_place_ids())
     print(f"Discovered {len(discovered)} places, {len(new_ids)} are new")
 

@@ -1,10 +1,14 @@
 """
-Enrich backend/data.csv with phone, website, opening_hours, extra_image_urls,
+Enrich backend/data.csv (or the CSV path given as the first argument, e.g.
+backend/sweets.csv) with phone, website, opening_hours, extra_image_urls,
 and top_reviews from data/raw_apify_data.json.
-Run once: python3 enrich_data.py
+Run: python3 enrich_data.py [path]
 """
 import json
+import sys
 import pandas as pd
+
+DATA_CSV = sys.argv[1] if len(sys.argv) > 1 else "backend/data.csv"
 
 with open("data/raw_apify_data.json") as f:
     apify_list = json.load(f)
@@ -15,7 +19,7 @@ for rec in apify_list:
     if pid:
         apify_map[pid] = rec
 
-df = pd.read_csv("backend/data.csv")
+df = pd.read_csv(DATA_CSV)
 
 def apify_for(row) -> dict:
     return apify_map.get(row.get("google_place_id", ""), {})
@@ -85,7 +89,7 @@ df["opening_hours"] = [get_opening_hours(r) for r in rows]
 df["extra_image_urls"] = [get_extra_images(r) for r in rows]
 df["top_reviews"] = [get_top_reviews(r) for r in rows]
 
-df.to_csv("backend/data.csv", index=False)
+df.to_csv(DATA_CSV, index=False)
 
 print(f"Total: {len(df)}")
 print(f"Has phone:        {df['phone'].notna().sum()}")

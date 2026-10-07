@@ -5,7 +5,7 @@ host_images.py
 Downloads each restaurant's current image and uploads it to Supabase Storage
 (restaurant-photos bucket). Updates backend/data.csv with permanent hosted URLs.
 
-Usage: python3 host_images.py
+Usage: python3 host_images.py [path]   (default backend/data.csv)
 """
 
 import csv
@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATA_CSV = "backend/data.csv"
+DATA_CSV = sys.argv[1] if len(sys.argv) > 1 else "backend/data.csv"
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 BUCKET = "restaurant-photos"

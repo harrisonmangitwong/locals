@@ -104,12 +104,26 @@ SEARCH_TERMS = [
     "restaurant Mott Haven Bronx",
     "restaurant Kingsbridge Bronx",
     "restaurant Pelham Parkway Bronx",
-    # Staten Island
-    "restaurant Staten Island",
-    "restaurant St George Staten Island",
 ]
 
 LOCATION = "New York City, USA"
+
+# The site serves four boroughs; Staten Island is excluded (backend/main.py).
+# Searching each served borough separately keeps Staten Island out of the
+# search results entirely instead of paying to find it and then dropping it.
+SERVED_BOROUGH_LOCATIONS = [
+    "Manhattan, New York, USA",
+    "Brooklyn, New York, USA",
+    "Queens, New York, USA",
+    "Bronx, New York, USA",
+]
+# ZIP-prefix backstop for results a borough search lets through anyway
+# (map edges can bleed across borough lines). 103xx is Staten Island.
+SERVED_ZIP_PREFIXES = ("100", "101", "102", "104", "110", "111", "112", "113", "114", "116")
+
+
+def in_scope(item: dict) -> bool:
+    return str(item.get("postalCode") or "").startswith(SERVED_ZIP_PREFIXES)
 MAX_PLACES_PER_SEARCH = 40      # results per search term
 MAX_REVIEWS_PER_PLACE = 50      # reviews to pull per restaurant
 OUTPUT_DIR = "data"
@@ -177,16 +191,22 @@ def run_scraper(token: str, use_last_run: bool = False) -> list[dict]:
     return items
 
 
-def discover_place_ids(client: ApifyClient, max_per_search: int = 20) -> set[str]:
+def discover_places(
+    client: ApifyClient,
+    max_per_search: int = 20,
+    search_terms: list[str] | None = None,
+    location: str = LOCATION,
+) -> list[dict]:
     """
-    Cheap pass: search the same SEARCH_TERMS but skip detail pages and
-    reviews, so it only costs the base per-place listing rate. Returns
-    the set of Google placeIds found, for comparing against what's
-    already scraped before paying for the expensive detail+review pass.
+    Cheap pass: search without detail pages or reviews, so it only costs
+    the base per-place listing rate. Returns the listing items (placeId,
+    postal code, review count, category) so callers can drop places
+    already on file or outside served boroughs before paying for the
+    expensive detail+review pass.
     """
     actor_input = {
-        "searchStringsArray": SEARCH_TERMS,
-        "locationQuery": LOCATION,
+        "searchStringsArray": search_terms or SEARCH_TERMS,
+        "locationQuery": location,
         "maxCrawledPlacesPerSearch": max_per_search,
         "language": "en",
         "searchMatching": "all",
@@ -197,9 +217,8 @@ def discover_place_ids(client: ApifyClient, max_per_search: int = 20) -> set[str
     print(f"🔎 Discovering places (no details/reviews, max {max_per_search}/search)...")
     run = client.actor("compass/crawler-google-places").call(run_input=actor_input)
     items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
-    place_ids = {item["placeId"] for item in items if item.get("placeId")}
-    print(f"   Found {len(place_ids)} unique places\n")
-    return place_ids
+    print(f"   Found {len({i.get('placeId') for i in items if i.get('placeId')})} unique places\n")
+    return items
 
 
 def scrape_by_place_ids(
@@ -210,7 +229,7 @@ def scrape_by_place_ids(
     """
     Expensive pass: full detail + review scrape, targeted at exact
     placeIds (not a broad search) — used to fetch only places already
-    confirmed new by discover_place_ids(), so the detail/review cost is
+    confirmed new by discover_places(), so the detail/review cost is
     never spent re-scraping a restaurant we already have.
     """
     actor_input = {
@@ -281,6 +300,12 @@ def guess_cuisine(item: dict) -> str:
         ("bakery", "Bakery"),
         ("dessert", "Dessert"),
         ("ice cream", "Dessert"),
+        ("gelato", "Dessert"),
+        ("donut", "Dessert"),
+        ("patisserie", "Dessert"),
+        ("pastry", "Dessert"),
+        ("bubble tea", "Cafe"),
+        ("tea house", "Cafe"),
         ("deli", "Deli"),
         ("sandwich", "Deli"),
         ("vegan", "Vegan"),
