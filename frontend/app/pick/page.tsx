@@ -422,7 +422,7 @@ export default function PickPage() {
               )}
             </div>
 
-            <aside className="hidden md:block rounded-2xl p-4" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }} aria-label="Places that fit">
+            <aside className="rounded-2xl p-4" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }} aria-label="Places that fit">
               <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "var(--text-muted)" }}>
                 Your shortlist{count ? ` · ${count}` : ""}
               </p>
@@ -445,7 +445,6 @@ export default function PickPage() {
           <div className="sticky bottom-0 w-full" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
             <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex flex-col-reverse md:flex-row md:items-center gap-2 md:gap-4">
               <p className="text-xs text-center md:text-left md:mr-auto" style={{ color: "var(--text-muted)" }} aria-live="polite">
-                {notice && count > 0 ? <span className="md:hidden">{notice} </span> : null}
                 {ctaHint}
               </p>
               <button
