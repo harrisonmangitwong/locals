@@ -8,84 +8,9 @@ import SiteHeader from "@/components/SiteHeader";
 import RequestRestaurantForm from "@/components/RequestRestaurantForm";
 import type { Bucket } from "@/lib/ranking";
 import { BOROUGH_NEIGHBORHOODS } from "@/lib/boroughs";
+import { findNearestNeighborhood } from "@/lib/neighborhoods";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-// Approximate center coordinates for each neighborhood in the dataset
-const NEIGHBORHOOD_COORDS: Record<string, [number, number]> = {
-  // Manhattan
-  "Battery Park City": [40.7117, -74.0154],
-  "Chelsea": [40.7465, -74.0014],
-  "East Harlem": [40.7957, -73.9425],
-  "East Village": [40.7265, -73.9815],
-  "Financial District": [40.7075, -74.0089],
-  "Harlem": [40.8116, -73.9465],
-  "Lower East Side": [40.7150, -73.9843],
-  "Midtown": [40.7549, -73.9840],
-  "Midtown East": [40.7550, -73.9680],
-  "Murray Hill": [40.7489, -73.9760],
-  "Roosevelt Island": [40.7620, -73.9510],
-  "SoHo": [40.7233, -74.0030],
-  "Tribeca": [40.7163, -74.0086],
-  "Upper East Side": [40.7736, -73.9566],
-  "Upper West Side": [40.7870, -73.9754],
-  "Washington Heights": [40.8417, -73.9394],
-  "West Village": [40.7336, -74.0027],
-  // Brooklyn
-  "Bay Ridge": [40.6264, -74.0310],
-  "Bedford-Stuyvesant": [40.6834, -73.9413],
-  "Bushwick": [40.6942, -73.9214],
-  "Brooklyn Heights": [40.6960, -73.9936],
-  "Crown Heights": [40.6694, -73.9422],
-  "Downtown Brooklyn": [40.6930, -73.9867],
-  "Dumbo": [40.7033, -73.9890],
-  "Fort Greene": [40.6885, -73.9770],
-  "Greenpoint": [40.7282, -73.9510],
-  "Park Slope": [40.6710, -73.9814],
-  "Prospect Lefferts Gardens": [40.6595, -73.9525],
-  "Sunset Park": [40.6454, -74.0104],
-  "Williamsburg": [40.7081, -73.9571],
-  // Queens
-  "Astoria": [40.7723, -73.9301],
-  "Bayside": [40.7686, -73.7714],
-  "Corona": [40.7450, -73.8602],
-  "Elmhurst": [40.7360, -73.8780],
-  "Flushing": [40.7580, -73.8296],
-  "Forest Hills": [40.7185, -73.8443],
-  "Jackson Heights": [40.7557, -73.8831],
-  "Jamaica": [40.7029, -73.7898],
-  "Long Island City": [40.7447, -73.9485],
-  "Ridgewood": [40.7043, -73.9018],
-  "Sunnyside": [40.7433, -73.9196],
-  "Woodside": [40.7454, -73.9030],
-  // Bronx
-  "Belmont": [40.8537, -73.8876],
-  "East Bronx": [40.8370, -73.8554],
-  "Fordham Heights": [40.8615, -73.8985],
-  "Melrose": [40.8246, -73.9127],
-  "West Bronx": [40.8540, -73.9090],
-  // Staten Island
-  "Rosebank": [40.6137, -74.0665],
-  "Staten Island": [40.5795, -74.1502],
-  "St. George": [40.6433, -74.0735],
-};
-
-function findNearestNeighborhood(lat: number, lng: number, available: string[]): string | null {
-  let best: string | null = null;
-  let bestDist = Infinity;
-  for (const name of available) {
-    const coords = NEIGHBORHOOD_COORDS[name];
-    if (!coords) continue;
-    const dlat = lat - coords[0];
-    const dlng = lng - coords[1];
-    const dist = dlat * dlat + dlng * dlng;
-    if (dist < bestDist) {
-      bestDist = dist;
-      best = name;
-    }
-  }
-  return best;
-}
 
 interface Restaurant {
   restaurant_id: string;
@@ -281,6 +206,15 @@ function RecommendationsContent() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader current="recs" />
 
+      {/* On phones the toolbar has no room, so the button floats over the list. */}
+      <Link
+        href="/pick"
+        className="cta-btn sm:hidden fixed z-30 left-1/2 -translate-x-1/2 px-6 rounded-full text-sm font-semibold min-h-[48px] flex items-center whitespace-nowrap"
+        style={{ bottom: "calc(16px + env(safe-area-inset-bottom, 0px))", boxShadow: "0 6px 20px rgba(36,31,24,0.25)" }}
+      >
+        Help me pick
+      </Link>
+
       <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {/* Search + filter toolbar */}
         <div className="flex items-center gap-2 mb-1">
@@ -356,6 +290,12 @@ function RecommendationsContent() {
               Clear all
             </button>
           )}
+          <Link
+            href="/pick"
+            className="cta-btn hidden sm:flex text-sm font-semibold px-4 rounded-full min-h-[44px] items-center whitespace-nowrap"
+          >
+            Help me pick
+          </Link>
         </div>
 
         {/* For You toggle -- only shown once someone has enough signal to personalize on */}

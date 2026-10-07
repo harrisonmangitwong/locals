@@ -260,3 +260,114 @@ def get_recommendations(
         "cuisines": cuisines,
         "results": results,
     }
+
+
+# ---------------------------------------------------------------------------
+# Help me pick
+# ---------------------------------------------------------------------------
+
+PRICE_RANGES = {"$": (0, 15), "$$": (15, 30), "$$$": (30, 60), "$$$$": (60, 500)}
+PICK_SHORTLIST_SIZE = 6
+
+
+def _miles_from(df: pd.DataFrame, lat: float, lng: float) -> pd.Series:
+    """Straight-line (haversine) miles. Free and instant; it ignores subway
+    routing, which is fine for a "within X miles" filter."""
+    p = np.pi / 180
+    a = (0.5 - np.cos((df["lat"] - lat) * p) / 2
+         + np.cos(lat * p) * np.cos(df["lat"] * p) * (1 - np.cos((df["lng"] - lng) * p)) / 2)
+    return 7918 * np.arcsin(np.sqrt(a))
+
+
+def _first_dish(review_themes) -> Optional[str]:
+    try:
+        dishes = json.loads(review_themes).get("standout_dishes") or []
+        return dishes[0] if dishes else None
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+
+def _csv_param(value: Optional[str]) -> list[str]:
+    return [v.strip() for v in (value or "").split(",") if v.strip()]
+
+
+@app.get("/api/pick")
+def get_pick_shortlist(
+    lat: Optional[float] = Query(default=None),
+    lng: Optional[float] = Query(default=None),
+    max_miles: float = Query(default=2.0, gt=0, le=25),
+    cuisines: Optional[str] = Query(default=None, description="Comma-separated"),
+    prices: Optional[str] = Query(default=None, description="Comma-separated, e.g. '$,$$'"),
+    exclude_ids: Optional[str] = Query(default=None, description="Comma-separated restaurant IDs to leave out"),
+):
+    """Up to PICK_SHORTLIST_SIZE open-now places for the "Help me pick"
+    comparison, best-ranked first. If too few match, the radius widens step
+    by step, then price is dropped (never open-now -- a closed place is
+    useless right now), and `notice` says what was loosened."""
+    df = get_df()
+    pool = df.copy()
+    pool["is_open_now"] = pool["opening_hours"].apply(lambda h: _is_open_now(h) if pd.notna(h) else None)
+    pool = pool[pool["is_open_now"] == True]  # noqa: E712
+
+    excluded = set(_csv_param(exclude_ids))
+    if excluded:
+        pool = pool[~pool["restaurant_id"].isin(excluded)]
+    wanted_cuisines = set(_csv_param(cuisines))
+    if wanted_cuisines:
+        pool = pool[pool["cuisine"].isin(wanted_cuisines)]
+
+    has_location = lat is not None and lng is not None
+    pool["distance_mi"] = _miles_from(pool, lat, lng) if has_location else np.nan
+
+    wanted_prices = [p for p in _csv_param(prices) if p in PRICE_RANGES]
+
+    def apply(frame: pd.DataFrame, radius: Optional[float], use_price: bool) -> pd.DataFrame:
+        out = frame
+        if radius is not None and has_location:
+            out = out[out["distance_mi"] <= radius]
+        if use_price and wanted_prices:
+            mask = pd.Series(False, index=out.index)
+            for p in wanted_prices:
+                lo, hi = PRICE_RANGES[p]
+                mask |= (out["price_midpoint"] > lo) & (out["price_midpoint"] <= hi)
+            out = out[mask]
+        return out
+
+    radii = [max_miles] + [r for r in (0.5, 1, 2, 3, 5) if r > max_miles]
+    attempts = [(r, True) for r in radii] + [(r, False) for r in radii]
+    matches, notice = pool.iloc[0:0], None
+    for radius, use_price in attempts:
+        matches = apply(pool, radius, use_price)
+        if len(matches) >= 2:
+            if not use_price and wanted_prices:
+                notice = f"Not enough open places at that price, so we included other prices within {radius:g} mi."
+            elif radius != max_miles and has_location:
+                notice = f"Not enough open places within {max_miles:g} mi, so we looked up to {radius:g} mi."
+            break
+
+    # Already sorted by p_safe_pick (load_data). Without a cuisine filter,
+    # keep the shortlist from being six of the same thing.
+    per_cuisine_cap = PICK_SHORTLIST_SIZE if wanted_cuisines else 2
+    counts: dict = {}
+    picked = []
+    for _, row in matches.iterrows():
+        counts[row["cuisine"]] = counts.get(row["cuisine"], 0) + 1
+        if counts[row["cuisine"]] <= per_cuisine_cap:
+            picked.append(row)
+        if len(picked) == PICK_SHORTLIST_SIZE:
+            break
+
+    fields = ["restaurant_id", "name", "neighborhood", "cuisine", "price_midpoint", "image_url", "url",
+              "lat", "lng", "rank", "local_weighted_rating", "tourist_weighted_rating", "distance_mi"]
+    shortlist = pd.DataFrame(picked, columns=list(matches.columns)) if picked else matches.iloc[0:0]
+    out = shortlist[fields].copy()
+    out["distance_mi"] = out["distance_mi"].round(2)
+    out["dish"] = shortlist["review_themes"].apply(_first_dish) if "review_themes" in shortlist else None
+    out = out.replace([np.inf, -np.inf], np.nan).astype(object).where(pd.notnull(out), None)
+    candidates = [_clean_row(r) for r in out.to_dict(orient="records")]
+
+    return {
+        "total_matches": len(matches),
+        "notice": notice if len(matches) else None,
+        "candidates": candidates,
+    }

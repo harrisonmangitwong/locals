@@ -27,9 +27,14 @@ export default function Home() {
               Ranking NYC&apos;s restaurants by who actually eats here, not just by star ratings.
             </p>
 
-            <Link href="/recommendations" className="diner-cta-btn">
-              Browse the picks
-            </Link>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link href="/pick" className="diner-cta-btn">
+                Help me pick
+              </Link>
+              <Link href="/recommendations" className="diner-sub text-base font-semibold underline underline-offset-4 transition-opacity hover:opacity-75">
+                Browse the picks
+              </Link>
+            </div>
             <p className="diner-footer-stat mt-6 text-xs uppercase tracking-wide">
               {REVIEW_COUNT_LABEL} reviews &middot; {RESTAURANT_POOL_LABEL} NYC restaurants, filtered for locals
             </p>

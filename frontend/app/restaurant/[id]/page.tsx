@@ -8,6 +8,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SignInPrompt from "@/components/SignInPrompt";
 import { getPhotoUrl, pickHeroPhoto } from "@/lib/photoFallback";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { getVerdict } from "@/lib/verdict";
 import type { Bucket } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -59,13 +60,6 @@ function priceLabel(mid: number | null | undefined): string | null {
   return "$$$$";
 }
 
-function getVerdict(localRating: number, touristRating: number): string {
-  const gap = localRating - touristRating;
-  if (gap > 0.5) return `Locals rate it ${localRating.toFixed(1)} vs. tourists' ${touristRating.toFixed(1)} — regulars love it more than visitors do.`;
-  if (gap > 0.3) return `Locals give it ${localRating.toFixed(1)} — noticeably higher than tourists' ${touristRating.toFixed(1)}. A neighborhood favorite.`;
-  if (gap < -0.3) return `Tourists give it ${touristRating.toFixed(1)}, locals ${localRating.toFixed(1)} — popular with visitors, but locals still rate it well.`;
-  return `Locals (${localRating.toFixed(1)}) and tourists (${touristRating.toFixed(1)}) agree — this place holds up across the board.`;
-}
 
 function friendlyDetailError(err: string | null): string {
   if (!err) return "Restaurant not found.";
