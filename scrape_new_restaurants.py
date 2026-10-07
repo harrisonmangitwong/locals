@@ -7,7 +7,7 @@ reviews for a restaurant already on file.
 
 Two-pass, to control cost:
   1. discover_place_ids() — cheap search-only pass (no detail page, no
-     reviews) across the existing SEARCH_TERMS, all five boroughs.
+     reviews) across a bounded, monthly rotating subset of SEARCH_TERMS.
   2. Compare against data/restaurants.csv's google_place_id column; only
      genuinely new places move on to the expensive pass.
   3. scrape_by_place_ids() — full detail + review scrape, targeted at
@@ -31,6 +31,7 @@ from apify_client import ApifyClient
 from dotenv import load_dotenv
 
 from scrape_google_maps import (
+    SEARCH_TERMS,
     discover_place_ids,
     scrape_by_place_ids,
     build_restaurants_df,
@@ -40,11 +41,19 @@ from scrape_google_maps import (
 
 load_dotenv()
 
-# Hard budget cap. The user's Apify plan is $5/month, and Apify doesn't
-# publish exact per-place detail/review pricing, so this stays conservative
-# until a real run's dashboard cost is known. Raise only with real numbers,
-# not a bigger guess.
-MAX_NEW_PLACES_PER_RUN = 15
+# Request caps, not a guarantee of a dollar spend. See SCRAPER_BUDGET.md.
+MAX_NEW_PLACES_PER_RUN = 5
+
+
+def read_limit(name: str, default: int) -> int:
+    raw = os.getenv(name, str(default))
+    try:
+        value = int(raw)
+    except ValueError:
+        raise ValueError(f"{name} must be a non-negative integer") from None
+    if value < 0:
+        raise ValueError(f"{name} must be a non-negative integer")
+    return value
 
 
 def known_place_ids() -> set[str]:
@@ -55,6 +64,24 @@ def known_place_ids() -> set[str]:
 
 
 def main():
+    # Validate every limit before constructing the client or spending credits.
+    max_new = read_limit("MAX_NEW_PLACES_PER_RUN", MAX_NEW_PLACES_PER_RUN)
+    max_results = read_limit("MAX_DISCOVERY_RESULTS_PER_RUN", 30)
+    max_terms = read_limit("MAX_DISCOVERY_SEARCH_TERMS", 3)
+    per_search = read_limit("MAX_DISCOVERY_PLACES_PER_SEARCH", 10)
+    max_reviews = read_limit("MAX_REVIEWS_PER_NEW_PLACE", 10)
+    if not all((max_new, max_results, max_terms, per_search)):
+        print("Scraping disabled by a zero request limit.")
+        return
+    known = known_place_ids()
+    # Rotate bounded subsets monthly rather than always searching the first terms.
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+    offset = ((now.year * 12 + now.month - 1) * max_terms) % len(SEARCH_TERMS)
+    terms = [SEARCH_TERMS[(offset + i) % len(SEARCH_TERMS)]
+             for i in range(min(max_terms, len(SEARCH_TERMS)))]
+    print(f"Request limits: discovery <= {min(len(terms), max_results // min(per_search, max_results)) * min(per_search, max_results)} "
+          f"results; details <= {max_new}; reviews/place <= {max_reviews}")
     token = os.getenv("APIFY_API_TOKEN")
     if not token:
         print("❌ Missing APIFY_API_TOKEN in .env file!")
@@ -62,22 +89,22 @@ def main():
 
     client = ApifyClient(token)
 
-    discovered = discover_place_ids(client)
-    new_ids = list(discovered - known_place_ids())
+    discovered = discover_place_ids(client, per_search, max_results=max_results, search_terms=terms)
+    new_ids = sorted(discovered - known)
     print(f"Discovered {len(discovered)} places, {len(new_ids)} are new")
 
     if not new_ids:
         print("Nothing new this run.")
         return
 
-    if len(new_ids) > MAX_NEW_PLACES_PER_RUN:
+    if len(new_ids) > max_new:
         print(
-            f"Capping this run to {MAX_NEW_PLACES_PER_RUN} of {len(new_ids)} new places "
-            f"(budget cap) -- the rest will be picked up in a future run."
+            f"Capping this run to {max_new} of {len(new_ids)} new places "
+            f"(request cap) -- remaining places may be rediscovered in a future run."
         )
-        new_ids = new_ids[:MAX_NEW_PLACES_PER_RUN]
+        new_ids = new_ids[:max_new]
 
-    items = scrape_by_place_ids(client, new_ids)
+    items = scrape_by_place_ids(client, new_ids, max_reviews=max_reviews)
     if not items:
         print("⚠️  No results returned for the new place IDs.")
         return
@@ -92,3 +119,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

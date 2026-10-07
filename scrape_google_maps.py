@@ -177,17 +177,31 @@ def run_scraper(token: str, use_last_run: bool = False) -> list[dict]:
     return items
 
 
-def discover_place_ids(client: ApifyClient, max_per_search: int = 20) -> set[str]:
+def discover_place_ids(
+    client: ApifyClient, max_per_search: int = 10, *,
+    max_results: int = 30, search_terms: list[str] | None = None,
+) -> set[str]:
     """
     Cheap pass: search the same SEARCH_TERMS but skip detail pages and
     reviews, so it only costs the base per-place listing rate. Returns
     the set of Google placeIds found, for comparing against what's
     already scraped before paying for the expensive detail+review pass.
     """
+    # Bound requests BEFORE submitting them; dataset deduplication saves no money.
+    for name, value in (("max_per_search", max_per_search), ("max_results", max_results)):
+        if type(value) is not int or value < 0:
+            raise ValueError(f"{name} must be a non-negative integer")
+    if not max_per_search or not max_results:
+        return set()
+    per_search = min(max_per_search, max_results)
+    terms = list(SEARCH_TERMS if search_terms is None else search_terms)
+    terms = terms[:max_results // per_search]
+    if not terms:
+        return set()
     actor_input = {
-        "searchStringsArray": SEARCH_TERMS,
+        "searchStringsArray": terms,
         "locationQuery": LOCATION,
-        "maxCrawledPlacesPerSearch": max_per_search,
+        "maxCrawledPlacesPerSearch": per_search,
         "language": "en",
         "searchMatching": "all",
         "skipClosedPlaces": True,
@@ -213,6 +227,10 @@ def scrape_by_place_ids(
     confirmed new by discover_place_ids(), so the detail/review cost is
     never spent re-scraping a restaurant we already have.
     """
+    if type(max_reviews) is not int or max_reviews < 0:
+        raise ValueError("max_reviews must be a non-negative integer")
+    if not place_ids:
+        return []
     actor_input = {
         "placeIds": place_ids,
         "scrapePlaceDetailPage": True,
@@ -416,6 +434,9 @@ def build_reviews_df(items: list[dict]) -> pd.DataFrame:
             })
 
     df = pd.DataFrame(rows)
+    df = df.reindex(columns=["review_id", "reviewer_id", "restaurant_id",
+                             "restaurant_city", "timestamp", "rating",
+                             "reviewer_total_reviews", "is_local_guide"])
     print(f"📝 Built reviews table: {len(df)} reviews from {df['reviewer_id'].nunique()} unique reviewers")
     return df
 
