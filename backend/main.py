@@ -279,12 +279,22 @@ def _miles_from(df: pd.DataFrame, lat: float, lng: float) -> pd.Series:
     return 7918 * np.arcsin(np.sqrt(a))
 
 
-def _first_dish(review_themes) -> Optional[str]:
+def _pick_themes(review_themes) -> dict:
+    """What the review analysis says to order and what the place is like:
+    up to 3 dishes, the top vibe line (for places with no standout dish),
+    and any wait-time note."""
     try:
-        dishes = json.loads(review_themes).get("standout_dishes") or []
-        return dishes[0] if dishes else None
-    except (TypeError, ValueError, AttributeError):
-        return None
+        themes = json.loads(review_themes)
+    except (TypeError, ValueError):
+        themes = None
+    if not isinstance(themes, dict):
+        return {"dishes": [], "vibe": None, "wait_note": None}
+    vibes = themes.get("vibe_and_service") or []
+    return {
+        "dishes": (themes.get("standout_dishes") or [])[:3],
+        "vibe": vibes[0] if vibes else None,
+        "wait_note": themes.get("wait_time_note") or None,
+    }
 
 
 def _csv_param(value: Optional[str]) -> list[str]:
@@ -362,9 +372,9 @@ def get_pick_shortlist(
     shortlist = pd.DataFrame(picked, columns=list(matches.columns)) if picked else matches.iloc[0:0]
     out = shortlist[fields].copy()
     out["distance_mi"] = out["distance_mi"].round(2)
-    out["dish"] = shortlist["review_themes"].apply(_first_dish) if "review_themes" in shortlist else None
     out = out.replace([np.inf, -np.inf], np.nan).astype(object).where(pd.notnull(out), None)
-    candidates = [_clean_row(r) for r in out.to_dict(orient="records")]
+    themes = shortlist["review_themes"].tolist() if "review_themes" in shortlist else [None] * len(out)
+    candidates = [{**_clean_row(r), **_pick_themes(t)} for r, t in zip(out.to_dict(orient="records"), themes)]
 
     return {
         "total_matches": len(matches),

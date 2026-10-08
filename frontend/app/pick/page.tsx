@@ -30,7 +30,11 @@ interface Candidate {
   local_weighted_rating: number;
   tourist_weighted_rating: number;
   distance_mi: number | null;
-  dish: string | null;
+  // From the review analysis: up to 3 standout dishes, the top line on
+  // vibe/service (shown when there's no standout dish), and wait times.
+  dishes: string[];
+  vibe: string | null;
+  wait_note: string | null;
 }
 
 type Screen = "prefs" | "compare" | "result";
@@ -66,7 +70,7 @@ function ChoiceCard({ c, onChoose, still, state }: { c: Candidate; onChoose: () 
       className={`pick-choice w-full text-left rounded-2xl overflow-hidden flex flex-col${state ? ` is-${state}` : ""}`}
     >
       <div className="relative">
-        <PickPhoto c={c} sizes="(max-width: 768px) 100vw, 480px" className="h-36 md:h-56" />
+        <PickPhoto c={c} sizes="(max-width: 768px) 100vw, 480px" className="h-28 md:h-56" />
         {still && (
           <span className="absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "var(--accent)", color: "#241f18" }}>
             Still in
@@ -80,7 +84,16 @@ function ChoiceCard({ c, onChoose, still, state }: { c: Candidate; onChoose: () 
           Locals <b style={{ color: "var(--success-strong)" }}>{c.local_weighted_rating.toFixed(1)}</b>
           <span style={{ color: "var(--text-muted)" }}> · Tourists {c.tourist_weighted_rating.toFixed(1)}</span>
         </span>
-        {c.dish && <span className="text-xs" style={{ color: "var(--text-muted)" }}>Popular: {c.dish}</span>}
+        {(c.dishes.length > 0 || c.vibe) && (
+          <div className="mt-2 pt-2.5" style={{ borderTop: "1px solid var(--border)" }}>
+            <span className="block text-[11px] font-bold uppercase tracking-wide mb-0.5" style={{ color: "var(--text-muted)" }}>
+              {c.dishes.length ? "Known for" : "The vibe"}
+            </span>
+            <span className="text-sm leading-snug line-clamp-1 md:line-clamp-2" style={{ color: "var(--text-secondary)" }}>
+              {c.dishes.length ? c.dishes.join(" · ") : c.vibe}
+            </span>
+          </div>
+        )}
       </div>
     </button>
   );
@@ -478,8 +491,8 @@ export default function PickPage() {
             {notice && round === 1 && (
               <p className="text-sm rounded-lg px-3 py-2 mb-3" style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}>{notice}</p>
             )}
-            <h1 className="font-display text-2xl sm:text-3xl mb-4">Which sounds better tonight?</h1>
-            <div className="grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-3 md:gap-5 items-stretch">
+            <h1 className="font-display text-2xl sm:text-3xl mb-3 md:mb-4">Which sounds better tonight?</h1>
+            <div className="grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-2 md:gap-5 items-stretch">
               <ChoiceCard key={champ.restaurant_id} c={champ} onChoose={() => choose(true)} still={round > 1} state={picked === null ? undefined : picked ? "chosen" : "passed"} />
               <span className="font-display text-sm text-center self-center" style={{ color: "var(--text-muted)" }} aria-hidden="true">OR</span>
               <ChoiceCard key={queue[0].restaurant_id} c={queue[0]} onChoose={() => choose(false)} state={picked === null ? undefined : picked ? "passed" : "chosen"} />
@@ -517,7 +530,25 @@ export default function PickPage() {
                 <div className="rounded-2xl px-4 py-3 mt-4" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
                   <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--text-muted)" }}>Why this one</p>
                   <p className="text-sm leading-relaxed">{getVerdict(result.local_weighted_rating, result.tourist_weighted_rating)}</p>
-                  {result.dish && <p className="text-sm mt-2" style={{ color: "var(--text-secondary)" }}>Popular here: {result.dish}</p>}
+                  {result.dishes.length > 0 && (
+                    <>
+                      <p className="text-xs font-bold uppercase tracking-wide mt-4 mb-1" style={{ color: "var(--text-muted)" }}>What to order</p>
+                      <ul className="text-sm leading-relaxed list-disc pl-5" style={{ color: "var(--text-secondary)" }}>
+                        {result.dishes.map((d) => <li key={d}>{d}</li>)}
+                      </ul>
+                    </>
+                  )}
+                  {result.vibe && (
+                    <>
+                      <p className="text-xs font-bold uppercase tracking-wide mt-4 mb-1" style={{ color: "var(--text-muted)" }}>The vibe</p>
+                      <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>{result.vibe}</p>
+                    </>
+                  )}
+                  {result.wait_note && (
+                    <p className="text-sm leading-relaxed mt-4" style={{ color: "var(--text-secondary)" }}>
+                      <b style={{ color: "var(--text)" }}>Heads up:</b> {result.wait_note}
+                    </p>
+                  )}
                 </div>
                 {runnerUp && (
                   <p className="text-sm mt-3" style={{ color: "var(--text-secondary)" }}>
