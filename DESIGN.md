@@ -4,18 +4,19 @@ description: Where to eat in NYC tonight, as a native-feeling iOS app on the web
 colors:
   ink: "#131517"
   ink-hover: "#2e3135"
-  paper: "#ffffff"
-  soft-gray: "#f2f2f4"
-  soft-gray-pressed: "#e6e6e9"
-  ink-secondary: "#6b6e73"
-  ink-muted: "#6e7075"
-  hairline: "rgba(19,21,23,0.08)"
+  paper: "#f7f4ee"
+  white: "#ffffff"
+  soft-gray: "#eeeae2"
+  soft-gray-pressed: "#e4dfd5"
+  ink-secondary: "#66625b"
+  ink-muted: "#69655d"
+  hairline: "rgba(30,27,22,0.08)"
   hairline-strong: "rgba(19,21,23,0.16)"
   open-green: "#11703a"
   open-green-soft: "#e3f6e9"
   pick-purple: "#6b3fd4"
   pick-purple-soft: "#efe9ff"
-  frost: "rgba(255,255,255,0.78)"
+  frost: "rgba(247,244,238,0.8)"
   scene-ground: "#0d0e0f"
 typography:
   display:
@@ -70,7 +71,7 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.ink}"
-    textColor: "{colors.paper}"
+    textColor: "{colors.white}"
     typography: "{typography.body}"
     rounded: "{rounded.pill}"
     padding: "0 32px"
@@ -98,7 +99,7 @@ components:
     height: "44px"
   chip-selected:
     backgroundColor: "{colors.ink}"
-    textColor: "{colors.paper}"
+    textColor: "{colors.white}"
     rounded: "{rounded.pill}"
   tag-open:
     backgroundColor: "{colors.open-green-soft}"
@@ -132,7 +133,7 @@ components:
 
 **Creative North Star: "The Photo Is the Only Color"**
 
-Locals reads as a native iOS app that happens to live on the web, after the user-pinned reference of Luma's iOS app. The interface itself is monochrome: a white ground with near-black ink in light mode, a near-black ground with white actions in dark mode. Everything that carries color has earned it. Food photographs supply nearly all of it; the rest comes from two small status tags, each of which means exactly one thing.
+Locals reads as a native iOS app that happens to live on the web, after the user-pinned reference of Luma's iOS app. The interface itself is monochrome: a warm paper ground (softer than pure white next to food photos) with near-black ink in light mode, a near-black ground with white actions in dark mode. Everything that carries color has earned it. Food photographs supply nearly all of it; the rest comes from two small status tags, each of which means exactly one thing.
 
 Hierarchy is built from weight and gray in the platform's own system face, never from a second typeface, caps labels, or decorative chrome. Places appear as rows: a rounded square photo with a tag on its edge, a name, and short icon meta lines, with no card box or border around them. Actions are pills: one black primary, soft-gray secondaries. Shadows exist only on things that float (the collage photos, the tab bar, a lifted photo on hover).
 
@@ -160,7 +161,8 @@ A monochrome ink-on-paper system with two small, semantic color tags; the photog
 - **Pick Purple** (`{colors.pick-purple}` on `{colors.pick-purple-soft}`): only "Still in" (the surviving contender in this-or-that) and "Your pick" on the result. Dark mode: #b89cff on #2a2140.
 
 ### Neutral
-- **Paper** (`{colors.paper}`): page ground. Dark mode ground #101112.
+- **Paper** (`{colors.paper}`): page ground, a warm off-white chosen over pure white, which read as harsh next to the photos. Dark mode ground #101112.
+- **White** (`{colors.white}`): card surfaces (a row lifted on hover) and text on the ink primary pill.
 - **Soft Gray** (`{colors.soft-gray}`): secondary pills, chips at rest, action tiles, active tab, the select field, notices, row hover wash. Dark: #232427.
 - **Soft Gray Pressed** (`{colors.soft-gray-pressed}`): hover state for every soft-gray control, photo placeholders, slider track. Dark: #2d2e32.
 - **Ink Secondary** (`{colors.ink-secondary}`): meta lines, counts, the value-prop line, inactive tab labels. Dark: #a1a3a8.
@@ -243,7 +245,7 @@ Quiet, large, and unmistakable: there is only one black pill on a screen.
 - **Variants:** Open (green) and Still in / Your pick (purple). On the dark scene they become translucent dark fills with pale text (#8ff0b2 on rgba(10,40,22,0.62); #ddd0ff on rgba(34,22,64,0.62)).
 
 ### Place Row
-The list unit for places. A 76px rounded-square photo with an optional tag overlapping its bottom edge, then the name (16px/600, up to two lines) and up to three icon meta lines (map pin: neighborhood and distance; utensils: cuisine and price; star: "Locals rate it 4.6"). No container, no border. When the row is a link, hover washes a 16px-radius soft-gray area behind it.
+The list unit for places. A 76px rounded-square photo with an optional tag overlapping its bottom edge, then the name (16px/600, up to two lines) and up to three icon meta lines (map pin: neighborhood and distance; utensils: cuisine and price; star: "Locals rate it 4.6"). No container, no border. When the row is a link, hover lifts it 3px into a white 16px-radius card with the large soft shadow and slowly zooms the photo; tap presses it to 0.985.
 
 ### This-or-That Choice
 A whole choice is one button: a large 18px-radius photo (144px / 224px / 288px tall by breakpoint) with facts beneath it, including a "Known for" or "The vibe" line. Hover raises the photo 3px with the Lift shadow; the chosen photo gets a 3px ink ring; the passed one fades to 35% and scales to 0.97. The incoming contender fades up.
