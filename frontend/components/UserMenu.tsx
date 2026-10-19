@@ -83,7 +83,7 @@ export default function UserMenu() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatar} alt="" aria-hidden="true" className="w-7 h-7 rounded-full" referrerPolicy="no-referrer" />
         ) : (
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold" style={{ backgroundColor: "var(--accent)", color: "#241f18" }}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold" style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}>
             {name[0]}
           </div>
         )}
@@ -115,7 +115,7 @@ export default function UserMenu() {
             ) : (
               <div
                 className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold shrink-0"
-                style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
+                style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
               >
                 {name[0]}
               </div>
@@ -148,7 +148,7 @@ export default function UserMenu() {
             {requestCount > 0 && (
               <span
                 className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                style={{ backgroundColor: "var(--accent)", color: "#241f18", lineHeight: 1.4 }}
+                style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)", lineHeight: 1.4 }}
               >
                 {requestCount}
               </span>

@@ -85,6 +85,7 @@ function parseReviewThemes(json: string | undefined): ReviewThemes | null {
 // Sub-components
 // ---------------------------------------------------------------------------
 
+// Only used over the hero photo, so always white regardless of theme.
 function MiniStars({ rating }: { rating: number }) {
   const stars = Math.round(rating * 2) / 2;
   const full = Math.floor(stars);
@@ -92,14 +93,14 @@ function MiniStars({ rating }: { rating: number }) {
   return (
     <span className="flex items-center gap-0.5" aria-label={`${rating.toFixed(1)} out of 5 stars`}>
       {Array.from({ length: 5 }).map((_, i) => {
-        if (i < full) return <span key={i} style={{ color: "var(--star-fill)", fontSize: 13 }}>&#9733;</span>;
+        if (i < full) return <span key={i} style={{ color: "#ffffff", fontSize: 13 }}>&#9733;</span>;
         if (i === full && half) return (
-          <span key={i} className="relative inline-block" style={{ color: "var(--star-empty)", fontSize: 13 }}>
+          <span key={i} className="relative inline-block" style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>
             &#9733;
-            <span className="absolute inset-0 overflow-hidden" style={{ width: "50%", color: "var(--star-fill)" }}>&#9733;</span>
+            <span className="absolute inset-0 overflow-hidden" style={{ width: "50%", color: "#ffffff" }}>&#9733;</span>
           </span>
         );
-        return <span key={i} style={{ color: "var(--star-empty)", fontSize: 13 }}>&#9733;</span>;
+        return <span key={i} style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>&#9733;</span>;
       })}
     </span>
   );
@@ -305,7 +306,7 @@ export default function RestaurantPage() {
         {/* Rank badge */}
         <span
           className="absolute top-4 left-4 text-xs font-bold px-2.5 py-1 rounded-full"
-          style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
+          style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
           title="Overall rank across all NYC restaurants, weighted by local ratings"
         >
           #{r.rank}
@@ -328,7 +329,7 @@ export default function RestaurantPage() {
               <span
                 className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
                 onAnimationEnd={() => setShowSaveError(false)}
-                style={{ backgroundColor: "var(--accent)", color: "#241f18", backdropFilter: "blur(4px)" }}
+                style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)", backdropFilter: "blur(4px)" }}
               >
                 Couldn&apos;t save — try again
               </span>
@@ -351,11 +352,11 @@ export default function RestaurantPage() {
                 }).catch(() => { setSaved(saved); setShowSaveError(true); });
               }}
               className={`heart-btn flex items-center justify-center w-11 h-11 rounded-full${savePop ? " heart-pop" : ""}`}
-              style={{ backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
+              style={{ backgroundColor: saved ? "var(--cta-bg)" : "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
               aria-label={saved ? "Remove from saved" : "Save restaurant"}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
-                fill={saved ? "#241f18" : "none"} stroke={saved ? "#241f18" : "#ffffff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                fill={saved ? "var(--cta-text)" : "none"} stroke={saved ? "var(--cta-text)" : "#ffffff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
               </svg>
             </button>
@@ -384,7 +385,7 @@ export default function RestaurantPage() {
           {r.archetype && (
             <span
               className="inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-1.5"
-              style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
+              style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
               title="A real, computed signal from reviewer-localness scoring across this restaurant's reviews — not a decorative label"
             >
               {r.archetype}
@@ -510,7 +511,7 @@ export default function RestaurantPage() {
                     />
                     <span
                       className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
+                      style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
                       title="Overall rank across all NYC restaurants, weighted by local ratings"
                     >
                       #{s.rank}

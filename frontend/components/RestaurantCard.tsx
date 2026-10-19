@@ -51,7 +51,6 @@ export interface RestaurantCardProps {
 
 export default function RestaurantCard({
   restaurantId,
-  rank,
   name,
   neighborhood,
   cuisine,
@@ -138,14 +137,18 @@ export default function RestaurantCard({
             onError={() => setPhotoUrl(getPhotoUrl(cuisine))}
           />
         </Link>
-        {/* Rank */}
-        <span
-          className="absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full"
-          style={{ backgroundColor: "var(--accent)", color: "#241f18" }}
-          title="Overall rank across all NYC restaurants, weighted by local ratings"
-        >
-          #{rankOverride ?? rank}
-        </span>
+        {/* Personal rank (Visited: "your #1 in Liked"). The global rank isn't
+            badged: the list order already says it, and the photo has enough
+            on it with the open tag and save button. */}
+        {rankOverride != null && (
+          <span
+            className="absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full tabular-nums"
+            style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
+            title="Your rank within this group"
+          >
+            #{rankOverride}
+          </span>
+        )}
         {/* Open/Closed badge */}
         {isOpenNow !== null && isOpenNow !== undefined && (
           <span
@@ -176,7 +179,7 @@ export default function RestaurantCard({
               <span
                 className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
                 onAnimationEnd={() => setShowSaveError(false)}
-                style={{ backgroundColor: "var(--accent)", color: "#241f18", backdropFilter: "blur(4px)" }}
+                style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)", backdropFilter: "blur(4px)" }}
               >
                 Couldn&apos;t save — try again
               </span>
@@ -200,14 +203,14 @@ export default function RestaurantCard({
               }}
               className={`flex items-center justify-center w-11 h-11 rounded-full transition-all duration-150 hover:scale-110 active:scale-95${savePop ? " heart-pop" : ""}`}
               style={{
-                backgroundColor: saved ? "var(--accent)" : "rgba(0,0,0,0.45)",
+                backgroundColor: saved ? "var(--cta-bg)" : "rgba(0,0,0,0.45)",
                 backdropFilter: "blur(4px)",
                 cursor: "pointer",
               }}
               aria-label={saved ? "Remove from saved" : "Save restaurant"}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
-                fill={saved ? "#241f18" : "none"} stroke={saved ? "#241f18" : "#ffffff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                fill={saved ? "var(--cta-text)" : "none"} stroke={saved ? "var(--cta-text)" : "#ffffff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
               </svg>
             </button>

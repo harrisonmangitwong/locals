@@ -256,7 +256,7 @@ function RecommendationsContent() {
             {activeFilterCount > 0 && (
               <span
                 className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                style={{ backgroundColor: "var(--accent)", color: "#241f18", lineHeight: 1.4 }}
+                style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)", lineHeight: 1.4 }}
               >
                 {activeFilterCount}
               </span>
