@@ -1,211 +1,284 @@
 ---
 name: Locals
-description: Eat like a local. Not a tourist.
+description: Where to eat in NYC tonight, as a native-feeling iOS app on the web.
 colors:
-  warm-amber: "#c98a1f"
-  amber-hover: "#ab7319"
-  amber-soft: "rgba(201,138,31,0.12)"
-  amber-text: "#9c6c17"
-  cta-olive: "#55503a"
-  cta-olive-hover: "#413d2c"
-  cta-ink: "#f3ece0"
-  confirmation-green: "#2d8a56"
-  bg-warm: "#f7f1e5"
-  bg-card: "#fffdf8"
-  bg-subtle: "#efe6d3"
-  bg-inset: "#e6dabf"
-  ink: "#241f18"
-  ink-secondary: "#5c5346"
-  ink-muted: "#746a5a"
-  hairline: "rgba(36,31,24,0.1)"
-  hairline-strong: "rgba(36,31,24,0.18)"
+  ink: "#131517"
+  ink-hover: "#2e3135"
+  paper: "#ffffff"
+  soft-gray: "#f2f2f4"
+  soft-gray-pressed: "#e6e6e9"
+  ink-secondary: "#6b6e73"
+  ink-muted: "#6e7075"
+  hairline: "rgba(19,21,23,0.08)"
+  hairline-strong: "rgba(19,21,23,0.16)"
+  open-green: "#11703a"
+  open-green-soft: "#e3f6e9"
+  pick-purple: "#6b3fd4"
+  pick-purple-soft: "#efe9ff"
+  frost: "rgba(255,255,255,0.78)"
+  scene-ground: "#0d0e0f"
 typography:
   display:
-    fontFamily: "Bricolage Grotesque, system-ui, sans-serif"
-    fontSize: "1.875rem"
-    fontWeight: 800
-    lineHeight: 1.1
-    letterSpacing: "-0.01em"
+    fontFamily: "-apple-system, BlinkMacSystemFont, SF Pro Text, system-ui, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontSize: "clamp(46px, 8vw, 66px)"
+    fontWeight: 700
+    lineHeight: 1.08
+    letterSpacing: "-0.022em"
+  headline:
+    fontFamily: "-apple-system, BlinkMacSystemFont, SF Pro Text, system-ui, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontSize: "clamp(26px, 5vw, 44px)"
+    fontWeight: 700
+    lineHeight: 1.08
+    letterSpacing: "-0.022em"
+  title:
+    fontFamily: "-apple-system, BlinkMacSystemFont, SF Pro Text, system-ui, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontSize: "17px"
+    fontWeight: 600
+    lineHeight: 1.375
+    letterSpacing: "-0.006em"
   body:
-    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
-    fontSize: "1rem"
+    fontFamily: "-apple-system, BlinkMacSystemFont, SF Pro Text, system-ui, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.5
-    letterSpacing: "normal"
+    letterSpacing: "-0.006em"
+  meta:
+    fontFamily: "-apple-system, BlinkMacSystemFont, SF Pro Text, system-ui, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: 1.375
+    letterSpacing: "-0.006em"
+  label:
+    fontFamily: "-apple-system, BlinkMacSystemFont, SF Pro Text, system-ui, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontSize: "11.5px"
+    fontWeight: 600
+    lineHeight: 1.45
+    letterSpacing: "-0.006em"
 rounded:
-  sm: "8px"
-  md: "10px"
-  lg: "16px"
-  xl: "16px"
-  full: "9999px"
+  tag: "6px"
+  thumb: "12px"
+  tile: "14px"
+  photo: "18px"
+  cover: "22px"
+  pill: "9999px"
 spacing:
-  xs: "8px"
-  sm: "12px"
-  md: "16px"
+  xs: "4px"
+  sm: "8px"
+  md: "14px"
   lg: "24px"
+  xl: "36px"
 components:
   button-primary:
-    backgroundColor: "{colors.cta-olive}"
-    textColor: "{colors.cta-ink}"
-    rounded: "{rounded.full}"
-    padding: "0 24px"
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.paper}"
+    typography: "{typography.body}"
+    rounded: "{rounded.pill}"
+    padding: "0 32px"
+    height: "50px"
   button-primary-hover:
-    backgroundColor: "{colors.cta-olive-hover}"
-  filter-pill-active:
-    backgroundColor: "{colors.warm-amber}"
-    textColor: "#241f18"
-    rounded: "{rounded.full}"
-  card-restaurant:
-    backgroundColor: "{colors.bg-card}"
-    rounded: "{rounded.lg}"
+    backgroundColor: "{colors.ink-hover}"
+  button-secondary:
+    backgroundColor: "{colors.soft-gray}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.pill}"
+    padding: "0 32px"
+    height: "50px"
+  button-secondary-hover:
+    backgroundColor: "{colors.soft-gray-pressed}"
+  action-tile:
+    backgroundColor: "{colors.soft-gray}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.tile}"
+    height: "64px"
+  chip:
+    backgroundColor: "{colors.soft-gray}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.pill}"
+    padding: "0 16px"
+    height: "44px"
+  chip-selected:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.paper}"
+    rounded: "{rounded.pill}"
+  tag-open:
+    backgroundColor: "{colors.open-green-soft}"
+    textColor: "{colors.open-green}"
+    typography: "{typography.label}"
+    rounded: "{rounded.tag}"
+    padding: "2px 7px"
+  tag-pick:
+    backgroundColor: "{colors.pick-purple-soft}"
+    textColor: "{colors.pick-purple}"
+    typography: "{typography.label}"
+    rounded: "{rounded.tag}"
+    padding: "2px 7px"
+  tab-bar:
+    backgroundColor: "{colors.frost}"
+    rounded: "{rounded.pill}"
+    padding: "4px"
+  tab-item-active:
+    backgroundColor: "{colors.soft-gray}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.pill}"
+    padding: "7px 10px 6px"
+  place-row-photo:
+    rounded: "{rounded.thumb}"
+    size: "76px"
 ---
 
 # Design System: Locals
 
 ## Overview
 
-**Creative North Star: "The Corner Table"**
+**Creative North Star: "The Photo Is the Only Color"**
 
-Locals is built around the feeling of the seat a regular always gets at their neighborhood spot — warm, familiar, quietly earned rather than announced. The system leans editorial (The Infatuation, Eater) over platform-generic: photography carries the argument, type sets the tone, and chrome stays out of the way. Every trust signal on the page — an archetype badge, a localness bar, a "locals rate it 4.4 vs. tourists' 3.8" verdict — is treated as something earned through a real, inspectable rule, never applied as decoration.
+Locals reads as a native iOS app that happens to live on the web, after the user-pinned reference of Luma's iOS app. The interface itself is monochrome: a white ground with near-black ink in light mode, a near-black ground with white actions in dark mode. Everything that carries color has earned it. Food photographs supply nearly all of it; the rest comes from two small status tags, each of which means exactly one thing.
 
-The site-wide palette is warm amber-and-cream, with a separate, deliberately muted olive reserved for the one primary call-to-action — a correction from an earlier bright-accent CTA that read as a pop-up ad. It explicitly rejects Yelp/TripAdvisor registers: no gradient text, no glassmorphism, no badges that don't mean something specific. Depth is used sparingly and only in response to interaction — flat by default, lifting only when someone is actually engaging with it.
+Hierarchy is built from weight and gray in the platform's own system face, never from a second typeface, caps labels, or decorative chrome. Places appear as rows: a rounded square photo with a tag on its edge, a name, and short icon meta lines, with no card box or border around them. Actions are pills: one black primary, soft-gray secondaries. Shadows exist only on things that float (the collage photos, the tab bar, a lifted photo on hover).
 
-One surface breaks from this system on purpose: the homepage hero runs its own "24-hour diner counter" visual world, documented separately below as a scoped exception, not a system-wide change.
+The signature moment is the result of Help me pick: the page turns dark and is tinted by the chosen restaurant's own blurred photo, with a white pill to go and a row of soft action tiles. Motion follows iOS: ease-out fades and small lifts (200 to 280ms), nothing bouncy.
 
 **Key Characteristics:**
-- Photography-first card grid; the food photo is the hero, the UI frames it
-- Warm amber/cream site-wide palette, with a distinct muted-olive CTA color reserved for the one primary action
-- Bricolage Grotesque (display, 700/800) paired with Plus Jakarta Sans (body) — a bold geometric sans pairing, not a serif
-- Shape language is mixed, not absolute: full pills for buttons, tags, and avatars; rounded-xl/2xl rectangles for cards and modals — both are native to the system
-- Flat-at-rest surfaces that gain shadow and lift only on hover/interaction
-- Every badge, score, and verdict traces back to a real computed rule, never decoration
+- Monochrome UI; color comes only from photos and meaning-bearing tags.
+- System font (SF on Apple), hierarchy by weight and gray, sentence case throughout.
+- Black primary pill, soft-gray secondary pill, soft-gray chips that flip to ink when selected.
+- Place rows and choice cards without containers or borders.
+- A dark, photo-tinted result scene.
+- A floating frosted tab bar on phones.
 
 ## Colors
 
-Warm amber-and-cream site-wide, with one quiet olive reserved for the single functional call-to-action.
+A monochrome ink-on-paper system with two small, semantic color tags; the photographs do the rest.
 
 ### Primary
-- **Warm Amber** (`#c98a1f`): the app's one true accent. Active filter-pill fill, star ratings, focus rings, link-focus outline, price-slider fill. Used sparingly and consistently — the only saturated warm hue that appears on most screens.
-- **Amber Hover** (`#ab7319`): the pressed/hover state of the primary accent.
-- **Amber Soft** (`rgba(201,138,31,0.12)`): a translucent wash behind focus rings and the search-input focus glow.
+- **Ink** (`{colors.ink}`): body text, headings, and the primary action fill. In dark mode the roles invert: text is near-white (#f5f5f7) and the primary action is white (#ffffff) with ink text. Hover deepens to **Ink Hover** (`{colors.ink-hover}`; dark: #e4e4e7).
 
 ### Secondary
-- **CTA Olive** (`#55503a`): a dedicated, distinct color for the primary call-to-action button, deliberately *not* the amber accent. A gradient-plus-shadow-at-rest version of this button was tried and read as a pop-up-ad "Claim Now" button rather than an app CTA, so it was corrected to flat olive with a fixed light-cream text color, earning its shadow only on hover.
+- **Open Green** (`{colors.open-green}` on `{colors.open-green-soft}`): only the "Open now" status tag. Dark mode: #5fd68a on #163322.
 
 ### Tertiary
-- **Confirmation Green** (`#2d8a56`): the app's only non-warm hue, reserved entirely for positive confirmation states — the "Saved" pill, a completed action. Never used decoratively.
+- **Pick Purple** (`{colors.pick-purple}` on `{colors.pick-purple-soft}`): only "Still in" (the surviving contender in this-or-that) and "Your pick" on the result. Dark mode: #b89cff on #2a2140.
 
 ### Neutral
-- **Warm Background** (`#f7f1e5`): the page background. Warm rather than clinical white.
-- **Card Background** (`#fffdf8`): card and elevated-surface background, distinct from the page itself.
-- **Subtle Sand** (`#efe6d3`) / **Inset Sand** (`#e6dabf`): inset/hover backgrounds for controls (filter pills, pagination, skeleton loading).
-- **Ink** (`#241f18`): primary text. Warm near-black, not pure `#000`.
-- **Ink Secondary** (`#5c5346`) / **Ink Muted** (`#746a5a`): secondary text and metadata.
-- **Hairline** (`rgba(36,31,24,0.1)`) / **Hairline Strong** (`rgba(36,31,24,0.18)`): borders and dividers, translucent against the warm background.
+- **Paper** (`{colors.paper}`): page ground. Dark mode ground #101112.
+- **Soft Gray** (`{colors.soft-gray}`): secondary pills, chips at rest, action tiles, active tab, the select field, notices, row hover wash. Dark: #232427.
+- **Soft Gray Pressed** (`{colors.soft-gray-pressed}`): hover state for every soft-gray control, photo placeholders, slider track. Dark: #2d2e32.
+- **Ink Secondary** (`{colors.ink-secondary}`): meta lines, counts, the value-prop line, inactive tab labels. Dark: #a1a3a8.
+- **Ink Muted** (`{colors.ink-muted}`): fine print (review-count line, "or" between choices, list numerals). Dark: #8e9096.
+- **Hairline** (`{colors.hairline}`): the header's bottom rule, the footer's top rule, dividers between "What to order" items, the tab bar's edge. **Hairline Strong** (`{colors.hairline-strong}`) for hover borders on legacy controls.
+- **Frost** (`{colors.frost}`): the tab bar's translucent fill (dark: rgba(30,31,34,0.72)).
+- **Scene Ground** (`{colors.scene-ground}`): base of the dark result scene, under the blurred photo.
 
 ### Named Rules
-**The CTA-Is-Not-The-Accent Rule.** The primary call-to-action button uses its own dedicated olive, never the amber accent color — the two are visually and semantically distinct roles (amber = "this is active/notable," olive = "take this one action"), confirmed by the code's own comment after an earlier bright-amber CTA was rejected.
+**The Photo Is the Only Color Rule.** No accent hue exists for decoration, links, or emphasis. If something is colored and it is not a photograph, it is a status tag.
 
-**The Dark-Mode Warmth Rule.** Dark mode is not a desaturated inversion — every warm hue shifts brighter and more saturated (amber `#c98a1f` → `#e0a73a`) to stay warm under low light rather than going cold and gray.
+**The One Meaning Rule.** Green means open now. Purple means still in or your pick. Neither color is ever used for anything else, and no third tag color is added without a third meaning.
+
+**The Inverted Action Rule.** The primary action is ink on light grounds and white on dark grounds (dark mode and the result scene alike); it is never a hue.
 
 ## Typography
 
-**Display Font:** Bricolage Grotesque (weights 700/800, with system-ui, sans-serif fallback)
-**Body Font:** Plus Jakarta Sans (with system-ui, sans-serif fallback)
+**Display Font:** the system face (SF Pro on Apple; -apple-system, BlinkMacSystemFont, system-ui, Segoe UI, Roboto fallbacks)
+**Body Font:** the same system face
 
-**Character:** A bold geometric-sans pairing — Bricolage Grotesque's heavier weights carry headlines and page titles with confident weight rather than editorial serif flourish; Plus Jakarta Sans handles everything functional. The display face is never used for body copy or UI chrome.
+**Character:** One family, no web fonts. Display is the same face set heavier and tighter, so the product feels native rather than branded. The whole page carries a slight negative tracking (-0.006em).
 
 ### Hierarchy
-- **Display** (800, 1.1 line-height, -0.01em tracking, `.font-display`): page titles, section headlines, and status headlines for empty/error states. Sized per context.
-- **Title** (600–700, ~1rem–1.25rem): card names, modal titles, section headings.
-- **Body** (400–500, 1rem, 1.5 line-height): descriptions, review text, form copy.
-- **Label** (500–600, 0.75–0.875rem): nav links, buttons, metadata, badges — the workhorse size for the dense trust-signal UI (ratings, counts, tags).
+- **Display** (700, 46px / 58px / 66px by breakpoint, 1.08, -0.022em): the homepage headline "Let's eat." only.
+- **Headline** (700, 26 to 44px, 1.08, -0.022em): screen titles in Help me pick ("What sounds good?", "Which sounds better tonight?") and the result's restaurant name, balanced.
+- **Section heading** (600, 21px, -0.015em): homepage section heads such as "Open right now".
+- **Title** (600, 17px): in-flow section heads (Craving, Price, Your shortlist, What to order). Place names in rows are 600 at 16px; choice names 600 at 18 to 20px.
+- **Body** (400, 15 to 17px, 1.5; long prose capped near 60ch): value-prop line, vibe and heads-up paragraphs.
+- **Meta** (400, 13px, tabular numerals): icon meta lines under a place name, hints under the primary action.
+- **Label** (600, 11 to 11.5px): status tags and tab-bar labels. Sentence case, never uppercase.
 
 ### Named Rules
-**The Display-Is-Rare Rule.** `.font-display` (Bricolage Grotesque, 800 weight) is reserved for a page's own headline moment — it does not appear in buttons, metadata, form fields, or routine section labels, which stay in Label/Body weight.
+**The Weight-and-Gray Rule.** Hierarchy comes from weight (400 / 600 / 700) and from ink versus secondary gray. No second typeface, no color for emphasis.
+
+**The Sentence-Case Rule.** No uppercase labels, no tracked-out kickers or eyebrows above headings. A heading stands on its own.
 
 ## Layout
 
-Card-grid based: a responsive `grid-cols-1` → `md:grid-cols-2` → `lg:grid-cols-3` layout for restaurant listings, with a centered container and consistent page gutters. Density is generous, not dense: cards get real breathing room, internal card padding keeps content off the photo edge. The header is sticky across every page.
+Mobile first, single column on phones, with content rails of 48rem (homepage rows, footer) and 64rem (Help me pick). Page gutters are 16px, 24px from 640px up. The homepage is centered: a collage box (230px tall on phones up to 440px on large screens) of six real restaurant photos placed at fixed percentages with slight tilts (-7 to 6 degrees), then the display headline, value-prop line, and the two pills (stacked full-width on phones, side by side from 640px). "Open right now" sits below as rows in one column, two from 640px.
 
-Mobile-first throughout — the primary use case is a phone screen while deciding whether to go in. Touch targets hold a 44px minimum floor everywhere (`.cta-btn`, heart buttons, pagination).
+Help me pick on desktop is a two-column grid: preferences on the left, a sticky 380px shortlist on the right. The this-or-that is two photos with a centered "or" between; the result is cover photo left (sticky), facts and actions right. On phones the primary action lives in a sticky bottom bar on the page ground; flows that own the bottom of the screen hide the tab bar.
+
+Rhythm: 4px base. Tags gap 4px, chips and pills 8 to 10px apart, rows use a 14px photo-to-text gap and 20 to 24px between rows, sections 32 to 36px apart. Touch targets are at least 44px; primary and secondary pills are 50px tall.
 
 ## Elevation & Depth
 
-Flat by default; shadow is earned by interaction, not applied as ambient decoration. A restaurant card carries no shadow at rest and gains `--shadow-card-hover` plus a 4px lift only on hover (or, on touch devices, on scroll-into-view via `.in-view` / native `animation-timeline: view()` where supported) — the same logic used for pagination buttons (1px lift) and the primary CTA button (shadow + lift only on hover, press-down on `:active`).
+Flat by default. Depth is reserved for things that float above the page; rows, chips, pills and tiles have no shadow. Light-mode shadows are soft and wide; dark mode deepens their opacity and adds a 1px light ring to collage photos so edges don't melt into the ground.
 
 ### Shadow Vocabulary
-- **Small** (`--shadow-sm`, `0 1px 2px rgba(36,31,24,0.06)`): quietest step, rarely used alone.
-- **Standard** (`--shadow`, `0 2px 8px rgba(36,31,24,0.09)`): default depth for buttons and surfaces that do carry some rest-state shadow (price-slider thumb).
-- **Lifted** (`--shadow-lg`, `0 8px 30px rgba(36,31,24,0.14)`): modals, dropdowns.
-- **Card Hover** (`--shadow-card-hover`, `0 20px 48px rgba(36,31,24,0.22)`): the hovered/in-view restaurant card specifically — deeper than the generic Lifted step.
-
-Dark mode keeps the same shadow roles but shifts to pure-black shadows at higher opacity (`0.15`–`0.45`), since a warm-tinted shadow reads as muddy on a dark surface.
+- **Collage float** (`box-shadow: 0 16px 38px rgba(0,0,0,0.16)`; dark adds `0 0 0 1px rgba(255,255,255,0.08)` at 0.45 opacity): homepage photo tiles.
+- **Tab bar float** (`box-shadow: 0 10px 34px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.06)`): the floating tab bar.
+- **Lift** (`box-shadow: 0 12px 36px rgba(0,0,0,0.12)`): a choice photo on hover (with a 3px rise), and under the chosen ring.
+- **Cover** (`box-shadow: 0 24px 60px rgba(0,0,0,0.45)`): the result's cover photo over the dark scene.
 
 ### Named Rules
-**The Earned Shadow Rule.** Shadow only appears in response to state — hover, scroll-into-view, an open dropdown. A surface that shows `--shadow-card-hover` or `--shadow-lg` whether or not anyone is touching it is a mistake, not a stylistic choice.
+**The Only-Floating-Things Rule.** A shadow means the element floats over the page. Nothing resting in the flow gets one.
+
+**The Native Material Rule.** The tab bar's frosted blur (saturate 180%, blur 20px) is iOS's own material, used there only. No other surface is translucent or blurred, except the result scene's backdrop photo.
 
 ## Shapes
 
-Mixed, not absolute: the system uses both full pills and rounded rectangles natively, by component role rather than one universal radius. Buttons, tags, avatars, and the "Saved"/badge pills use a full 9999px radius (`rounded-full`, 80+ occurrences across the codebase). Cards use 16px (`rounded-xl`/`rounded-2xl`); modals use 16px (`rounded-2xl`); inputs and smaller controls use 8–12px (`rounded-lg`). Borders are 1px and translucent (the Hairline tokens).
-
-### Named Rules
-**The Role-Based Radius Rule.** Radius is assigned by what a shape *is*, not by one blanket invariant: an action a person taps (button, tag, chip, avatar) is a full pill; a container that holds content (card, modal, input) is a rounded rectangle at 8–16px. Neither form is more "correct" — both are native to the shipped system, and a surface should not be forced into a pill just because another component is one.
+Soft, continuous corners keyed to object size: 6px on tags, 12px on row thumbnails, 14px on action tiles, 18px on choice photos and collage tiles, 22px on the result cover. Every action, chip, and the tab bar is a full pill. Borders are almost absent: only the header and footer hairlines, the tab bar's edge, and list dividers. Photos are always clipped to their radius with a soft-gray placeholder behind them.
 
 ## Components
 
-Restrained and earned — buttons, cards, and inputs do a single clear state change per interaction, and nothing carries a badge or highlight that isn't backed by a real, checkable fact.
-
 ### Buttons
-- **Shape:** full pill (`rounded-full`, 9999px), 44px minimum height everywhere tappable.
-- **Primary CTA** (`.cta-btn`): CTA Olive fill, fixed light-cream text, `font-semibold`. Flat at rest; hover darkens to Olive Hover, gains the Standard shadow, and lifts/scales slightly (`translateY(-1px) scale(1.03)`); active presses down. Colors live in the class, not inline style, since an inline `backgroundColor` would otherwise beat the class-based hover rule.
-- **Filter pill** (`.filter-pill`, toggle-style, e.g. "All restaurants" / "For You"): active state fills with Warm Amber and dark ink text; inactive state sits on Subtle Sand with a hairline border and darkens to Inset Sand on hover.
-- **Secondary (Google sign-in):** white background, 1px `#dadce0` border, `#3c4043` text — the one deliberate exception to the app's own palette, borrowing Google's actual brand colors for recognizability.
-- **Icon buttons** (save/heart): circular; hover scales to 1.12, a short pop keyframe plays on save, active scales down.
-- **Ghost/text links:** no background; opacity-based hover (150ms) is the default link-hover treatment app-wide.
+Quiet, large, and unmistakable: there is only one black pill on a screen.
+- **Shape:** full pill (`{rounded.pill}`), 50px minimum height, 600 weight, 15 to 16px.
+- **Primary:** ink fill, white text (white fill, ink text in dark mode and the result scene). One per screen: Help me pick, Let's go.
+- **Secondary:** soft-gray fill, ink text, no border (Browse all places, Just pick for me).
+- **Hover / Active:** fill darkens one step (150ms ease-out); press scales to 0.98. Disabled primary drops to 35% opacity.
+- **Action tiles:** soft-gray 14px-radius tiles, 64px tall, a 19px icon over a 13px/600 label, in a row of three (Details, Share, Pick again). Press scales to 0.97.
 
 ### Chips
-- **Style:** small pill, `rounded-full`, colored background derived from the chip's own meaning (never a generic gray), `text-xs font-medium`.
-- **Collapse pattern:** `.chip-collapse` keeps all chips in one continuous flex-wrap flow and truncates by max-height (not item count) with a 300ms transition, so wrapping never orphans a chip alone on its row.
+- **Style:** soft-gray pill, no border, 15px/500, 44px tall.
+- **State:** selected flips to the primary ink fill with white text (inverted in dark). Used for cuisine, price, and either/or answers; an "Anything" chip is selected when nothing else is.
 
-### Cards / Containers
-- **Corner Style:** 16px radius (`rounded-xl`/`rounded-2xl`).
-- **Background:** Card Background on Warm Background page background — always a visible, if subtle, distinction from the page itself.
-- **Shadow Strategy:** flat at rest, `--shadow-card-hover` + 4px translateY on hover/in-view (see Elevation & Depth); the photo inside scales 1.03 in sync.
-- **Border:** 1px Hairline.
+### Status Tags
+- **Style:** small 6px-radius label (11.5px/600, 2px 7px padding), sitting on a photo's edge or in a tag row.
+- **Variants:** Open (green) and Still in / Your pick (purple). On the dark scene they become translucent dark fills with pale text (#8ff0b2 on rgba(10,40,22,0.62); #ddd0ff on rgba(34,22,64,0.62)).
+
+### Place Row
+The list unit for places. A 76px rounded-square photo with an optional tag overlapping its bottom edge, then the name (16px/600, up to two lines) and up to three icon meta lines (map pin: neighborhood and distance; utensils: cuisine and price; star: "Locals rate it 4.6"). No container, no border. When the row is a link, hover washes a 16px-radius soft-gray area behind it.
+
+### This-or-That Choice
+A whole choice is one button: a large 18px-radius photo (144px / 224px / 288px tall by breakpoint) with facts beneath it, including a "Known for" or "The vibe" line. Hover raises the photo 3px with the Lift shadow; the chosen photo gets a 3px ink ring; the passed one fades to 35% and scales to 0.97. The incoming contender fades up.
 
 ### Inputs / Fields
-- **Style:** Subtle Sand background, 1px Hairline border, 8–12px radius.
-- **Focus:** border shifts to Warm Amber plus a 3px Amber Soft glow — no default browser outline.
+- **Select:** soft-gray fill, no border, 12px radius, 15px text, 12px by 16px padding.
+- **Slider:** 6px pill track in soft-gray-pressed with an ink fill, 20px ink thumb ringed in the ground color.
+- **Focus:** a 2px ink outline offset 2px everywhere (4px on choice cards).
 
 ### Navigation
-- **Style:** sticky header, Warm Background, 1px Hairline bottom border. Nav links in Label size, secondary-ink at rest, full ink + `font-medium` for the current page — no underline or pill background marks the active state, weight and color alone carry it.
+- **Header:** sticky, 56px, page ground with a hairline bottom rule. Wordmark "Locals" in 19px/700 system type. On desktop, text links in 14px pills: active is soft-gray with ink 600, inactive is secondary gray 500. Sign in is a quiet gray pill.
+- **Tab bar (phones):** a floating frosted pill 14px above the safe area, centered, holding five tabs (Home, Pick, Browse, Saved, Visited). Each tab is a 20px Lucide-shaped icon over an 11px/600 label; the active tab gets a soft-gray pill and ink color with a heavier icon stroke (2.25 versus 1.9). The page gains bottom padding so the bar never covers content.
 
-### Modal / Flow overlay (signature component)
-Every modal in the system (the rating flow, sign-in prompt, Find People, Follow List) shares one construction: a `fixed inset-0` semi-transparent black backdrop, a centered card at 16px radius (`rounded-2xl`), rendered through a React portal (`createPortal`) into `document.body` so it's never clipped by an animated ancestor. Entrance is a single authored keyframe (`.menu-drop`: fade + slight scale-up from 0.97, 150ms) shared across every modal — no per-modal animation choices.
+### Result Scene (signature)
+The pick is revealed on a dark scene: the restaurant's photo, blurred 60px, saturated 1.7x and dimmed to 32% brightness, fills the page behind a scrim that darkens from 25% to 60% black top to bottom so white text holds contrast on any photo. Over it: the 22px-radius cover photo, the name in Headline, icon meta lines, the purple and green tags, the white Let's go pill, the three action tiles, then What to order, The vibe, Heads up, and a Close second row. All tokens re-map inside the scene (ink becomes white, soft grays become white at 12 to 18%).
+
+### Scope Limits
+Today the system is fully expressed on the homepage and Help me pick. Browse, restaurant detail, saved, visited and profile pages inherit the tokens, the buttons and the tab bar but still carry older component layouts; those layouts are not part of this system and should be brought onto it rather than copied.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep the photo as the largest, first thing a person sees on any card or detail page.
-- **Do** use the full pill radius (9999px) for buttons, tags, chips, and avatars; use 8–16px for rectangular containers (cards, modals, inputs) — both are native, pick by component role, not by a single rule.
-- **Do** let shadow and lift communicate interactivity — apply `--shadow-card-hover`/`--shadow-lg` only on hover/active/in-view states, never at rest.
-- **Do** back every badge, score, or "verdict" sentence with a real, recomputable rule against the live dataset.
-- **Do** respect `prefers-reduced-motion` by disabling transform/transition/animation app-wide.
-- **Do** keep the primary CTA's color (olive) distinct from the amber accent used everywhere else — they are different semantic roles, not interchangeable warm tones.
+- **Do** let photographs carry the color; keep every control ink, white, or soft gray.
+- **Do** use exactly one black (or, on dark grounds, white) primary pill per screen, 50px tall.
+- **Do** use the green tag only for "Open now" and the purple tag only for "Still in" / "Your pick".
+- **Do** show places as rows: 76px rounded photo, name, icon meta lines, no container.
+- **Do** build hierarchy with the system face at 400 / 600 / 700 and ink versus secondary gray.
+- **Do** use iOS-style ease-out (cubic-bezier(0.22, 1, 0.36, 1)) at 150 to 280ms for fades, lifts and presses, and drop them under reduced motion.
+- **Do** keep touch targets at least 44px.
 
 ### Don't:
-- **Don't** use gradient text for emphasis — weight and size carry emphasis in this system.
-- **Don't** add glassmorphism or blur-as-decoration.
-- **Don't** give a CTA button a gradient or a shadow at rest — the earlier gradient-plus-shadow CTA read as a pop-up ad, not an app action; it was corrected to flat-at-rest, shadow-on-hover.
-- **Don't** use bounce or elastic easing on any transition; motion decelerates confidently (`cubic-bezier(0.16, 1, 0.3, 1)` for interaction feedback, `cubic-bezier(0.25, 1, 0.5, 1)` for entrances) and never overshoots.
-- **Don't** show an archetype badge, "verified," or trust indicator that isn't backed by an inspectable rule.
-- **Don't** reuse the homepage hero's amber-glow/orange-neon diner-counter treatment, Fredoka/Space Grotesk fonts, or checkerboard-floor motif anywhere outside that one surface — it is a scoped exception, not a system-wide addition (see below).
-
-## Homepage Hero Exception: The Diner Counter
-
-The homepage hero (`frontend/app/page.tsx`) intentionally runs its own distinct visual world — a 24-hour NYC diner counter — rather than the site-wide system above. This is a deliberate, scoped surface decision, not a system-wide change, and its tokens (`--diner-*` in `globals.css`) and fonts (Fredoka for the headline, Space Grotesk for data/UI labels, loaded only in `layout.tsx` for this surface) are not part of the reusable system and should not be drawn on by other pages.
-
-Full direction contract, rationale, and finish-review verdict ("ship," all six fixes reverified) live in `.impeccable/surfaces/frontend-app-page-tsx.md`. In short: dark mode renders the counter at night (near-black ground, glowing amber headline, orange-outline-tube CTA); light mode renders the same counter by day (sunlit ground, solid amber/orange fills, no glow) — same structure, same two rationed color roles (amber = headline/brand only, orange = the one CTA action, never decorative elsewhere) in both. No kicker/eyebrow sits above the headline — an earlier version was cut specifically because this project's own craft floor bans that device.
-
-This section exists so a future agent extending the homepage hero has a pointer to the real brief instead of re-deriving the diner world from scratch — it is not an invitation to extend `--diner-*` tokens, Fredoka/Space Grotesk, or the checkerboard motif to any other page.
+- **Don't** load a web font or introduce a second typeface; the system face is the brand.
+- **Don't** put card boxes, borders, or resting shadows around rows or choices.
+- **Don't** add an accent hue for links, emphasis, or decoration.
+- **Don't** write uppercase labels, kickers, or eyebrows above headings.
+- **Don't** use glass or blur anywhere except the phone tab bar and the result scene's photo backdrop.
+- **Don't** use emoji or mixed icon sets; icons are the Lucide-shaped set at a shared stroke.
+- **Don't** use bouncy or overshooting motion.
