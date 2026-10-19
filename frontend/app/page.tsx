@@ -61,7 +61,7 @@ export default async function Home() {
           <ul className="grid sm:grid-cols-2 gap-x-10 gap-y-6">
             {places.slice(0, 4).map((c) => (
               <li key={c.restaurant_id}>
-                <Link href={`/restaurant/${c.restaurant_id}`} className="row-link block rounded-2xl p-2 -m-2">
+                <Link href={`/restaurant/${c.restaurant_id}`} className="row-link block rounded-2xl p-2.5 -m-2.5">
                   <PlaceRow c={c} />
                 </Link>
               </li>

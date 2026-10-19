@@ -357,15 +357,34 @@ def get_pick_shortlist(
 
     # Already sorted by p_safe_pick (load_data). Without a cuisine filter,
     # keep the shortlist from being six of the same thing.
-    per_cuisine_cap = PICK_SHORTLIST_SIZE if wanted_cuisines else 2
+    # Spread the slots across what was asked for: with three cuisines picked,
+    # two places each; with none, at most two per cuisine so it's a real
+    # choice. Then backfill with the best remaining matches if a cuisine
+    # runs short, and keep best-ranked first.
+    per_cuisine_cap = -(-PICK_SHORTLIST_SIZE // len(wanted_cuisines)) if wanted_cuisines else 2
     counts: dict = {}
-    picked = []
-    for _, row in matches.iterrows():
+    chosen: list[int] = []
+    for pos, (_, row) in enumerate(matches.iterrows()):
         counts[row["cuisine"]] = counts.get(row["cuisine"], 0) + 1
         if counts[row["cuisine"]] <= per_cuisine_cap:
-            picked.append(row)
-        if len(picked) == PICK_SHORTLIST_SIZE:
+            chosen.append(pos)
+        if len(chosen) == PICK_SHORTLIST_SIZE:
             break
+    if len(chosen) < PICK_SHORTLIST_SIZE:
+        taken = set(chosen)
+        extra = [pos for pos in range(len(matches)) if pos not in taken]
+        chosen += extra[: PICK_SHORTLIST_SIZE - len(chosen)]
+    picked = [matches.iloc[pos] for pos in sorted(chosen)]
+
+    # Say so when a cuisine they asked for has nothing open nearby, rather
+    # than quietly filling its slots with the others.
+    if wanted_cuisines and picked:
+        present = {row["cuisine"] for row in picked}
+        missing = [c for c in sorted(wanted_cuisines) if c not in present]
+        if missing:
+            names = missing[0] if len(missing) == 1 else ", ".join(missing[:-1]) + " or " + missing[-1]
+            gap = f"Nothing {names} is open nearby right now."
+            notice = f"{notice} {gap}" if notice else gap
 
     fields = ["restaurant_id", "name", "neighborhood", "cuisine", "price_midpoint", "image_url", "url",
               "lat", "lng", "rank", "local_weighted_rating", "tourist_weighted_rating", "distance_mi"]

@@ -591,14 +591,19 @@ a, button, [role="button"] {
 .tab-item { transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out), transform 140ms var(--ease-out); }
 .tab-item:active { transform: scale(0.92); }
 
-/* Rows: a soft highlight and a slow photo zoom on hover, a press on tap. */
+/* Rows: on hover the row lifts into a card (surface, soft shadow) and its
+   photo slowly zooms; a press on tap. */
 .row-link {
-  transition: background-color 180ms var(--ease-out), transform 160ms var(--ease-out);
+  transition: background-color 220ms var(--ease-out), box-shadow 320ms var(--ease-settle), transform 320ms var(--ease-settle);
 }
 .row-link:active { transform: scale(0.985); }
 .row-thumb img { transition: transform 420ms var(--ease-settle); }
 @media (hover: hover) {
-  .row-link:hover { background-color: var(--bg-subtle); }
+  .row-link:hover {
+    background-color: var(--bg-card);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
   .row-link:hover .row-thumb img { transform: scale(1.07); }
   .pick-choice:hover .pick-photo img { transform: scale(1.035); }
 }

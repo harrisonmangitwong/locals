@@ -419,7 +419,14 @@ export default function PickPage() {
               {notice && <p className="text-[14px] leading-snug px-3.5 py-3 mb-4 rounded-xl" style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}>{notice}</p>}
               {!loading && count === 0 && <p className="text-[14px]" style={{ color: "var(--text-secondary)" }}>Nothing open fits yet. Try fewer filters.</p>}
               <ul className="flex flex-col gap-5 transition-opacity" style={{ opacity: loading ? 0.45 : 1 }}>
-                {shortlist.map((c, i) => <li key={c.restaurant_id} className="rise" style={{ "--i": i } as CSSProperties}><PlaceRow c={c} shared /></li>)}
+                {shortlist.map((c, i) => (
+                  <li key={c.restaurant_id} className="rise" style={{ "--i": i } as CSSProperties}>
+                    {/* New tab, so the answers and shortlist here survive a look at the details. */}
+                    <a href={`/restaurant/${c.restaurant_id}`} target="_blank" rel="noopener" className="row-link block rounded-2xl p-2.5 -m-2.5" aria-label={`${c.name} details (opens in a new tab)`}>
+                      <PlaceRow c={c} shared />
+                    </a>
+                  </li>
+                ))}
               </ul>
               <div className="hidden md:block mt-7">
                 <button onClick={start} disabled={loading || count === 0} className="cta-btn w-full px-6 text-[16px]">
