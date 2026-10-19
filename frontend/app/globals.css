@@ -577,12 +577,12 @@ a, button, [role="button"] {
 }
 
 /* ── Motion ──
-   One curve for arrivals (--spring: fast start, long soft settle, no
+   One curve for arrivals (--ease-settle: fast start, long soft settle, no
    overshoot), press feedback on everything tappable, and photos that
    travel between screens via view transitions. Reduced motion keeps the
    state changes and drops the movement (see the end of this block). */
 :root {
-  --spring: cubic-bezier(0.2, 0.9, 0.25, 1);
+  --ease-settle: cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
 /* Press: every tappable thing gives a little under the finger. */
@@ -596,17 +596,17 @@ a, button, [role="button"] {
   transition: background-color 180ms var(--ease-out), transform 160ms var(--ease-out);
 }
 .row-link:active { transform: scale(0.985); }
-.row-thumb img { transition: transform 420ms var(--spring); }
+.row-thumb img { transition: transform 420ms var(--ease-settle); }
 @media (hover: hover) {
   .row-link:hover { background-color: var(--bg-subtle); }
   .row-link:hover .row-thumb img { transform: scale(1.07); }
   .pick-choice:hover .pick-photo img { transform: scale(1.035); }
 }
-.pick-choice .pick-photo img { transition: transform 520ms var(--spring); }
+.pick-choice .pick-photo img { transition: transform 520ms var(--ease-settle); }
 
 /* Staged arrival for a short sequence of siblings (cap: ~7 steps). */
 .rise {
-  animation: rise 560ms var(--spring) backwards;
+  animation: rise 560ms var(--ease-settle) backwards;
   animation-delay: calc(var(--i, 0) * 60ms + 60ms);
 }
 @keyframes rise {
@@ -619,8 +619,8 @@ a, button, [role="button"] {
 .collage-item {
   z-index: 1;
   transform: translate3d(calc(var(--mx, 0) * var(--d, 1) * 22px), calc(var(--my, 0) * var(--d, 1) * 14px), 0) rotate(var(--rot, 0deg));
-  transition: transform 900ms var(--spring);
-  animation: tile-in 820ms var(--spring) backwards;
+  transition: transform 900ms var(--ease-settle);
+  animation: tile-in 820ms var(--ease-settle) backwards;
   animation-delay: calc(var(--i, 0) * 70ms);
 }
 @keyframes tile-in {
@@ -628,7 +628,7 @@ a, button, [role="button"] {
   to { opacity: 1; translate: 0 0; scale: 1; }
 }
 .collage-tile {
-  transition: transform 380ms var(--spring), box-shadow 380ms var(--spring);
+  transition: transform 380ms var(--ease-settle), box-shadow 380ms var(--ease-settle);
 }
 .collage-label {
   position: absolute;
@@ -644,7 +644,7 @@ a, button, [role="button"] {
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 180ms var(--ease-out), translate 260ms var(--spring);
+  transition: opacity 180ms var(--ease-out), translate 260ms var(--ease-settle);
 }
 @media (hover: hover) {
   .collage-item:hover { z-index: 5; }
@@ -659,7 +659,7 @@ a, button, [role="button"] {
 .collage-item:active .collage-tile { transform: rotate(calc(var(--rot, 0deg) * -1)) scale(1.02); }
 
 /* The result scene: the blurred photo blooms in behind the cover. */
-.scene-backdrop { animation: backdrop-in 900ms var(--spring) backwards; }
+.scene-backdrop { animation: backdrop-in 900ms var(--ease-settle) backwards; }
 @keyframes backdrop-in {
   from { opacity: 0; transform: scale(1.25); }
   to { opacity: 1; transform: scale(1.1); }
@@ -669,7 +669,7 @@ a, button, [role="button"] {
    screens; whatever has no partner fades out quickly or rises in. */
 ::view-transition-group(*) {
   animation-duration: 460ms;
-  animation-timing-function: var(--spring);
+  animation-timing-function: var(--ease-settle);
 }
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -682,7 +682,7 @@ a, button, [role="button"] {
   overflow: clip;
 }
 ::view-transition-new(*):only-child {
-  animation: vt-in 420ms var(--spring) both;
+  animation: vt-in 420ms var(--ease-settle) both;
 }
 ::view-transition-old(*):only-child {
   animation: vt-out 200ms var(--ease-out) both;
