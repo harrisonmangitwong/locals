@@ -5,6 +5,7 @@ import { flushSync } from "react-dom";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import Icon from "@/components/Icon";
+import ScrollSpotlight from "@/components/ScrollSpotlight";
 import { type Candidate, ChoiceBody, PickPhoto, PlaceRow, fmtDistance, priceLabel } from "@/components/PickCard";
 import { NEIGHBORHOOD_COORDS } from "@/lib/neighborhoods";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -265,7 +266,7 @@ export default function PickPage() {
   const directions = result ? `https://www.google.com/maps/dir/?api=1&destination=${result.lat},${result.lng}` : "";
 
   return (
-    <div className={`min-h-screen flex flex-col${screen === "result" ? " scene-dark" : ""}`} style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
+    <div className={`min-h-screen flex flex-col${screen === "result" ? " scene" : ""}`} style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader current="pick" tabBar={false} />
 
       {screen === "prefs" && (
@@ -418,6 +419,7 @@ export default function PickPage() {
               </div>
               {notice && <p className="text-[14px] leading-snug px-3.5 py-3 mb-4 rounded-xl" style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}>{notice}</p>}
               {!loading && count === 0 && <p className="text-[14px]" style={{ color: "var(--text-secondary)" }}>Nothing open fits yet. Try fewer filters.</p>}
+              <ScrollSpotlight watch={shortlist.map((c) => c.restaurant_id).join(",")}>
               <ul className="flex flex-col gap-5 transition-opacity" style={{ opacity: loading ? 0.45 : 1 }}>
                 {shortlist.map((c, i) => (
                   <li key={c.restaurant_id} className="rise" style={{ "--i": i } as CSSProperties}>
@@ -428,6 +430,7 @@ export default function PickPage() {
                   </li>
                 ))}
               </ul>
+              </ScrollSpotlight>
               <div className="hidden md:block mt-7">
                 <button onClick={start} disabled={loading || count === 0} className="cta-btn w-full px-6 text-[16px]">
                   Help me pick

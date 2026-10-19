@@ -144,7 +144,7 @@ The signature moment is the result of Help me pick: the page turns dark and is t
 - System font (SF on Apple), hierarchy by weight and gray, sentence case throughout.
 - Black primary pill, soft-gray secondary pill, soft-gray chips that flip to ink when selected.
 - Place rows and choice cards without containers or borders.
-- A dark, photo-tinted result scene.
+- A photo-tinted result scene that follows the theme (light wash in light mode, dimmed dark in dark mode).
 - A floating frosted tab bar on phones.
 
 ## Colors
@@ -169,14 +169,14 @@ A monochrome ink-on-paper system with two small, semantic color tags; the photog
 - **Ink Muted** (`{colors.ink-muted}`): fine print (review-count line, "or" between choices, list numerals). Dark: #8e9096.
 - **Hairline** (`{colors.hairline}`): the header's bottom rule, the footer's top rule, dividers between "What to order" items, the tab bar's edge. **Hairline Strong** (`{colors.hairline-strong}`) for hover borders on legacy controls.
 - **Frost** (`{colors.frost}`): the tab bar's translucent fill (dark: rgba(30,31,34,0.72)).
-- **Scene Ground** (`{colors.scene-ground}`): base of the dark result scene, under the blurred photo.
+- **Scene Ground** (`{colors.scene-ground}`): base of the result scene in dark mode, under the blurred photo. In light mode the scene keeps the paper ground.
 
 ### Named Rules
 **The Photo Is the Only Color Rule.** No accent hue exists for decoration, links, or emphasis. If something is colored and it is not a photograph, it is a status tag.
 
 **The One Meaning Rule.** Green means open now. Purple means still in or your pick. Neither color is ever used for anything else, and no third tag color is added without a third meaning.
 
-**The Inverted Action Rule.** The primary action is ink on light grounds and white on dark grounds (dark mode and the result scene alike); it is never a hue.
+**The Inverted Action Rule.** The primary action is ink on light grounds and white on dark grounds (including the result scene in dark mode); it is never a hue.
 
 ## Typography
 
@@ -215,7 +215,7 @@ Flat by default. Depth is reserved for things that float above the page; rows, c
 - **Collage float** (`box-shadow: 0 16px 38px rgba(0,0,0,0.16)`; dark adds `0 0 0 1px rgba(255,255,255,0.08)` at 0.45 opacity): homepage photo tiles.
 - **Tab bar float** (`box-shadow: 0 10px 34px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.06)`): the floating tab bar.
 - **Lift** (`box-shadow: 0 12px 36px rgba(0,0,0,0.12)`): a choice photo on hover (with a 3px rise), and under the chosen ring.
-- **Cover** (`box-shadow: 0 24px 60px rgba(0,0,0,0.45)`): the result's cover photo over the dark scene.
+- **Cover** (`box-shadow: 0 24px 60px rgba(0,0,0,0.45)`): the result's cover photo over the scene.
 
 ### Named Rules
 **The Only-Floating-Things Rule.** A shadow means the element floats over the page. Nothing resting in the flow gets one.
@@ -231,7 +231,7 @@ Soft, continuous corners keyed to object size: 6px on tags, 12px on row thumbnai
 ### Buttons
 Quiet, large, and unmistakable: there is only one black pill on a screen.
 - **Shape:** full pill (`{rounded.pill}`), 50px minimum height, 600 weight, 15 to 16px.
-- **Primary:** ink fill, white text (white fill, ink text in dark mode and the result scene). One per screen: Help me pick, Let's go.
+- **Primary:** ink fill, white text (white fill, ink text in dark mode). One per screen: Help me pick, Let's go.
 - **Secondary:** soft-gray fill, ink text, no border (Browse all places, Just pick for me).
 - **Hover / Active:** fill darkens one step (150ms ease-out); press scales to 0.98. Disabled primary drops to 35% opacity.
 - **Action tiles:** soft-gray 14px-radius tiles, 64px tall, a 19px icon over a 13px/600 label, in a row of three (Details, Share, Pick again). Press scales to 0.97.
@@ -242,7 +242,7 @@ Quiet, large, and unmistakable: there is only one black pill on a screen.
 
 ### Status Tags
 - **Style:** small 6px-radius label (11.5px/600, 2px 7px padding), sitting on a photo's edge or in a tag row.
-- **Variants:** Open (green) and Still in / Your pick (purple). On the dark scene they become translucent dark fills with pale text (#8ff0b2 on rgba(10,40,22,0.62); #ddd0ff on rgba(34,22,64,0.62)).
+- **Variants:** Open (green) and Still in / Your pick (purple). On the dark-mode scene they become translucent dark fills with pale text (#8ff0b2 on rgba(10,40,22,0.62); #ddd0ff on rgba(34,22,64,0.62)).
 
 ### Place Row
 The list unit for places. A 76px rounded-square photo with an optional tag overlapping its bottom edge, then the name (16px/600, up to two lines) and up to three icon meta lines (map pin: neighborhood and distance; utensils: cuisine and price; star: "Locals rate it 4.6"). No container, no border. When the row is a link, hover lifts it 3px into a white 16px-radius card with the large soft shadow and slowly zooms the photo; tap presses it to 0.985.
@@ -260,7 +260,10 @@ A whole choice is one button: a large 18px-radius photo (144px / 224px / 288px t
 - **Tab bar (phones):** a floating frosted pill 14px above the safe area, centered, holding five tabs (Home, Pick, Browse, Saved, Visited). Each tab is a 20px Lucide-shaped icon over an 11px/600 label; the active tab gets a soft-gray pill and ink color with a heavier icon stroke (2.25 versus 1.9). The page gains bottom padding so the bar never covers content.
 
 ### Result Scene (signature)
-The pick is revealed on a dark scene: the restaurant's photo, blurred 60px, saturated 1.7x and dimmed to 32% brightness, fills the page behind a scrim that darkens from 25% to 60% black top to bottom so white text holds contrast on any photo. Over it: the 22px-radius cover photo, the name in Headline, icon meta lines, the purple and green tags, the white Let's go pill, the three action tiles, then What to order, The vibe, Heads up, and a Close second row. All tokens re-map inside the scene (ink becomes white, soft grays become white at 12 to 18%).
+The pick is revealed on a scene tinted by the restaurant's own photo, and the scene follows the theme rather than switching it. Light mode: the photo, blurred 60px, saturated 1.5x and brightened slightly at 70% opacity, sits behind a paper scrim (55% to 90% #f7f4ee, top to bottom), so ink text holds contrast and the page takes on the place's colors; soft grays become frosted white (62% / 86%). Dark mode: the photo is blurred 60px, saturated 1.7x and dimmed to 32% brightness behind a scrim from 25% to 60% black, and tokens re-map (ink becomes white, soft grays white at 12 to 18%). Over it in both: the 22px-radius cover photo, the name in Headline, icon meta lines, the purple and green tags, the Let's go pill, the three action tiles, then What to order, The vibe, Heads up, and a Close second row.
+
+### Touch: scroll stands in for hover
+Phones have no hover, so scrolling drives the same responses. The homepage collage moves with page scroll by depth (nearer photos rise faster, the pile straightens over the first 600px). In row lists (Open right now, Your shortlist), the single row whose center is nearest the middle of the screen (within 22% of the viewport height) gets the hover treatment (white card, large soft shadow, 3px lift, photo zoom) via `.is-focus`, one row at a time.
 
 ### Scope Limits
 Today the system is fully expressed on the homepage and Help me pick. Browse, restaurant detail, saved, visited and profile pages inherit the tokens, the buttons and the tab bar but still carry older component layouts; those layouts are not part of this system and should be brought onto it rather than copied.

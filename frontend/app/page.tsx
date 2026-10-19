@@ -3,6 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import Icon from "@/components/Icon";
 import { type CSSProperties } from "react";
 import Collage from "@/components/Collage";
+import ScrollSpotlight from "@/components/ScrollSpotlight";
 import { type Candidate, PlaceRow } from "@/components/PickCard";
 import { REVIEW_COUNT_LABEL, RESTAURANT_POOL_LABEL } from "@/lib/stats";
 
@@ -58,15 +59,17 @@ export default async function Home() {
               See all <Icon name="chevron-right" size={15} />
             </Link>
           </div>
-          <ul className="grid sm:grid-cols-2 gap-x-10 gap-y-6">
-            {places.slice(0, 4).map((c) => (
-              <li key={c.restaurant_id}>
-                <Link href={`/restaurant/${c.restaurant_id}`} className="row-link block rounded-2xl p-2.5 -m-2.5">
-                  <PlaceRow c={c} />
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <ScrollSpotlight>
+            <ul className="grid sm:grid-cols-2 gap-x-10 gap-y-6">
+              {places.slice(0, 4).map((c) => (
+                <li key={c.restaurant_id}>
+                  <Link href={`/restaurant/${c.restaurant_id}`} className="row-link block rounded-2xl p-2.5 -m-2.5">
+                    <PlaceRow c={c} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </ScrollSpotlight>
         </section>
       )}
 

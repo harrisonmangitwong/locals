@@ -16,7 +16,8 @@ const TILES = [
 ];
 
 // Real places open right now, assembling into a loose pile on arrival and
-// shifting with the pointer like layers at different depths. Each photo
+// shifting with the pointer (and with scroll, on any device) like layers
+// at different depths. Each photo
 // straightens up and names itself on hover, and opens its restaurant.
 export default function Collage({ places }: { places: Candidate[] }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -26,9 +27,25 @@ export default function Collage({ places }: { places: Candidate[] }) {
     if (!el) return;
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!finePointer || reduced) return;
+    if (reduced) return;
     const host = (el.closest("section") as HTMLElement | null) ?? el;
     let frame = 0;
+    let scrollFrame = 0;
+    // Scroll depth works everywhere; it's the phone's version of hover.
+    const onScroll = () => {
+      cancelAnimationFrame(scrollFrame);
+      scrollFrame = requestAnimationFrame(() => {
+        el.style.setProperty("--sy", String(Math.min(Math.max(window.scrollY, 0), 600)));
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    if (!finePointer) {
+      return () => {
+        cancelAnimationFrame(scrollFrame);
+        window.removeEventListener("scroll", onScroll);
+      };
+    }
     const onMove = (e: PointerEvent) => {
       const r = host.getBoundingClientRect();
       const mx = ((e.clientX - r.left) / r.width) * 2 - 1;
@@ -48,6 +65,8 @@ export default function Collage({ places }: { places: Candidate[] }) {
     host.addEventListener("pointerleave", onLeave);
     return () => {
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(scrollFrame);
+      window.removeEventListener("scroll", onScroll);
       host.removeEventListener("pointermove", onMove);
       host.removeEventListener("pointerleave", onLeave);
     };

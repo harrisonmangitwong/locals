@@ -624,7 +624,14 @@ a, button, [role="button"] {
    drift with the pointer by depth; hovering straightens and names one. */
 .collage-item {
   z-index: 1;
-  transform: translate3d(calc(var(--mx, 0) * var(--d, 1) * 22px), calc(var(--my, 0) * var(--d, 1) * 14px), 0) rotate(var(--rot, 0deg));
+  /* --mx/--my: pointer (desktop). --sy: page scroll, 0-600px. Nearer photos
+     (higher --d) rise faster as you scroll and the pile slowly straightens. */
+  transform:
+    translate3d(
+      calc(var(--mx, 0) * var(--d, 1) * 22px),
+      calc(var(--my, 0) * var(--d, 1) * 14px + var(--sy, 0) * var(--d, 1) * -0.28px),
+      0)
+    rotate(calc(var(--rot, 0deg) * (1 - var(--sy, 0) / 700)));
   transition: transform 900ms var(--ease-settle);
   animation: tile-in 820ms var(--ease-settle) backwards;
   animation-delay: calc(var(--i, 0) * 70ms);
@@ -663,6 +670,22 @@ a, button, [role="button"] {
 .collage-item:focus-visible { z-index: 5; outline-offset: 6px; border-radius: 18px; }
 .collage-item:focus-visible .collage-label { opacity: 1; translate: -50% 0; }
 .collage-item:active .collage-tile { transform: rotate(calc(var(--rot, 0deg) * -1)) scale(1.02); }
+
+/* On touch, scroll drives the collage directly, so follow it tightly. */
+@media (hover: none) {
+  .collage-item { transition: transform 120ms linear; }
+}
+
+/* Phones have no hover, so the row crossing the middle of the screen gets
+   the hover treatment instead (ScrollSpotlight toggles .is-focus). */
+@media (hover: none) {
+  .row-link.is-focus {
+    background-color: var(--bg-card);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+  .row-link.is-focus .row-thumb img { transform: scale(1.07); }
+}
 
 /* The result scene: the blurred photo blooms in behind the cover. */
 .scene-backdrop { animation: backdrop-in 900ms var(--ease-settle) backwards; }
@@ -766,43 +789,60 @@ a, button, [role="button"] {
   }
 }
 
-/* ── The pick: a dark scene tinted by the restaurant's own photo ── */
-.scene-dark {
-  --bg: #0d0e0f;
-  --bg-card: rgba(255,255,255,0.06);
-  --bg-subtle: rgba(255,255,255,0.12);
-  --bg-inset: rgba(255,255,255,0.18);
-  --text: #ffffff;
-  --text-secondary: rgba(255,255,255,0.72);
-  --text-muted: rgba(255,255,255,0.62);
-  --cta-bg: #ffffff;
-  --cta-bg-hover: #e4e4e7;
-  --cta-text: #131517;
-  --border: rgba(255,255,255,0.12);
-  --tag-open-bg: rgba(10,40,22,0.62);
-  --tag-open-text: #8ff0b2;
-  --tag-pick-bg: rgba(34,22,64,0.62);
-  --tag-pick-text: #ddd0ff;
-  --gsi-bg: rgba(255,255,255,0.12);
-  --gsi-text: #ffffff;
-  color: var(--text);
-  background: var(--bg);
+/* ── The pick: a scene tinted by the restaurant's own photo ──
+   Follows the theme. Light: the photo's colors washed into the paper, with
+   frosted-white tiles. Dark: the photo dimmed into a near-black ground,
+   white actions. Either way the place sets the mood without the app
+   switching themes under you. */
+.scene {
+  --bg-subtle: rgba(255,255,255,0.62);
+  --bg-inset: rgba(255,255,255,0.86);
 }
 .scene-backdrop {
   position: absolute;
   inset: -80px;
-  filter: blur(60px) saturate(1.7) brightness(0.32);
+  filter: blur(60px) saturate(1.5) brightness(1.08);
   transform: scale(1.1);
+  opacity: 0.7;
   pointer-events: none;
 }
-/* Keeps the tint dark at the top and darker at the bottom, so white text
-   holds contrast whatever the photo is. */
+/* Washes the tint toward paper, lightest at the top, so ink text holds
+   contrast whatever the photo is. */
 .scene-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.6));
+  background: linear-gradient(to bottom, rgba(247,244,238,0.55), rgba(247,244,238,0.9));
   pointer-events: none;
 }
+@media (prefers-color-scheme: dark) {
+  .scene {
+    --bg: #0d0e0f;
+    --bg-card: rgba(255,255,255,0.06);
+    --bg-subtle: rgba(255,255,255,0.12);
+    --bg-inset: rgba(255,255,255,0.18);
+    --text: #ffffff;
+    --text-secondary: rgba(255,255,255,0.72);
+    --text-muted: rgba(255,255,255,0.62);
+    --cta-bg: #ffffff;
+    --cta-bg-hover: #e4e4e7;
+    --cta-text: #131517;
+    --border: rgba(255,255,255,0.12);
+    --tag-open-bg: rgba(10,40,22,0.62);
+    --tag-open-text: #8ff0b2;
+    --tag-pick-bg: rgba(34,22,64,0.62);
+    --tag-pick-text: #ddd0ff;
+    --gsi-bg: rgba(255,255,255,0.12);
+    --gsi-text: #ffffff;
+  }
+  .scene-backdrop {
+    filter: blur(60px) saturate(1.7) brightness(0.32);
+    opacity: 1;
+  }
+  .scene-scrim {
+    background: linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.6));
+  }
+}
+
 .fade-up {
   animation: fade-up 280ms var(--ease-out) both;
 }
