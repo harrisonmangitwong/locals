@@ -248,7 +248,7 @@ Quiet, large, and unmistakable: there is only one black pill on a screen.
 The list unit for places. A 76px rounded-square photo with an optional tag overlapping its bottom edge, then the name (16px/600, up to two lines) and up to three icon meta lines (map pin: neighborhood and distance; utensils: cuisine and price; star: "Locals rate it 4.6"). No container, no border. When the row is a link, hover lifts it 3px into a white 16px-radius card with the large soft shadow and slowly zooms the photo; tap presses it to 0.985.
 
 ### This-or-That Choice
-A whole choice is one button: a large 18px-radius photo (144px / 224px / 288px tall by breakpoint) with facts beneath it, including a "Known for" or "The vibe" line. Hover raises the photo 3px with the Lift shadow; the chosen photo gets a 3px ink ring; the passed one fades to 35% and scales to 0.97. The incoming contender fades up.
+A whole choice is one button: a large 18px-radius photo (144px / 224px / 288px tall by breakpoint) with facts beneath it, including a "Known for" or "The vibe" line. No box at rest; on hover the whole choice lifts 3px into a white 28px-radius card with the Lift shadow and the photo zooms slightly, the same behavior as shortlist rows. The chosen choice keeps the card with a 2px ink ring; the passed one fades to 35% and scales to 0.97. The incoming contender fades up.
 
 ### Inputs / Fields
 - **Select:** soft-gray fill, no border, 12px radius, 15px text, 12px by 16px padding.

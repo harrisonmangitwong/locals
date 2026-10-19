@@ -534,7 +534,6 @@ a, button, [role="button"] {
   .chip-collapse,
   .google-signin-btn,
   .pick-choice,
-  .pick-choice .pick-photo,
   .fade-up,
   .tile-btn,
   .soft-btn,
@@ -546,20 +545,21 @@ a, button, [role="button"] {
 }
 
 /* ── Help me pick: this-or-that cards ──
-   No box: a big rounded photo with the facts under it. Hover lifts the
-   photo slightly; the chosen one gets an ink ring, the other fades. */
+   No box at rest: a big rounded photo with the facts under it. On hover
+   the whole choice lifts into a white card (same as the shortlist rows);
+   the chosen one keeps the card with an ink ring, the other fades. */
 .pick-choice {
-  border-radius: 18px;
+  border-radius: 28px;
+  padding: 10px 10px 14px;
+  margin: -10px -10px -14px;
   text-align: left;
-  transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
-}
-.pick-choice .pick-photo {
-  transition: transform 260ms var(--ease-out), box-shadow 260ms var(--ease-out);
+  transition: opacity 220ms var(--ease-out), background-color 220ms var(--ease-out), box-shadow 320ms var(--ease-settle), transform 320ms var(--ease-settle);
 }
 @media (hover: hover) {
-  .pick-choice:hover .pick-photo {
-    transform: translateY(-3px);
+  .pick-choice:hover {
+    background-color: var(--bg-card);
     box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
   }
 }
 .pick-choice:active {
@@ -569,8 +569,9 @@ a, button, [role="button"] {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
-.pick-choice.is-chosen .pick-photo {
-  box-shadow: 0 0 0 3px var(--text), var(--shadow-lg);
+.pick-choice.is-chosen {
+  background-color: var(--bg-card);
+  box-shadow: 0 0 0 2px var(--text), var(--shadow-lg);
 }
 .pick-choice.is-passed {
   opacity: 0.35;
@@ -606,7 +607,7 @@ a, button, [role="button"] {
     transform: translateY(-3px);
   }
   .row-link:hover .row-thumb img { transform: scale(1.07); }
-  .pick-choice:hover .pick-photo img { transform: scale(1.035); }
+  .pick-choice:hover .pick-photo img { transform: scale(1.05); }
 }
 .pick-choice .pick-photo img { transition: transform 520ms var(--ease-settle); }
 
@@ -844,7 +845,7 @@ a, button, [role="button"] {
 }
 
 .fade-up {
-  animation: fade-up 280ms var(--ease-out) both;
+  animation: fade-up 280ms var(--ease-out) backwards;
 }
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(8px); }
