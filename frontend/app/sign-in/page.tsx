@@ -24,7 +24,7 @@ export default function SignInPage() {
             Locals
           </h1>
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Eat like a local. Not a tourist.
+            Locals tells you where to go tonight.
           </p>
         </div>
 

@@ -1,10 +1,11 @@
 ## Design Context
 
 ### Users
-- **Primary**: NYC residents looking for authentic neighborhood restaurants, not tourist traps. They know their city, they want data-backed picks that match their taste, and they want to discover spots in neighborhoods they haven't explored yet.
+- **Primary**: Young, food-curious New Yorkers, roughly 0–5 years in the city (e.g. recent NYU grads). They have some friends here and use Beli, but they don't like repeating restaurants, their friends haven't been everywhere and fall for TikTok hype too, and they're worn out from scrolling recs, friend lists, and forgotten bookmarks. The job: "help me land on one place I haven't tried that's actually worth it, so I can stop deciding and go."
+- **Value prop**: "Most food apps give you endless recs. Locals tells you where to go tonight." Help me pick is the core experience; the ranking model is the engine that chooses its shortlist, not something users are asked to read.
 - **Secondary**: Visitors to NYC who want to eat where locals eat, not where TripAdvisor sends them.
 - **Tertiary**: Recruiters and hiring managers viewing this as a portfolio project. The design needs to signal "real product" not "weekend hackathon."
-- **Context**: Mobile-first browsing, desktop for deeper exploration. Decision-making moment is urgent — they're hungry now or planning tonight.
+- **Context**: Mobile-first. The decision moment is urgent: they're hungry now or planning tonight. The product problem is hype and value for money ("overhyped," "too expensive for what it was"), not tourist traps.
 
 ### Brand Personality
 - **Voice**: Warm, trustworthy, local

@@ -13,7 +13,7 @@ interface SiteHeaderProps {
 }
 
 const NAV_ITEMS: { key: NavKey; href: string; label: string }[] = [
-  { key: "recs", href: "/recommendations", label: "Recs" },
+  { key: "recs", href: "/recommendations", label: "Browse" },
   { key: "saved", href: "/favorites", label: "Saved" },
   { key: "visited", href: "/visited", label: "Visited" },
   { key: "about", href: "/about", label: "About" },

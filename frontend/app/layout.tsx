@@ -32,21 +32,21 @@ const dinerMono = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Locals | NYC Restaurant Recommendations",
+  title: "Locals | Where to eat in NYC tonight",
   description:
-    "Eat like a local. Not a tourist. We rank NYC restaurants by how much locals love them, not by tourist hype.",
+    "Most food apps give you endless recs. Locals tells you where to go tonight: a few quick questions, a this-or-that, and one NYC restaurant worth it.",
   openGraph: {
-    title: "Locals | Eat like a local. Not a tourist.",
+    title: "Locals | Where to eat in NYC tonight",
     description:
-      "We rank NYC restaurants by how much locals love them — not by how many tourists stumble in. Find your next neighborhood gem.",
+      "Most food apps give you endless recs. Locals tells you where to go tonight.",
     siteName: "Locals",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Locals | Eat like a local. Not a tourist.",
+    title: "Locals | Where to eat in NYC tonight",
     description:
-      "We rank NYC restaurants by how much locals love them — not by how many tourists stumble in.",
+      "Most food apps give you endless recs. Locals tells you where to go tonight.",
   },
 };
 

@@ -114,7 +114,9 @@ export default function PickPage() {
   const [showAllCuisines, setShowAllCuisines] = useState(false);
   const [prices, setPrices] = useState<Set<string>>(new Set());
   const [distIdx, setDistIdx] = useState(DEFAULT_DIST_IDX);
-  const [onlyNew, setOnlyNew] = useState(false);
+  // On by default: the people this is for would rather try somewhere new.
+  // Only takes effect once we know what they've been to.
+  const [onlyNew, setOnlyNew] = useState(true);
   const [visitedIds, setVisitedIds] = useState<string[]>([]);
 
   const [shortlist, setShortlist] = useState<Candidate[]>([]);
@@ -163,6 +165,27 @@ export default function PickPage() {
       .then((d) => setCuisineOptions((d.cuisines ?? []).filter((c: string) => c !== "Restaurant")))
       .catch(() => {});
   }, []);
+
+  // Pre-fill craving and price from the taste profile set at onboarding, so
+  // a returning user can go straight to comparing.
+  useEffect(() => {
+    if (!user || !cuisineOptions.length) return;
+    let cancelled = false;
+    fetch("/api/profile")
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        const liked = ((d.preferredCuisines ?? []) as string[]).filter((c) => cuisineOptions.includes(c));
+        if (liked.length) setCuisines((cur) => (cur.size ? cur : new Set(liked)));
+        const budget = d.preferredPrice as number | null;
+        if (budget != null) {
+          const upTo = PRICES.indexOf(priceLabel(Math.max(budget, 1)) ?? "$$$$");
+          setPrices((cur) => (cur.size ? cur : new Set(PRICES.slice(0, upTo + 1))));
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user, cuisineOptions]);
 
   useEffect(() => {
     if (!user) return;

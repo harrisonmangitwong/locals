@@ -24,7 +24,7 @@ export default function Home() {
             </h1>
 
             <p className="diner-sub text-lg sm:text-xl max-w-md mb-10 leading-relaxed">
-              Ranking NYC&apos;s restaurants by who actually eats here, not just by star ratings.
+              Most food apps give you endless recs. Locals tells you where to go tonight.
             </p>
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
