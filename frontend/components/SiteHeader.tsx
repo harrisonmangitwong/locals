@@ -42,7 +42,7 @@ export default function SiteHeader({ current }: SiteHeaderProps) {
                   ? "text-xs sm:text-sm font-semibold"
                   : `text-xs sm:text-sm transition-colors hover:opacity-75${item.key === "about" ? " hidden sm:inline" : ""}`
               }
-              style={{ color: active ? "var(--accent-text)" : "var(--text-secondary)" }}
+              style={{ color: active ? "var(--text)" : "var(--text-secondary)" }}
             >
               {item.label}
             </Link>

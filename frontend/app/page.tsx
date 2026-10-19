@@ -1,50 +1,91 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import DinerProofCard from "@/components/DinerProofCard";
+import { type Candidate, PickCardBody } from "@/components/PickCard";
 import { REVIEW_COUNT_LABEL, RESTAURANT_POOL_LABEL } from "@/lib/stats";
-import { PROOF_EXAMPLES as FEATURED } from "@/lib/proofExamples";
 
-export default function Home() {
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// Two real places that are open right now, shown as the same this-or-that
+// Help me pick uses, so the homepage shows the product instead of
+// describing it. Refreshed every 15 minutes; if the API is down or almost
+// nothing is open (late night), the hero just goes without it.
+async function getTonightPair(): Promise<Candidate[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/pick`, { next: { revalidate: 900 } });
+    if (!res.ok) return [];
+    const { candidates = [] } = (await res.json()) as { candidates?: Candidate[] };
+    const [first, ...rest] = candidates;
+    if (!first) return [];
+    // A real choice reads better than two of the same kind of night out.
+    const second =
+      rest.find((c) => c.cuisine !== first.cuisine && c.price_midpoint !== first.price_midpoint) ??
+      rest.find((c) => c.cuisine !== first.cuisine) ??
+      rest[0];
+    return second ? [first, second] : [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function Home() {
+  const pair = await getTonightPair();
+
   return (
     <main className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader />
 
-      {/* Hero -- a 24-hour NYC diner counter, not another editorial food
-          page. Day shift in light mode, neon night shift in dark mode; see
-          .diner-hero in globals.css and this page's surface brief. */}
-      <section id="main-content" className="diner-hero flex-1 flex items-center">
-        <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-16 flex flex-col md:flex-row gap-12 md:gap-16 md:items-center">
-          <div className="flex-1">
-            <div className="diner-open-tag mb-5">
-              <span className="diner-open-dot" />
-              Open &middot; deciding now
-            </div>
-            <h1 className="diner-headline text-5xl sm:text-6xl md:text-7xl mb-6">
-              Let&apos;s eat.
-            </h1>
-
-            <p className="diner-sub text-lg sm:text-xl max-w-md mb-10 leading-relaxed">
+      <section id="main-content" className="flex-1 flex items-center">
+        <div
+          className={`w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-20 grid gap-12 md:gap-16 items-center${pair.length ? " md:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]" : ""}`}
+        >
+          <div>
+            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl mb-5 text-balance">Let&apos;s eat.</h1>
+            <p className="text-lg sm:text-xl max-w-md mb-8 leading-relaxed text-pretty" style={{ color: "var(--text-secondary)" }}>
               Most food apps give you endless recs. Locals tells you where to go tonight.
             </p>
-
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Link href="/pick" className="diner-cta-btn">
+              <Link href="/pick" className="cta-btn inline-flex items-center justify-center px-7 py-3 rounded-full text-base font-semibold">
                 Help me pick
               </Link>
-              <Link href="/recommendations" className="diner-sub text-base font-semibold underline underline-offset-4 transition-opacity hover:opacity-75">
-                Browse the picks
+              <Link
+                href="/recommendations"
+                className="text-base font-semibold underline underline-offset-4 decoration-1 transition-opacity hover:opacity-75"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Browse all places
               </Link>
             </div>
-            <p className="diner-footer-stat mt-6 text-xs uppercase tracking-wide">
-              {REVIEW_COUNT_LABEL} reviews &middot; {RESTAURANT_POOL_LABEL} NYC restaurants, filtered for locals
+            <p className="mt-8 text-sm" style={{ color: "var(--text-muted)" }}>
+              Ranked from {REVIEW_COUNT_LABEL} reviews of {RESTAURANT_POOL_LABEL} NYC restaurants.
             </p>
           </div>
 
-          <div className="diner-cards min-w-0">
-            {FEATURED.slice(0, 2).map((item, i) => (
-              <DinerProofCard key={item.name} item={item} rotate={i === 0 ? "left" : "right"} />
-            ))}
-          </div>
+          {pair.length === 2 && (
+            <div className="min-w-0">
+              <div className="flex items-baseline justify-between gap-3 mb-3">
+                <h2 className="font-display text-xl sm:text-2xl">Which sounds better tonight?</h2>
+                <span className="flex items-center gap-1.5 text-sm shrink-0" style={{ color: "var(--text-secondary)" }}>
+                  <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "var(--success-strong)" }} aria-hidden="true" />
+                  Open now
+                </span>
+              </div>
+              <div className="grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-2 sm:gap-4 items-stretch">
+                {pair.map((c, i) => (
+                  <div key={c.restaurant_id} className="contents">
+                    {i === 1 && (
+                      <span className="text-sm font-semibold text-center self-center" style={{ color: "var(--text-secondary)" }} aria-hidden="true">or</span>
+                    )}
+                    <Link href="/pick" aria-label={`Help me pick, starting with places like ${c.name}`} className="pick-choice rounded-2xl overflow-hidden flex flex-col">
+                      <PickCardBody c={c} photoClass="h-36 sm:h-48" sizes="(max-width: 640px) 100vw, 400px" priority={i === 0} />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-sm leading-relaxed max-w-md" style={{ color: "var(--text-muted)" }}>
+                Help me pick narrows places like these down to one, based on what you&apos;re craving, your budget, and how far you&apos;ll go.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -57,7 +98,7 @@ export default function Home() {
         </div>
         <nav className="flex items-center gap-5">
           <Link href="/recommendations" className="text-sm transition-opacity hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-            Browse restaurants
+            Browse
           </Link>
           <Link href="/about" className="text-sm transition-opacity hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
             About

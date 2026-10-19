@@ -30,7 +30,7 @@ export default function GoogleSignInButton({
     <button
       onClick={handleSignIn}
       className={`google-signin-btn flex items-center justify-center rounded-full font-semibold ${compact ? "gap-1.5 px-3 py-1.5 text-xs sm:text-sm" : "gap-3 px-4 py-3 text-sm"} ${className}`}
-      style={{ backgroundColor: "#ffffff", color: "#3c4043", border: "1px solid #dadce0" }}
+      style={{ backgroundColor: "var(--gsi-bg)", color: "var(--gsi-text)", border: "1px solid var(--gsi-border)" }}
     >
       <svg width={iconSize} height={iconSize} viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
         <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" />

@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import SiteHeader from "@/components/SiteHeader";
-import { getPhotoUrl } from "@/lib/photoFallback";
-import { getVerdict } from "@/lib/verdict";
+import { type Candidate, PickCardBody, PickPhoto, metaLine, priceLabel } from "@/components/PickCard";
 import { NEIGHBORHOOD_COORDS } from "@/lib/neighborhoods";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -18,50 +16,12 @@ const PRICES = ["$", "$$", "$$$", "$$$$"];
 // Shown before "More" so price and distance stay on the first screen on a phone.
 const COMMON_CUISINES = ["American", "Italian", "Chinese", "Japanese", "Korean", "Mexican", "Thai", "Pizza", "Indian"];
 
-interface Candidate {
-  restaurant_id: string;
-  name: string;
-  neighborhood: string;
-  cuisine: string;
-  price_midpoint: number | null;
-  image_url: string | null;
-  lat: number;
-  lng: number;
-  local_weighted_rating: number;
-  tourist_weighted_rating: number;
-  distance_mi: number | null;
-  // From the review analysis: up to 3 standout dishes, the top line on
-  // vibe/service (shown when there's no standout dish), and wait times.
-  dishes: string[];
-  vibe: string | null;
-  wait_note: string | null;
-}
-
 type Screen = "prefs" | "compare" | "result";
 type Location = { lat: number; lng: number; label: string } | null;
 
 function fmtMiles(m: number) {
   return `${m < 1 ? m.toFixed(1) : String(m)} mi`;
 }
-function priceLabel(mid: number | null) {
-  if (!mid) return null;
-  return mid <= 15 ? "$" : mid <= 30 ? "$$" : mid <= 60 ? "$$$" : "$$$$";
-}
-function metaLine(c: Candidate) {
-  const parts = [c.neighborhood, c.cuisine !== "Restaurant" ? c.cuisine : null, priceLabel(c.price_midpoint)];
-  if (c.distance_mi != null) parts.push(`${c.distance_mi < 1 ? c.distance_mi.toFixed(1) : c.distance_mi.toFixed(1).replace(/\.0$/, "")} mi away`);
-  return parts.filter(Boolean).join(" · ");
-}
-
-function PickPhoto({ c, sizes, className }: { c: Candidate; sizes: string; className: string }) {
-  const [src, setSrc] = useState(c.image_url || getPhotoUrl(c.cuisine));
-  return (
-    <div className={`relative overflow-hidden ${className}`} style={{ backgroundColor: "var(--bg-inset)" }}>
-      <Image src={src} alt={`${c.name} in ${c.neighborhood}`} fill sizes={sizes} className="object-cover" onError={() => setSrc(getPhotoUrl(c.cuisine))} />
-    </div>
-  );
-}
-
 function ChoiceCard({ c, onChoose, still, state }: { c: Candidate; onChoose: () => void; still?: boolean; state?: "chosen" | "passed" }) {
   return (
     <button
@@ -69,32 +29,7 @@ function ChoiceCard({ c, onChoose, still, state }: { c: Candidate; onChoose: () 
       aria-label={`Choose ${c.name}`}
       className={`pick-choice w-full text-left rounded-2xl overflow-hidden flex flex-col${state ? ` is-${state}` : ""}`}
     >
-      <div className="relative">
-        <PickPhoto c={c} sizes="(max-width: 768px) 100vw, 480px" className="h-28 md:h-56" />
-        {still && (
-          <span className="absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "var(--accent)", color: "#241f18" }}>
-            Still in
-          </span>
-        )}
-      </div>
-      <div className="px-4 pt-3 pb-4 flex flex-col gap-1">
-        <span className="font-semibold text-base md:text-lg leading-snug" style={{ color: "var(--text)" }}>{c.name}</span>
-        <span className="text-xs md:text-sm" style={{ color: "var(--text-secondary)" }}>{metaLine(c)}</span>
-        <span className="text-sm" style={{ color: "var(--text)" }}>
-          Locals <b style={{ color: "var(--success-strong)" }}>{c.local_weighted_rating.toFixed(1)}</b>
-          <span style={{ color: "var(--text-muted)" }}> · Tourists {c.tourist_weighted_rating.toFixed(1)}</span>
-        </span>
-        {(c.dishes.length > 0 || c.vibe) && (
-          <div className="mt-2 pt-2.5" style={{ borderTop: "1px solid var(--border)" }}>
-            <span className="block text-[11px] font-bold uppercase tracking-wide mb-0.5" style={{ color: "var(--text-muted)" }}>
-              {c.dishes.length ? "Known for" : "The vibe"}
-            </span>
-            <span className="text-sm leading-snug line-clamp-1 md:line-clamp-2" style={{ color: "var(--text-secondary)" }}>
-              {c.dishes.length ? c.dishes.join(" · ") : c.vibe}
-            </span>
-          </div>
-        )}
-      </div>
+      <PickCardBody c={c} still={still} photoClass="h-28 md:h-56" sizes="(max-width: 768px) 100vw, 480px" />
     </button>
   );
 }
@@ -433,8 +368,8 @@ export default function PickPage() {
                     value={distIdx}
                     onChange={(e) => setDistIdx(Number(e.target.value))}
                     aria-valuetext={`Within ${fmtMiles(DIST_STEPS[distIdx])}`}
-                    className="w-full h-7"
-                    style={{ accentColor: "var(--cta-bg)" }}
+                    className="price-slider my-2.5"
+                    style={{ "--slider-pct": `${(distIdx / (DIST_STEPS.length - 1)) * 100}%` } as CSSProperties}
                   />
                 </section>
               )}
@@ -458,8 +393,8 @@ export default function PickPage() {
               )}
             </div>
 
-            <aside className="rounded-2xl p-4" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }} aria-label="Places that fit">
-              <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "var(--text-muted)" }}>
+            <aside className="rounded-2xl p-4" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)" }} aria-label="Places that fit">
+              <p className="text-sm font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>
                 Your shortlist{count ? ` · ${count}` : ""}
               </p>
               {notice && <p className="text-sm rounded-lg px-3 py-2 mb-2" style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}>{notice}</p>}
@@ -502,13 +437,13 @@ export default function PickPage() {
               <button onClick={() => setScreen("prefs")} className="text-sm font-semibold min-h-[44px] transition-opacity hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
                 ← Change answers
               </button>
-              <span className="text-xs font-bold uppercase tracking-wide tabular-nums" style={{ color: "var(--text-muted)" }}>
+              <span className="text-sm font-semibold tabular-nums" style={{ color: "var(--text-secondary)" }}>
                 Round {round} of {rounds}
               </span>
             </div>
             <div className="flex gap-1 mb-4" aria-hidden="true">
               {Array.from({ length: rounds }, (_, i) => (
-                <span key={i} className="flex-1 h-1 rounded-full" style={{ backgroundColor: i < round ? "var(--accent)" : "var(--bg-inset)" }} />
+                <span key={i} className="flex-1 h-1 rounded-full" style={{ backgroundColor: i < round ? "var(--cta-bg)" : "var(--bg-inset)" }} />
               ))}
             </div>
             {notice && round === 1 && (
@@ -517,7 +452,7 @@ export default function PickPage() {
             <h1 className="font-display text-2xl sm:text-3xl mb-3 md:mb-4">Which sounds better tonight?</h1>
             <div className="grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-2 md:gap-5 items-stretch">
               <ChoiceCard key={champ.restaurant_id} c={champ} onChoose={() => choose(true)} still={round > 1} state={picked === null ? undefined : picked ? "chosen" : "passed"} />
-              <span className="font-display text-sm text-center self-center" style={{ color: "var(--text-muted)" }} aria-hidden="true">OR</span>
+              <span className="text-sm font-semibold text-center self-center" style={{ color: "var(--text-secondary)" }} aria-hidden="true">or</span>
               <ChoiceCard key={queue[0].restaurant_id} c={queue[0]} onChoose={() => choose(false)} state={picked === null ? undefined : picked ? "passed" : "chosen"} />
             </div>
           </main>
@@ -543,38 +478,36 @@ export default function PickPage() {
               <button onClick={() => setScreen("prefs")} className="text-sm font-semibold min-h-[44px] transition-opacity hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
                 ← Pick again
               </button>
-              <span className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Your pick</span>
             </div>
             <div className="grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-5 md:gap-8 items-start">
               <PickPhoto key={result.restaurant_id} c={result} sizes="(max-width: 768px) 100vw, 560px" className="h-60 md:h-[420px] rounded-2xl" />
               <div className="min-w-0">
                 <h1 className="font-display text-3xl md:text-4xl leading-tight">{result.name}</h1>
                 <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>{metaLine(result)}</p>
-                <div className="rounded-2xl px-4 py-3 mt-4" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
-                  <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--text-muted)" }}>Why this one</p>
-                  <p className="text-sm leading-relaxed">{getVerdict(result.local_weighted_rating, result.tourist_weighted_rating)}</p>
-                  {result.dishes.length > 0 && (
-                    <>
-                      <p className="text-xs font-bold uppercase tracking-wide mt-4 mb-1" style={{ color: "var(--text-muted)" }}>What to order</p>
-                      <ul className="text-sm leading-relaxed list-disc pl-5" style={{ color: "var(--text-secondary)" }}>
-                        {result.dishes.map((d) => <li key={d}>{d}</li>)}
-                      </ul>
-                    </>
-                  )}
-                  {result.vibe && (
-                    <>
-                      <p className="text-xs font-bold uppercase tracking-wide mt-4 mb-1" style={{ color: "var(--text-muted)" }}>The vibe</p>
-                      <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>{result.vibe}</p>
-                    </>
-                  )}
-                  {result.wait_note && (
-                    <p className="text-sm leading-relaxed mt-4" style={{ color: "var(--text-secondary)" }}>
-                      <b style={{ color: "var(--text)" }}>Heads up:</b> {result.wait_note}
-                    </p>
-                  )}
-                </div>
+                <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+                  Locals rate it <b className="font-semibold tabular-nums" style={{ color: "var(--text)" }}>{result.local_weighted_rating.toFixed(1)}</b>
+                </p>
+                {result.dishes.length > 0 && (
+                  <section className="mt-6">
+                    <h2 className="text-base font-semibold mb-1.5">What to order</h2>
+                    <ul className="text-base leading-relaxed list-disc pl-5 marker:text-[var(--text-muted)]" style={{ color: "var(--text-secondary)" }}>
+                      {result.dishes.map((d) => <li key={d}>{d}</li>)}
+                    </ul>
+                  </section>
+                )}
+                {result.vibe && (
+                  <section className="mt-5">
+                    <h2 className="text-base font-semibold mb-1.5">The vibe</h2>
+                    <p className="text-base leading-relaxed max-w-[60ch]" style={{ color: "var(--text-secondary)" }}>{result.vibe}</p>
+                  </section>
+                )}
+                {result.wait_note && (
+                  <p className="text-sm leading-relaxed mt-5 pt-4 max-w-[60ch]" style={{ color: "var(--text-secondary)", borderTop: "1px solid var(--border)" }}>
+                    <b className="font-semibold" style={{ color: "var(--text)" }}>Heads up:</b> {result.wait_note}
+                  </p>
+                )}
                 {runnerUp && (
-                  <p className="text-sm mt-3" style={{ color: "var(--text-secondary)" }}>
+                  <p className="text-sm mt-5" style={{ color: "var(--text-secondary)" }}>
                     Close second:{" "}
                     <button
                       onClick={() => { setResult(runnerUp); setRunnerUp(result); }}
