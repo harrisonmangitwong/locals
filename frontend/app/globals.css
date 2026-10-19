@@ -1,84 +1,105 @@
 @import "tailwindcss";
 
-/* ── Light mode (primary) ── */
+/* ── Tokens ──
+   After Luma's iOS grammar (user-pinned reference): a monochrome
+   interface. White ground and near-black ink; actions are black (white in
+   dark mode), secondary actions soft gray fills with no borders. Color
+   comes from the food photos and from small status tags, each of which
+   means one thing: green = open now, purple = still in / your pick. */
 :root {
-  --bg: #f7f1e5;
-  --bg-card: #fffdf8;
-  --bg-subtle: #efe6d3;
-  --bg-inset: #e6dabf;
-  --text: #241f18;
-  --text-secondary: #5c5346;
-  --text-muted: #746a5a;
-  --accent: #c98a1f;
-  --accent-hover: #ab7319;
-  --accent-soft: rgba(201,138,31,0.12);
-  --accent-text: #9c6c17;
-  --cta-bg: #a8460c;
-  --cta-bg-hover: #8f3b0a;
-  --cta-text: #f3ece0;
-  --border: rgba(36,31,24,0.1);
-  --border-strong: rgba(36,31,24,0.18);
-  --shadow-sm: 0 1px 2px rgba(36,31,24,0.06);
-  --shadow: 0 2px 8px rgba(36,31,24,0.09);
-  --shadow-lg: 0 8px 30px rgba(36,31,24,0.14);
-  --shadow-card-hover: 0 20px 48px rgba(36,31,24,0.22);
-  --star-fill: #c98a1f;
-  --star-empty: rgba(36,31,24,0.15);
-  --success: #2d8a56;
-  --success-soft: rgba(45,138,86,0.08);
-  --success-strong: #297a4b;
-  --warm: #c98a1f;
-  --warm-soft: rgba(201,138,31,0.08);
-  /* Google's own sign-in button colors (light / dark variants from its
-     branding guidelines), so it stays recognizable without being the
-     brightest thing in a dark header. */
-  --gsi-bg: #ffffff;
-  --gsi-text: #3c4043;
-  --gsi-border: #dadce0;
+  --bg: #ffffff;
+  --bg-card: #ffffff;
+  --bg-subtle: #f2f2f4;
+  --bg-inset: #e6e6e9;
+  --text: #131517;
+  --text-secondary: #6b6e73;
+  --text-muted: #6e7075;
+  --cta-bg: #131517;
+  --cta-bg-hover: #2e3135;
+  --cta-text: #ffffff;
+  --accent: #131517;
+  --accent-hover: #2e3135;
+  --accent-soft: rgba(19,21,23,0.08);
+  --accent-text: #131517;
+  --tag-open-bg: #e3f6e9;
+  --tag-open-text: #11703a;
+  --tag-pick-bg: #efe9ff;
+  --tag-pick-text: #6b3fd4;
+  --border: rgba(19,21,23,0.08);
+  --border-strong: rgba(19,21,23,0.16);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 2px 10px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 36px rgba(0,0,0,0.12);
+  --shadow-card-hover: 0 14px 36px rgba(0,0,0,0.14);
+  --shadow-float: 0 10px 34px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.06);
+  --glass: rgba(255,255,255,0.78);
+  --star-fill: #131517;
+  --star-empty: rgba(19,21,23,0.15);
+  --success: #11703a;
+  --success-soft: #e3f6e9;
+  --success-strong: #1f9d55;
+  --warm: #131517;
+  --warm-soft: rgba(19,21,23,0.06);
+  /* Google's "neutral" sign-in button (from its branding guidelines), so
+     it sits in the header as a quiet secondary pill. */
+  --gsi-bg: #f2f2f2;
+  --gsi-text: #1f1f1f;
+  --gsi-border: transparent;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   color-scheme: light dark;
 }
 
-/* ── Dark mode ── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1f1a10;
-    --bg-card: #2a2318;
-    --bg-subtle: #332b1d;
-    --bg-inset: #3d3321;
-    --text: #f5efe0;
-    --text-secondary: #b8ac92;
-    --text-muted: #938870;
-    --accent: #e0a73a;
-    --accent-hover: #c99228;
-    --accent-soft: rgba(224,167,58,0.14);
-    --accent-text: #e0a73a;
-    --cta-bg: #b54c0e;
-    --cta-bg-hover: #9c3e0a;
-    --cta-text: #f5efe0;
-    --border: rgba(245,239,224,0.1);
-    --border-strong: rgba(245,239,224,0.18);
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.15);
-    --shadow: 0 2px 8px rgba(0,0,0,0.20);
-    --shadow-lg: 0 8px 30px rgba(0,0,0,0.30);
-    --shadow-card-hover: 0 20px 48px rgba(0,0,0,0.45);
-    --star-fill: #e0a73a;
-    --star-empty: rgba(245,239,224,0.15);
-    --success: #3da868;
-    --success-soft: rgba(61,168,104,0.10);
-    --success-strong: #3da868;
-    --warm: #e0a73a;
-    --warm-soft: rgba(224,167,58,0.12);
-    --gsi-bg: #131314;
+    --bg: #101112;
+    --bg-card: #1a1b1d;
+    --bg-subtle: #232427;
+    --bg-inset: #2d2e32;
+    --text: #f5f5f7;
+    --text-secondary: #a1a3a8;
+    --text-muted: #8e9096;
+    --cta-bg: #ffffff;
+    --cta-bg-hover: #e4e4e7;
+    --cta-text: #131517;
+    --accent: #f5f5f7;
+    --accent-hover: #d9d9dc;
+    --accent-soft: rgba(245,245,247,0.12);
+    --accent-text: #f5f5f7;
+    --tag-open-bg: #163322;
+    --tag-open-text: #5fd68a;
+    --tag-pick-bg: #2a2140;
+    --tag-pick-text: #b89cff;
+    --border: rgba(245,245,247,0.09);
+    --border-strong: rgba(245,245,247,0.18);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow: 0 2px 10px rgba(0,0,0,0.4);
+    --shadow-lg: 0 12px 36px rgba(0,0,0,0.5);
+    --shadow-card-hover: 0 14px 36px rgba(0,0,0,0.5);
+    --shadow-float: 0 10px 34px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
+    --glass: rgba(30,31,34,0.72);
+    --star-fill: #f5f5f7;
+    --star-empty: rgba(245,245,247,0.18);
+    --success: #5fd68a;
+    --success-soft: #163322;
+    --success-strong: #34c46a;
+    --warm: #f5f5f7;
+    --warm-soft: rgba(245,245,247,0.08);
+    --gsi-bg: #2a2b2e;
     --gsi-text: #e3e3e3;
-    --gsi-border: #8e918f;
+    --gsi-border: transparent;
   }
 }
 
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: var(--font-jakarta, "Plus Jakarta Sans"), system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.006em;
+}
+::selection {
+  background: var(--text);
+  color: var(--bg);
 }
 
 /* ── Native-feeling touch: no gray flash on tap, no double-tap zoom delay ── */
@@ -206,61 +227,102 @@ a, button, [role="button"] {
   animation: heart-pop 400ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* ── CTA press ──
-   Orange (--cta-bg) is the app's one action color: the main button, the
-   distance slider, Help me pick's progress and "Still in" tag. Selected
-   states (chips) are ink, not a second accent, so "chosen" stays quiet
-   and "do this" stays loud. Flat at rest; shadow and --cta-bg-hover are
-   earned on hover. Light cream text on orange measures 5.04:1 (light) /
-   4.57:1 (dark); the light orange was darkened from #b54c0e (4.47:1). */
+/* ── Buttons ──
+   Three kinds, each looking different: black primary pill (white in dark
+   mode), soft-gray secondary pill, and segmented chips. Declared outside
+   Tailwind's layers so they win over leftover utilities in older markup. */
 .cta-btn {
   background-color: var(--cta-bg);
   color: var(--cta-text);
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 100ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1);
-  min-height: 44px;
+  border-radius: 9999px;
+  font-weight: 600;
+  min-height: 50px;
+  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out), opacity 150ms var(--ease-out);
 }
 .cta-btn:hover {
   background-color: var(--cta-bg-hover);
-  box-shadow: var(--shadow);
-  transform: translateY(-1px) scale(1.03);
+}
+.cta-btn:active {
+  transform: scale(0.98);
+}
+.cta-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.soft-btn {
+  background-color: var(--bg-subtle);
+  color: var(--text);
+  border-radius: 9999px;
+  font-weight: 600;
+  min-height: 50px;
+  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.soft-btn:hover {
+  background-color: var(--bg-inset);
+}
+.soft-btn:active {
+  transform: scale(0.98);
+}
+/* Action tile: icon over a short label (Directions / Details / Share). */
+.tile-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 64px;
+  border-radius: 14px;
+  background-color: var(--bg-subtle);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.tile-btn:hover {
+  background-color: var(--bg-inset);
+}
+.tile-btn:active {
+  transform: scale(0.97);
 }
 
-/* ── Filter pill (toggle-style buttons, e.g. "All restaurants" / "For You") ──
-   Colors live entirely in these classes, not inline style -- an inline
-   backgroundColor always wins over a class-based :hover rule regardless of
-   specificity tricks, which is why a first attempt at this hover state
-   silently did nothing. */
+/* ── Chips (cuisine, price, filters) ──
+   Soft-gray fill at rest, no border; selected flips to the action ink. */
 .filter-pill {
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 9999px;
+  transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out);
 }
 .filter-pill.is-active {
-  background-color: var(--text);
-  color: var(--bg);
-  border: 1px solid var(--text);
+  background-color: var(--cta-bg);
+  color: var(--cta-text);
+  border: 1px solid transparent;
 }
 .filter-pill.is-active:hover {
-  background-color: var(--text-secondary);
-  border-color: var(--text-secondary);
+  background-color: var(--cta-bg-hover);
 }
 .filter-pill:not(.is-active) {
   background-color: var(--bg-subtle);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
+  color: var(--text);
+  border: 1px solid transparent;
 }
 .filter-pill:not(.is-active):hover {
   background-color: var(--bg-inset);
-  border-color: var(--border-strong);
-  color: var(--text);
 }
-.cta-btn:hover svg {
-  transform: translateX(2px);
+
+/* ── Status tags: small, colored only when the color means something ── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  white-space: nowrap;
 }
-.cta-btn svg {
-  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.cta-btn:active {
-  transform: translateY(1px) scale(1);
-}
+.tag-open { background: var(--tag-open-bg); color: var(--tag-open-text); }
+.tag-pick { background: var(--tag-pick-bg); color: var(--tag-pick-text); }
+.tag-plain { background: var(--bg); color: var(--text); box-shadow: var(--shadow-sm); }
 
 /* ── Google sign-in button ── */
 .google-signin-btn {
@@ -286,7 +348,7 @@ a, button, [role="button"] {
 
 /* ── Global focus-visible ── */
 :focus-visible {
-  outline: 2px solid var(--text);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -471,7 +533,10 @@ a, button, [role="button"] {
   .chip-collapse,
   .google-signin-btn,
   .pick-choice,
-  .pick-choice img,
+  .pick-choice .pick-photo,
+  .fade-up,
+  .tile-btn,
+  .soft-btn,
   .price-slider::-webkit-slider-thumb {
     transition: none !important;
     transform: none !important;
@@ -480,45 +545,125 @@ a, button, [role="button"] {
 }
 
 /* ── Help me pick: this-or-that cards ──
-   Hover lifts on a mouse; on touch, :active presses and .is-chosen holds
-   the pick for a beat before the next round so the tap reads. */
+   No box: a big rounded photo with the facts under it. Hover lifts the
+   photo slightly; the chosen one gets an ink ring, the other fades. */
 .pick-choice {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border);
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease, opacity 180ms ease;
+  border-radius: 18px;
+  text-align: left;
+  transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
 }
-.pick-choice img {
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+.pick-choice .pick-photo {
+  transition: transform 260ms var(--ease-out), box-shadow 260ms var(--ease-out);
 }
 @media (hover: hover) {
-  .pick-choice:hover {
-    transform: translateY(-4px);
-    border-color: var(--cta-bg);
-    box-shadow: var(--shadow-card-hover);
-  }
-  .pick-choice:hover img {
-    transform: scale(1.03);
+  .pick-choice:hover .pick-photo {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
   }
 }
 .pick-choice:active {
-  transform: scale(0.98);
+  transform: scale(0.985);
 }
 .pick-choice:focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
-.pick-choice.is-chosen {
-  transform: scale(1.02);
-  border-color: var(--cta-bg);
-  box-shadow: 0 0 0 2px var(--cta-bg), var(--shadow-card-hover);
+.pick-choice.is-chosen .pick-photo {
+  box-shadow: 0 0 0 3px var(--text), var(--shadow-lg);
 }
 .pick-choice.is-passed {
-  opacity: 0.45;
+  opacity: 0.35;
   transform: scale(0.97);
 }
-.pick-still {
-  background-color: var(--cta-bg);
-  color: var(--cta-text);
+
+/* ── Floating tab bar (phones) ──
+   Frosted like iOS's own bar: a native material here, not decoration. */
+.tab-bar {
+  background: var(--glass);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: var(--shadow-float);
+  border: 1px solid var(--border);
+}
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 60px;
+  padding: 7px 10px 6px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out);
+}
+.tab-item[aria-current="page"] {
+  background: var(--bg-subtle);
+  color: var(--text);
+}
+
+/* Homepage collage: real photos, rounded, soft shadow; a hairline ring
+   in dark mode so edges don't melt into the ground. */
+.collage-tile {
+  border-radius: 18px;
+  box-shadow: 0 16px 38px rgba(0,0,0,0.16);
+}
+@media (prefers-color-scheme: dark) {
+  .collage-tile {
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 16px 38px rgba(0,0,0,0.45);
+  }
+}
+
+@media (max-width: 767px) {
+  body.has-tab-bar {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ── The pick: a dark scene tinted by the restaurant's own photo ── */
+.scene-dark {
+  --bg: #0d0e0f;
+  --bg-card: rgba(255,255,255,0.06);
+  --bg-subtle: rgba(255,255,255,0.12);
+  --bg-inset: rgba(255,255,255,0.18);
+  --text: #ffffff;
+  --text-secondary: rgba(255,255,255,0.72);
+  --text-muted: rgba(255,255,255,0.62);
+  --cta-bg: #ffffff;
+  --cta-bg-hover: #e4e4e7;
+  --cta-text: #131517;
+  --border: rgba(255,255,255,0.12);
+  --tag-open-bg: rgba(10,40,22,0.62);
+  --tag-open-text: #8ff0b2;
+  --tag-pick-bg: rgba(34,22,64,0.62);
+  --tag-pick-text: #ddd0ff;
+  --gsi-bg: rgba(255,255,255,0.12);
+  --gsi-text: #ffffff;
+  color: var(--text);
+  background: var(--bg);
+}
+.scene-backdrop {
+  position: absolute;
+  inset: -80px;
+  filter: blur(60px) saturate(1.7) brightness(0.32);
+  transform: scale(1.1);
+  pointer-events: none;
+}
+/* Keeps the tint dark at the top and darker at the bottom, so white text
+   holds contrast whatever the photo is. */
+.scene-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.6));
+  pointer-events: none;
+}
+.fade-up {
+  animation: fade-up 280ms var(--ease-out) both;
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
 
 /* ── Skip navigation ── */
@@ -554,10 +699,11 @@ a, button, [role="button"] {
   outline-offset: 2px;
 }
 
-/* ── Display font ── */
+/* ── Display type ──
+   The same system face, just heavier and tighter: hierarchy by weight. */
 .font-display {
-  font-family: var(--font-display-face, "Bricolage Grotesque"), system-ui, sans-serif;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+
 }

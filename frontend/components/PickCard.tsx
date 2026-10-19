@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Icon from "@/components/Icon";
 import { getPhotoUrl } from "@/lib/photoFallback";
 
 // One place as /api/pick returns it. Shared by Help me pick and the
-// homepage preview so both show the exact same card.
+// homepage so both show the exact same place.
 export interface Candidate {
   restaurant_id: string;
   name: string;
@@ -30,16 +31,23 @@ export function priceLabel(mid: number | null) {
   return mid <= 15 ? "$" : mid <= 30 ? "$$" : mid <= 60 ? "$$$" : "$$$$";
 }
 
-export function metaLine(c: Candidate) {
-  const parts = [c.neighborhood, c.cuisine !== "Restaurant" ? c.cuisine : null, priceLabel(c.price_midpoint)];
-  if (c.distance_mi != null) parts.push(`${c.distance_mi < 1 ? c.distance_mi.toFixed(1) : c.distance_mi.toFixed(1).replace(/\.0$/, "")} mi away`);
-  return parts.filter(Boolean).join(" · ");
+export function fmtDistance(mi: number) {
+  return `${mi < 1 ? mi.toFixed(1) : mi.toFixed(1).replace(/\.0$/, "")} mi`;
 }
 
+function whereLine(c: Candidate) {
+  return [c.neighborhood, c.distance_mi != null ? fmtDistance(c.distance_mi) : null].filter(Boolean).join(" · ");
+}
+function whatLine(c: Candidate) {
+  return [c.cuisine !== "Restaurant" ? c.cuisine : null, priceLabel(c.price_midpoint)].filter(Boolean).join(" · ");
+}
+
+// The caller owns size and positioning (the image fills it), e.g.
+// "absolute inset-0" or "relative w-[76px] h-[76px] rounded-xl".
 export function PickPhoto({ c, sizes, className, priority }: { c: Candidate; sizes: string; className: string; priority?: boolean }) {
   const [src, setSrc] = useState(c.image_url || getPhotoUrl(c.cuisine));
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ backgroundColor: "var(--bg-inset)" }}>
+    <div className={`overflow-hidden ${className}`} style={{ backgroundColor: "var(--bg-inset)" }}>
       <Image
         src={src}
         alt={`${c.name} in ${c.neighborhood}`}
@@ -53,39 +61,55 @@ export function PickPhoto({ c, sizes, className, priority }: { c: Candidate; siz
   );
 }
 
-// Photo, name, where/what/price, the locals' rating, and what it's known
-// for. The caller supplies the clickable wrapper (a button in the
-// this-or-that, a link on the homepage).
-export function PickCardBody({ c, still, photoClass, sizes, priority }: {
-  c: Candidate;
-  still?: boolean;
-  photoClass: string;
-  sizes: string;
-  priority?: boolean;
-}) {
+function MetaLine({ icon, children }: { icon: "map-pin" | "utensils" | "star"; children: React.ReactNode }) {
+  return (
+    <span className="flex items-center gap-1.5 text-[13px] leading-snug min-w-0" style={{ color: "var(--text-secondary)" }}>
+      <Icon name={icon} size={13} className="shrink-0 opacity-80" />
+      <span className="truncate tabular-nums">{children}</span>
+    </span>
+  );
+}
+
+// A place as a list row: rounded photo with a status tag on its edge,
+// then name and icon lines. No card, no border.
+export function PlaceRow({ c, tag }: { c: Candidate; tag?: string }) {
+  return (
+    <span className="grid grid-cols-[76px_minmax(0,1fr)] gap-3.5 items-start">
+      <span className="relative block">
+        <PickPhoto c={c} sizes="76px" className="relative block w-[76px] h-[76px] rounded-xl" />
+        {tag && <span className="tag tag-open absolute -bottom-2 left-1.5">{tag}</span>}
+      </span>
+      <span className="flex flex-col gap-0.5 min-w-0 pt-0.5">
+        <span className="text-[16px] font-semibold leading-snug line-clamp-2" style={{ color: "var(--text)" }}>{c.name}</span>
+        <MetaLine icon="map-pin">{whereLine(c)}</MetaLine>
+        {whatLine(c) && <MetaLine icon="utensils">{whatLine(c)}</MetaLine>}
+        <MetaLine icon="star">Locals rate it {c.local_weighted_rating.toFixed(1)}</MetaLine>
+      </span>
+    </span>
+  );
+}
+
+// A contender in the this-or-that: big rounded photo, facts underneath.
+export function ChoiceBody({ c, still }: { c: Candidate; still?: boolean }) {
+  const known = c.dishes.length ? c.dishes.join(" · ") : c.vibe;
   return (
     <>
-      <div className="relative">
-        <PickPhoto c={c} sizes={sizes} className={photoClass} priority={priority} />
-        {still && (
-          <span className="pick-still absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full">
-            Still in
+      <span className="pick-photo relative block rounded-[18px] overflow-hidden">
+        <PickPhoto c={c} sizes="(max-width: 768px) 100vw, 520px" className="relative block h-36 sm:h-56 md:h-72" priority />
+        {still && <span className="tag tag-pick absolute top-2.5 left-2.5">Still in</span>}
+      </span>
+      <span className="flex flex-col gap-0.5 pt-3 px-0.5 min-w-0">
+        <span className="text-[18px] md:text-[20px] font-semibold leading-snug" style={{ color: "var(--text)" }}>{c.name}</span>
+        <MetaLine icon="map-pin">{whereLine(c)}</MetaLine>
+        {whatLine(c) && <MetaLine icon="utensils">{whatLine(c)}</MetaLine>}
+        <MetaLine icon="star">Locals rate it {c.local_weighted_rating.toFixed(1)}</MetaLine>
+        {known && (
+          <span className="text-[13px] leading-snug mt-1.5 line-clamp-2" style={{ color: "var(--text-secondary)" }}>
+            <span className="font-semibold" style={{ color: "var(--text)" }}>{c.dishes.length ? "Known for: " : "The vibe: "}</span>
+            {known}
           </span>
         )}
-      </div>
-      <div className="px-4 pt-3 pb-4 flex flex-col gap-1">
-        <span className="font-semibold text-base md:text-lg leading-snug" style={{ color: "var(--text)" }}>{c.name}</span>
-        <span className="text-xs md:text-sm" style={{ color: "var(--text-secondary)" }}>{metaLine(c)}</span>
-        <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Locals rate it <b className="font-semibold tabular-nums" style={{ color: "var(--text)" }}>{c.local_weighted_rating.toFixed(1)}</b>
-        </span>
-        {(c.dishes.length > 0 || c.vibe) && (
-          <p className="text-sm leading-snug mt-2 pt-2.5 line-clamp-1 md:line-clamp-2" style={{ borderTop: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-            <span className="font-semibold" style={{ color: "var(--text)" }}>{c.dishes.length ? "Known for " : "The vibe: "}</span>
-            {c.dishes.length ? c.dishes.join(" · ") : c.vibe}
-          </p>
-        )}
-      </div>
+      </span>
     </>
   );
 }

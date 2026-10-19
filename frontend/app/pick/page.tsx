@@ -3,7 +3,8 @@
 import { type CSSProperties, useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { type Candidate, PickCardBody, PickPhoto, metaLine, priceLabel } from "@/components/PickCard";
+import Icon from "@/components/Icon";
+import { type Candidate, ChoiceBody, PickPhoto, PlaceRow, fmtDistance, priceLabel } from "@/components/PickCard";
 import { NEIGHBORHOOD_COORDS } from "@/lib/neighborhoods";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -22,18 +23,6 @@ type Location = { lat: number; lng: number; label: string } | null;
 function fmtMiles(m: number) {
   return `${m < 1 ? m.toFixed(1) : String(m)} mi`;
 }
-function ChoiceCard({ c, onChoose, still, state }: { c: Candidate; onChoose: () => void; still?: boolean; state?: "chosen" | "passed" }) {
-  return (
-    <button
-      onClick={onChoose}
-      aria-label={`Choose ${c.name}`}
-      className={`pick-choice w-full text-left rounded-2xl overflow-hidden flex flex-col${state ? ` is-${state}` : ""}`}
-    >
-      <PickCardBody c={c} still={still} photoClass="h-28 md:h-56" sizes="(max-width: 768px) 100vw, 480px" />
-    </button>
-  );
-}
-
 export default function PickPage() {
   const { user } = useCurrentUser();
 
@@ -68,6 +57,7 @@ export default function PickPage() {
   // Which side was just tapped (true = left/champ); held briefly so the
   // choice registers visually before the next pair slides in.
   const [picked, setPicked] = useState<boolean | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Location: asked once on arrival; neighborhood picker if declined or if
   // they're planning for somewhere other than where they're standing.
@@ -191,7 +181,7 @@ export default function PickPage() {
     setTimeout(() => {
       setPicked(null);
       advance(keepChamp);
-    }, 260);
+    }, 280);
   }
 
   function advance(keepChamp: boolean) {
@@ -237,44 +227,53 @@ export default function PickPage() {
           ? "Only one place fits. Tap to see it."
           : "Nothing open fits yet. Try fewer filters.";
 
+  async function share(c: Candidate) {
+    const url = `${window.location.origin}/restaurant/${c.restaurant_id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: c.name, text: `${c.name} tonight?`, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Share sheet dismissed, or clipboard blocked: nothing to undo.
+    }
+  }
+
+  const sideState = (left: boolean) => (picked === null ? "" : picked === left ? " is-chosen" : " is-passed");
+  const directions = result ? `https://www.google.com/maps/dir/?api=1&destination=${result.lat},${result.lng}` : "";
+
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
-      <SiteHeader />
+    <div className={`min-h-screen flex flex-col${screen === "result" ? " scene-dark" : ""}`} style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
+      <SiteHeader current="pick" tabBar={false} />
 
       {screen === "prefs" && (
         <>
-          <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-8 grid md:grid-cols-[1.15fr_1fr] gap-8 md:gap-12 items-start">
+          <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-7 md:pt-12 pb-10 grid md:grid-cols-[minmax(0,1fr)_380px] gap-10 md:gap-14 items-start">
             <div className="min-w-0">
-              <h1 className="font-display text-3xl sm:text-4xl mb-2">What sounds good?</h1>
-              <div className="flex items-center gap-2 text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
+              <h1 className="font-display text-[32px] sm:text-[40px]">What sounds good?</h1>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] mt-2" style={{ color: "var(--text-secondary)" }}>
                 {locStatus === "asking" && <span>Finding your location...</span>}
                 {location && (
-                  <>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                    <span>{location.label}</span>
-                  </>
+                  <span className="flex items-center gap-1.5"><Icon name="map-pin" size={14} />{location.label}</span>
                 )}
                 {locStatus === "granted" && !pickingHood && (
                   <button
                     onClick={() => setPickingHood(true)}
-                    className="font-semibold underline underline-offset-4 min-h-[44px] -my-3 px-1 transition-opacity hover:opacity-75"
+                    className="font-semibold min-h-[44px] -my-3 px-1 transition-opacity hover:opacity-70"
                     style={{ color: "var(--text)" }}
                   >
                     Change
                   </button>
                 )}
-                {locStatus !== "asking" && (
-                  <>
-                    {location && <span aria-hidden="true">·</span>}
-                    <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "var(--success-strong)" }} aria-hidden="true" />
-                    <span>Open now</span>
-                  </>
-                )}
+                {locStatus !== "asking" && <span className="tag tag-open">Open now</span>}
               </div>
 
               {(locStatus === "denied" || pickingHood) && (
-                <div className="mt-3">
-                  <label htmlFor="pick-hood" className="block text-sm font-semibold mb-1.5">Where are you?</label>
+                <div className="mt-5">
+                  <label htmlFor="pick-hood" className="block text-[15px] font-semibold mb-2">Where are you?</label>
                   <select
                     id="pick-hood"
                     value={manualHood}
@@ -289,8 +288,8 @@ export default function PickPage() {
                       const c = NEIGHBORHOOD_COORDS[name];
                       setLocation(c ? { lat: c[0], lng: c[1], label: `Near ${name}` } : null);
                     }}
-                    className="filter-control w-full rounded-lg px-3 py-3 text-sm font-medium cursor-pointer"
-                    style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", colorScheme: "light dark" }}
+                    className="filter-control w-full rounded-xl px-4 py-3 text-[15px] cursor-pointer"
+                    style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "none", colorScheme: "light dark" }}
                   >
                     <option value="">{deviceLocation ? "My current location" : "Anywhere in NYC"}</option>
                     {Object.keys(NEIGHBORHOOD_COORDS).sort().map((n) => <option key={n} value={n}>{n}</option>)}
@@ -298,16 +297,16 @@ export default function PickPage() {
                 </div>
               )}
 
-              <section className="mt-6">
-                <div className="flex justify-between items-baseline mb-2">
-                  <h2 className="text-sm font-bold">Craving</h2>
-                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>{cuisines.size ? `${cuisines.size} picked` : "Anything"}</span>
+              <section className="mt-9">
+                <div className="flex justify-between items-baseline mb-3">
+                  <h2 className="text-[17px] font-semibold">Craving</h2>
+                  <span className="text-[14px]" style={{ color: "var(--text-secondary)" }}>{cuisines.size ? `${cuisines.size} picked` : "Anything"}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setCuisines(new Set())}
                     aria-pressed={cuisines.size === 0}
-                    className={`filter-pill text-sm font-semibold px-3.5 py-2 rounded-full min-h-[44px]${cuisines.size === 0 ? " is-active" : ""}`}
+                    className={`filter-pill text-[15px] font-medium px-4 min-h-[44px]${cuisines.size === 0 ? " is-active" : ""}`}
                   >
                     Anything
                   </button>
@@ -316,7 +315,7 @@ export default function PickPage() {
                       key={c}
                       onClick={() => toggle(cuisines, c, setCuisines)}
                       aria-pressed={cuisines.has(c)}
-                      className={`filter-pill text-sm font-semibold px-3.5 py-2 rounded-full min-h-[44px]${cuisines.has(c) ? " is-active" : ""}`}
+                      className={`filter-pill text-[15px] font-medium px-4 min-h-[44px]${cuisines.has(c) ? " is-active" : ""}`}
                     >
                       {c}
                     </button>
@@ -325,19 +324,19 @@ export default function PickPage() {
                     <button
                       onClick={() => setShowAllCuisines((v) => !v)}
                       aria-expanded={showAllCuisines}
-                      className="text-sm font-semibold px-2 min-h-[44px] underline underline-offset-4 transition-opacity hover:opacity-75"
-                      style={{ color: "var(--text-secondary)" }}
+                      className="inline-flex items-center gap-0.5 text-[15px] font-semibold px-2 min-h-[44px] transition-opacity hover:opacity-70"
                     >
                       {showAllCuisines ? "Fewer" : `${hiddenCuisineCount} more`}
+                      <Icon name="chevron-right" size={15} className={showAllCuisines ? "-rotate-90" : "rotate-90"} />
                     </button>
                   )}
                 </div>
               </section>
 
-              <section className="mt-6">
-                <div className="flex justify-between items-baseline mb-2">
-                  <h2 className="text-sm font-bold">Price</h2>
-                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>{prices.size ? [...prices].join(", ") : "Any price"}</span>
+              <section className="mt-8">
+                <div className="flex justify-between items-baseline mb-3">
+                  <h2 className="text-[17px] font-semibold">Price</h2>
+                  <span className="text-[14px]" style={{ color: "var(--text-secondary)" }}>{prices.size ? [...prices].join(", ") : "Any price"}</span>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   {PRICES.map((p) => (
@@ -345,7 +344,7 @@ export default function PickPage() {
                       key={p}
                       onClick={() => toggle(prices, p, setPrices)}
                       aria-pressed={prices.has(p)}
-                      className={`filter-pill text-sm font-semibold py-2 rounded-full min-h-[44px] tabular-nums${prices.has(p) ? " is-active" : ""}`}
+                      className={`filter-pill text-[15px] font-medium min-h-[44px] tabular-nums${prices.has(p) ? " is-active" : ""}`}
                     >
                       {p}
                     </button>
@@ -354,10 +353,10 @@ export default function PickPage() {
               </section>
 
               {location && (
-                <section className="mt-6">
-                  <div className="flex justify-between items-baseline mb-2">
-                    <label htmlFor="pick-distance" className="text-sm font-bold">How far</label>
-                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>Within {fmtMiles(DIST_STEPS[distIdx])}</span>
+                <section className="mt-8">
+                  <div className="flex justify-between items-baseline mb-3">
+                    <label htmlFor="pick-distance" className="text-[17px] font-semibold">How far</label>
+                    <span className="text-[14px]" style={{ color: "var(--text-secondary)" }}>Within {fmtMiles(DIST_STEPS[distIdx])}</span>
                   </div>
                   <input
                     id="pick-distance"
@@ -375,15 +374,15 @@ export default function PickPage() {
               )}
 
               {visitedIds.length > 0 && (
-                <section className="mt-6">
-                  <h2 className="text-sm font-bold mb-2">Places you&apos;ve been</h2>
+                <section className="mt-8">
+                  <h2 className="text-[17px] font-semibold mb-3">Places you&apos;ve been</h2>
                   <div className="grid grid-cols-2 gap-2">
                     {[{ label: "Include them", value: false }, { label: "Only new to me", value: true }].map((o) => (
                       <button
                         key={o.label}
                         onClick={() => setOnlyNew(o.value)}
                         aria-pressed={onlyNew === o.value}
-                        className={`filter-pill text-sm font-semibold py-2 rounded-full min-h-[44px]${onlyNew === o.value ? " is-active" : ""}`}
+                        className={`filter-pill text-[15px] font-medium min-h-[44px]${onlyNew === o.value ? " is-active" : ""}`}
                       >
                         {o.label}
                       </button>
@@ -393,38 +392,31 @@ export default function PickPage() {
               )}
             </div>
 
-            <aside className="rounded-2xl p-4" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)" }} aria-label="Places that fit">
-              <p className="text-sm font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>
-                Your shortlist{count ? ` · ${count}` : ""}
-              </p>
-              {notice && <p className="text-sm rounded-lg px-3 py-2 mb-2" style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}>{notice}</p>}
-              {!loading && count === 0 && <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Nothing open fits yet. Try fewer filters.</p>}
-              <ul className="flex flex-col" style={{ opacity: loading ? 0.5 : 1 }}>
-                {shortlist.map((c) => (
-                  <li key={c.restaurant_id} className="grid grid-cols-[52px_minmax(0,1fr)] gap-3 items-center py-2" style={{ borderTop: "1px solid var(--border)" }}>
-                    <PickPhoto c={c} sizes="52px" className="w-[52px] h-[52px] rounded-lg" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">{c.name}</p>
-                      <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>{metaLine(c)}</p>
-                    </div>
-                  </li>
-                ))}
+            <aside className="md:sticky md:top-20" aria-label="Places that fit">
+              <div className="flex items-baseline justify-between mb-4">
+                <h2 className="text-[17px] font-semibold">Your shortlist</h2>
+                <span className="text-[14px]" style={{ color: "var(--text-secondary)" }}>{count === 1 ? "1 place" : `${count} places`}</span>
+              </div>
+              {notice && <p className="text-[14px] leading-snug px-3.5 py-3 mb-4 rounded-xl" style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}>{notice}</p>}
+              {!loading && count === 0 && <p className="text-[14px]" style={{ color: "var(--text-secondary)" }}>Nothing open fits yet. Try fewer filters.</p>}
+              <ul className="flex flex-col gap-5 transition-opacity" style={{ opacity: loading ? 0.45 : 1 }}>
+                {shortlist.map((c) => <li key={c.restaurant_id}><PlaceRow c={c} /></li>)}
               </ul>
+              <div className="hidden md:block mt-7">
+                <button onClick={start} disabled={loading || count === 0} className="cta-btn w-full px-6 text-[16px]">
+                  Help me pick
+                </button>
+                <p className="text-[13px] mt-2.5 text-center" style={{ color: "var(--text-secondary)" }} aria-live="polite">{ctaHint}</p>
+              </div>
             </aside>
           </main>
 
-          <div className="sticky bottom-0 w-full" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex flex-col-reverse md:flex-row md:items-center gap-2 md:gap-4">
-              <p className="text-xs text-center md:text-left md:mr-auto" style={{ color: "var(--text-muted)" }} aria-live="polite">
-                {ctaHint}
-              </p>
-              <button
-                onClick={start}
-                disabled={loading || count === 0}
-                className="cta-btn w-full md:w-auto md:min-w-[220px] px-6 py-3 rounded-full text-base font-semibold disabled:opacity-50"
-              >
+          <div className="md:hidden sticky bottom-0 w-full" style={{ backgroundColor: "var(--bg)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+            <div className="px-4 pt-2 pb-3 flex flex-col gap-1.5">
+              <button onClick={start} disabled={loading || count === 0} className="cta-btn w-full px-6 text-[16px]">
                 Help me pick
               </button>
+              <p className="text-[12.5px] text-center" style={{ color: "var(--text-secondary)" }} aria-live="polite">{ctaHint}</p>
             </div>
           </div>
         </>
@@ -432,38 +424,40 @@ export default function PickPage() {
 
       {screen === "compare" && champ && queue[0] && (
         <>
-          <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-8">
-            <div className="flex items-center justify-between mb-2">
-              <button onClick={() => setScreen("prefs")} className="text-sm font-semibold min-h-[44px] transition-opacity hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-                ← Change answers
+          <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-3 md:pt-8 pb-6">
+            <div className="flex items-center justify-between">
+              <button onClick={() => setScreen("prefs")} className="inline-flex items-center gap-1.5 text-[15px] font-medium min-h-[44px] transition-opacity hover:opacity-70">
+                <Icon name="arrow-left" size={17} /> Change answers
               </button>
-              <span className="text-sm font-semibold tabular-nums" style={{ color: "var(--text-secondary)" }}>
-                Round {round} of {rounds}
-              </span>
+              <span className="text-[14px] tabular-nums" style={{ color: "var(--text-secondary)" }}>Round {round} of {rounds}</span>
             </div>
-            <div className="flex gap-1 mb-4" aria-hidden="true">
+            <div className="flex gap-1 mt-1" aria-hidden="true">
               {Array.from({ length: rounds }, (_, i) => (
-                <span key={i} className="flex-1 h-1 rounded-full" style={{ backgroundColor: i < round ? "var(--cta-bg)" : "var(--bg-inset)" }} />
+                <span key={i} className="flex-1 h-1 rounded-full transition-colors" style={{ backgroundColor: i < round ? "var(--text)" : "var(--bg-inset)" }} />
               ))}
             </div>
+            <h1 className="font-display text-[26px] sm:text-[34px] mt-4 md:mt-6">Which sounds better tonight?</h1>
             {notice && round === 1 && (
-              <p className="text-sm rounded-lg px-3 py-2 mb-3" style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}>{notice}</p>
+              <p className="text-[14px] mt-1.5" style={{ color: "var(--text-secondary)" }}>{notice}</p>
             )}
-            <h1 className="font-display text-2xl sm:text-3xl mb-3 md:mb-4">Which sounds better tonight?</h1>
-            <div className="grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-2 md:gap-5 items-stretch">
-              <ChoiceCard key={champ.restaurant_id} c={champ} onChoose={() => choose(true)} still={round > 1} state={picked === null ? undefined : picked ? "chosen" : "passed"} />
-              <span className="text-sm font-semibold text-center self-center" style={{ color: "var(--text-secondary)" }} aria-hidden="true">or</span>
-              <ChoiceCard key={queue[0].restaurant_id} c={queue[0]} onChoose={() => choose(false)} state={picked === null ? undefined : picked ? "passed" : "chosen"} />
+            <div className="grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-3 md:gap-6 mt-4 md:mt-6 items-start">
+              <button key={champ.restaurant_id} onClick={() => choose(true)} aria-label={`Choose ${champ.name}`} className={`pick-choice${sideState(true)}`}>
+                <ChoiceBody c={champ} still={round > 1} />
+              </button>
+              <span className="text-[13px] font-semibold text-center md:self-center md:pt-0" style={{ color: "var(--text-muted)" }} aria-hidden="true">or</span>
+              <button key={queue[0].restaurant_id} onClick={() => choose(false)} aria-label={`Choose ${queue[0].name}`} className={`pick-choice fade-up${sideState(false)}`}>
+                <ChoiceBody c={queue[0]} />
+              </button>
             </div>
           </main>
-          <div className="sticky bottom-0 w-full" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4">
-              <p className="hidden md:block text-xs mr-auto" style={{ color: "var(--text-muted)" }}>Use ← and → to choose</p>
-              <button
-                onClick={() => finish(champ, queue[0])}
-                className="w-full md:w-auto md:min-w-[220px] px-6 py-3 rounded-full text-sm font-semibold min-h-[44px] transition-opacity hover:opacity-80"
-                style={{ border: "1px solid var(--border-strong)", color: "var(--text)", backgroundColor: "var(--bg-subtle)" }}
-              >
+          <div className="sticky bottom-0 w-full" style={{ backgroundColor: "var(--bg)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-2 pb-3 flex items-center gap-4">
+              <p className="hidden md:flex items-center gap-1.5 text-[13px] mr-auto" style={{ color: "var(--text-secondary)" }}>
+                <kbd className="inline-flex items-center justify-center w-6 h-6 rounded-md" style={{ backgroundColor: "var(--bg-subtle)" }}><Icon name="arrow-left" size={12} /></kbd>
+                <kbd className="inline-flex items-center justify-center w-6 h-6 rounded-md" style={{ backgroundColor: "var(--bg-subtle)" }}><Icon name="arrow-right" size={12} /></kbd>
+                <span className="ml-1">to choose</span>
+              </p>
+              <button onClick={() => finish(champ, queue[0])} className="soft-btn w-full md:w-auto md:min-w-[220px] px-6 text-[15px]">
                 Just pick for me
               </button>
             </div>
@@ -472,74 +466,78 @@ export default function PickPage() {
       )}
 
       {screen === "result" && result && (
-        <>
-          <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-8">
-            <div className="flex items-center justify-between mb-3">
-              <button onClick={() => setScreen("prefs")} className="text-sm font-semibold min-h-[44px] transition-opacity hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-                ← Pick again
-              </button>
+        <main id="main-content" className="relative flex-1">
+          {/* Clipped in its own layer so <main> can stay unclipped, which
+              lets the cover stick while the details scroll. */}
+          <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+            <PickPhoto key={`bg-${result.restaurant_id}`} c={result} sizes="40vw" className="scene-backdrop" />
+            <div className="scene-scrim" />
+          </div>
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4 md:pt-10 pb-12 grid md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-6 md:gap-12 items-start fade-up" key={result.restaurant_id}>
+            <div className="relative rounded-[22px] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.45)] md:sticky md:top-[88px]">
+              <PickPhoto c={result} sizes="(max-width: 768px) 100vw, 520px" priority className="relative block aspect-[4/3] md:aspect-[4/5]" />
             </div>
-            <div className="grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-5 md:gap-8 items-start">
-              <PickPhoto key={result.restaurant_id} c={result} sizes="(max-width: 768px) 100vw, 560px" className="h-60 md:h-[420px] rounded-2xl" />
-              <div className="min-w-0">
-                <h1 className="font-display text-3xl md:text-4xl leading-tight">{result.name}</h1>
-                <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>{metaLine(result)}</p>
-                <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-                  Locals rate it <b className="font-semibold tabular-nums" style={{ color: "var(--text)" }}>{result.local_weighted_rating.toFixed(1)}</b>
-                </p>
-                {result.dishes.length > 0 && (
-                  <section className="mt-6">
-                    <h2 className="text-base font-semibold mb-1.5">What to order</h2>
-                    <ul className="text-base leading-relaxed list-disc pl-5 marker:text-[var(--text-muted)]" style={{ color: "var(--text-secondary)" }}>
-                      {result.dishes.map((d) => <li key={d}>{d}</li>)}
-                    </ul>
-                  </section>
-                )}
-                {result.vibe && (
-                  <section className="mt-5">
-                    <h2 className="text-base font-semibold mb-1.5">The vibe</h2>
-                    <p className="text-base leading-relaxed max-w-[60ch]" style={{ color: "var(--text-secondary)" }}>{result.vibe}</p>
-                  </section>
-                )}
-                {result.wait_note && (
-                  <p className="text-sm leading-relaxed mt-5 pt-4 max-w-[60ch]" style={{ color: "var(--text-secondary)", borderTop: "1px solid var(--border)" }}>
-                    <b className="font-semibold" style={{ color: "var(--text)" }}>Heads up:</b> {result.wait_note}
-                  </p>
-                )}
-                {runnerUp && (
-                  <p className="text-sm mt-5" style={{ color: "var(--text-secondary)" }}>
-                    Close second:{" "}
-                    <button
-                      onClick={() => { setResult(runnerUp); setRunnerUp(result); }}
-                      className="font-semibold underline underline-offset-2 transition-opacity hover:opacity-75"
-                      style={{ color: "var(--text)" }}
-                    >
-                      {runnerUp.name}
-                    </button>
-                  </p>
-                )}
-                <div className="hidden md:flex items-center gap-4 mt-6">
-                  <a href={`https://www.google.com/maps/dir/?api=1&destination=${result.lat},${result.lng}`} target="_blank" rel="noopener noreferrer" className="cta-btn inline-flex items-center justify-center px-8 py-3 rounded-full text-base font-semibold">
-                    Let&apos;s go
-                  </a>
-                  <Link href={`/restaurant/${result.restaurant_id}`} className="text-sm font-semibold transition-opacity hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-                    See details
-                  </Link>
-                </div>
+            <div className="min-w-0">
+              <h1 className="font-display text-[34px] md:text-[44px] text-balance">{result.name}</h1>
+              <div className="flex flex-col gap-1 mt-3 text-[15px]" style={{ color: "var(--text-secondary)" }}>
+                <span className="flex items-center gap-2"><Icon name="map-pin" size={15} />{[result.neighborhood, result.distance_mi != null ? `${fmtDistance(result.distance_mi)} away` : null].filter(Boolean).join(" · ")}</span>
+                <span className="flex items-center gap-2"><Icon name="utensils" size={15} />{[result.cuisine !== "Restaurant" ? result.cuisine : null, priceLabel(result.price_midpoint)].filter(Boolean).join(" · ")}</span>
+                <span className="flex items-center gap-2"><Icon name="star" size={15} />Locals rate it {result.local_weighted_rating.toFixed(1)}</span>
               </div>
-            </div>
-          </main>
-          <div className="md:hidden sticky bottom-0 w-full" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-            <div className="px-4 py-3 flex flex-col gap-2">
-              <a href={`https://www.google.com/maps/dir/?api=1&destination=${result.lat},${result.lng}`} target="_blank" rel="noopener noreferrer" className="cta-btn flex items-center justify-center px-6 py-3 rounded-full text-base font-semibold">
-                Let&apos;s go
+              <div className="flex flex-wrap gap-1.5 mt-3.5">
+                <span className="tag tag-pick">Your pick</span>
+                <span className="tag tag-open">Open now</span>
+              </div>
+
+              <a href={directions} target="_blank" rel="noopener noreferrer" className="cta-btn flex items-center justify-center gap-2 w-full mt-6 text-[16px]">
+                <Icon name="navigation" size={16} /> Let&rsquo;s go
               </a>
-              <Link href={`/restaurant/${result.restaurant_id}`} className="text-sm font-semibold text-center py-2" style={{ color: "var(--text-secondary)" }}>
-                See details
-              </Link>
+              <div className="grid grid-cols-3 gap-2 mt-2.5">
+                <Link href={`/restaurant/${result.restaurant_id}`} className="tile-btn"><Icon name="info" size={19} />Details</Link>
+                <button onClick={() => share(result)} className="tile-btn"><Icon name="share" size={19} />{copied ? "Copied" : "Share"}</button>
+                <button onClick={() => setScreen("prefs")} className="tile-btn"><Icon name="rotate-ccw" size={19} />Pick again</button>
+              </div>
+
+              {result.dishes.length > 0 && (
+                <section className="mt-9">
+                  <h2 className="text-[17px] font-semibold mb-2">What to order</h2>
+                  <ol className="flex flex-col">
+                    {result.dishes.map((d, i) => (
+                      <li key={d} className="flex items-baseline gap-3 py-2.5 text-[16px]" style={{ borderTop: i ? "1px solid var(--border)" : undefined }}>
+                        <span className="tabular-nums text-[14px] w-4" style={{ color: "var(--text-muted)" }}>{i + 1}</span>
+                        {d}
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              )}
+              {result.vibe && (
+                <section className="mt-7">
+                  <h2 className="text-[17px] font-semibold mb-1.5">The vibe</h2>
+                  <p className="text-[16px] leading-relaxed max-w-[60ch]" style={{ color: "var(--text-secondary)" }}>{result.vibe}</p>
+                </section>
+              )}
+              {result.wait_note && (
+                <section className="mt-7">
+                  <h2 className="text-[17px] font-semibold mb-1.5">Heads up</h2>
+                  <p className="text-[15px] leading-relaxed max-w-[60ch]" style={{ color: "var(--text-secondary)" }}>{result.wait_note}</p>
+                </section>
+              )}
+              {runnerUp && (
+                <section className="mt-9">
+                  <h2 className="text-[17px] font-semibold mb-3">Close second</h2>
+                  <button
+                    onClick={() => { setResult(runnerUp); setRunnerUp(result); }}
+                    className="w-full text-left rounded-2xl p-2.5 -m-2.5 transition-colors hover:bg-[var(--bg-card)]"
+                    aria-label={`Switch to ${runnerUp.name}`}
+                  >
+                    <PlaceRow c={runnerUp} />
+                  </button>
+                </section>
+              )}
             </div>
           </div>
-        </>
+        </main>
       )}
     </div>
   );

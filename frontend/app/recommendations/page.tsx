@@ -206,15 +206,6 @@ function RecommendationsContent() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader current="recs" />
 
-      {/* On phones the toolbar has no room, so the button floats over the list. */}
-      <Link
-        href="/pick"
-        className="cta-btn sm:hidden fixed z-30 left-1/2 -translate-x-1/2 px-6 rounded-full text-sm font-semibold min-h-[48px] flex items-center whitespace-nowrap"
-        style={{ bottom: "calc(16px + env(safe-area-inset-bottom, 0px))", boxShadow: "0 6px 20px rgba(36,31,24,0.25)" }}
-      >
-        Help me pick
-      </Link>
-
       <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {/* Search + filter toolbar */}
         <div className="flex items-center gap-2 mb-1">

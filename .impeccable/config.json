@@ -11,6 +11,24 @@
         ],
         "createdAt": "2026-09-24T16:02:22.192Z",
         "reason": "Agent: .chip-collapse (line ~350) truncates a continuous flex-wrap chip list by pixel height; the grid-template-rows technique used by sibling .filter-expand/.hours-body collapses only works for a single collapsing row, not a reflowing wrapped list (see comment at globals.css:342-346). Pre-existing pattern predating this session, single user-triggered toggle, not a hot path."
+      },
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "app/globals.css"
+        ],
+        "createdAt": "2026-10-19T17:58:53.662Z",
+        "reason": "Same pre-existing .chip-collapse max-height exception already ignored for frontend/app/globals.css; the hook resolves the path relative to frontend/, so the existing entry didn't match."
+      },
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "**/globals.css"
+        ],
+        "createdAt": "2026-10-19T18:13:46.251Z",
+        "reason": "Pre-existing .chip-collapse max-height collapse (documented in globals.css); the path-specific ignores above weren't matched by the stop hook."
       }
     ]
   }

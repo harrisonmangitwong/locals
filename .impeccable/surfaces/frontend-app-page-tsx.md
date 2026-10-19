@@ -2,21 +2,19 @@
 version: 1
 slug: "frontend-app-page-tsx"
 primary_target: "frontend/app/page.tsx"
-related_targets: []
+related_targets: ["frontend/app/pick/page.tsx","frontend/components/SiteHeader.tsx"]
 ---
 
+## Scope
+Homepage (Persuade) and Help me pick (Operate: questions, this-or-that, result), plus the shared header and a mobile tab bar. Audience: young, food-curious New Yorkers ~0-5 years in, deciding on a phone in the evening; recruiters (~30 seconds). Craft bar: Apple, The Infatuation/Eater, Linear/Figma/Arc. Must not feel themed/costume, corporate/fintech, or old-media magazine. Keep: the Help me pick flow and locked copy, light + dark first-class, real restaurant photos. Rejected: diner neon, orange/khaki ("Home Depot"), Matchup broadcast.
+
 ## Direction contract
+THESIS: Locals as a native-feeling iOS app on the web, after the user-pinned reference Luma: a monochrome interface where color comes only from the food photos and small meaningful status tags. Refuses the beige card grid where every control is the same pill.
+OWN-WORLD: White ground and near-black ink (dark: near-black ground, white actions). System font (SF on Apple), hierarchy by weight and gray, sentence case, no caps labels. Black pill primary, soft-gray pill secondary, small status tags (green open, purple still in). Feed as Luma rows: rounded square photo with a tag on its edge, name, icon meta lines; no card borders. Floating frosted tab bar on phones. Soft wide shadows only on floating things.
+STORY: A visitor sees real NYC places floating around "Let's eat.", taps Help me pick, answers three questions, compares two photos at a time, and lands on a dark, photo-tinted "your pick" screen with what to order and Let's go.
+FIRST VIEWPORT: Homepage centered: a collage of real restaurant photos (soft shadows, slight tilts) above "Let's eat." and the locked value-prop line, black pill Help me pick, gray pill Browse all places; below, an "Open right now" section of rows. Result screen: page ground tinted by the pick's blurred photo, rounded cover, name, tag row, white pill Let's go, a row of three soft action tiles.
+FORM: User-pinned reference (Luma iOS: typography, color, layout), which supersedes the direction round (seed key e5f3a840; Matchup built and rejected). Signature interaction: the result screen's photo-tinted dark reveal. Motion grammar: iOS-like ease-out fades and lifts (200-280ms), nothing bouncy.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
-THESIS: The landing page is a 24-hour NYC diner counter, not another boutique-editorial food app (the category rut this page already was). It owns "deciding where to eat, right now, like a regular" instead of "browsing a curated list."
-
-OWN-WORLD: Diner-revival material system. Dark mode = night: near-black warm ground (#1a1310), glowing amber neon headline ("Let's eat."), a lit "Open · deciding now" status pill, orange (not red) outline-tube CTA, laminated overlapping proof cards, a faint checkerboard floor motif fading into the dark. Light mode = the same diner by day: warm sunlit counter ground, the same amber/orange hues as solid fills (no glow), same structure. Fredoka (headline, rounded/friendly-bold) + Space Grotesk (data/UI labels) + Inter (body). Color rationed: amber owns the headline/brand mark only, orange owns the one functional/status action (the CTA and the open-tag's live dot) -- never decorative elsewhere, never red (reads as an error state).
-
-The "Open · deciding now" pill sits above the headline. This is a deliberate, disclosed exception to the craft floor's kicker/eyebrow ban: it was cut once already for that reason, then restored at the user's explicit request, on the judgment that it's a diegetic status badge (part of the diner-sign world, carrying real "decide right now" product meaning) rather than the generic decorative category label the ban targets. Kept to the hero's own two-color rule (neutral ink pill, orange dot only) rather than reintroducing a third color.
-
-STORY: A visitor lands believing this app knows their city block-by-block like a regular, not a database. They see the real locals-vs-tourists rating gap on real NYC restaurants within the first viewport and click through to browse.
-
-FIRST VIEWPORT: Full-bleed diner scene filling the viewport. "Open · deciding now" status pill, then "Let's eat." as the neon headline (glowing in dark, solid fill in light, deepened amber #96640d in light mode specifically for contrast). Subhead copy unchanged. Orange CTA "Browse the picks" (no arrow). Two real restaurant photos (Yopcity, Grandma's Dumpling House) as overlapping laminated menu cards, each with a local-favorite badge and the real locals/tourists rating line, fully revealed on hover (desktop) or scroll-into-view (touch, via the app's existing useScrollActive pattern, correctly scoped to `@media (hover: none)` so it doesn't fight real `:hover`). Footer stat line in tracked uppercase with a ticket-stub tear-line detail.
-
-FORM: Diner Counter / 24-hour neon, candidate #1 of 7 grounded candidates (my top-ranked), assigned-index was #5 (Order Pad); user chose the pick card over the assigned direction, then iterated live: CTA color (red -> green/blue considered and rejected -> orange chosen), a finish-review fix batch (color-rationing leak, clipped card text, banned icon glyph, dark-mode contrast, flat ground, ticket materiality -- all resolved, verdict ship), a post-ship hover bug (in-view leaking onto desktop, fixed), and the open-tag restoration above. Seed key 51a36938.
-
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance. (Finish review already ran and scored ship on the fix batch; this later round -- hover-scope fix + open-tag restoration -- is a small enough follow-up that it was verified directly rather than re-routed through a fresh reviewer spawn.)
+## Unresolved
+Browse, restaurant, saved, visited and profile get tokens, buttons and the tab bar now; their own layouts (Browse as Luma rows) are a follow-up pass.
