@@ -72,11 +72,15 @@ function MetaLine({ icon, children }: { icon: "map-pin" | "utensils" | "star"; c
 
 // A place as a list row: rounded photo with a status tag on its edge,
 // then name and icon lines. No card, no border.
-export function PlaceRow({ c, tag }: { c: Candidate; tag?: string }) {
+// `shared` names the photo for view transitions, so it can travel to the
+// same restaurant's photo on the next screen.
+export function PlaceRow({ c, tag, shared }: { c: Candidate; tag?: string; shared?: boolean }) {
   return (
     <span className="grid grid-cols-[76px_minmax(0,1fr)] gap-3.5 items-start">
       <span className="relative block">
-        <PickPhoto c={c} sizes="76px" className="relative block w-[76px] h-[76px] rounded-xl" />
+        <span className="row-thumb relative block rounded-xl overflow-hidden" style={shared ? { viewTransitionName: `p-${c.restaurant_id}` } : undefined}>
+          <PickPhoto c={c} sizes="76px" className="relative block w-[76px] h-[76px]" />
+        </span>
         {tag && <span className="tag tag-open absolute -bottom-2 left-1.5">{tag}</span>}
       </span>
       <span className="flex flex-col gap-0.5 min-w-0 pt-0.5">
@@ -94,7 +98,7 @@ export function ChoiceBody({ c, still }: { c: Candidate; still?: boolean }) {
   const known = c.dishes.length ? c.dishes.join(" · ") : c.vibe;
   return (
     <>
-      <span className="pick-photo relative block rounded-[18px] overflow-hidden">
+      <span className="pick-photo relative block rounded-[18px] overflow-hidden" style={{ viewTransitionName: `p-${c.restaurant_id}` }}>
         <PickPhoto c={c} sizes="(max-width: 768px) 100vw, 520px" className="relative block h-36 sm:h-56 md:h-72" priority />
         {still && <span className="tag tag-pick absolute top-2.5 left-2.5">Still in</span>}
       </span>

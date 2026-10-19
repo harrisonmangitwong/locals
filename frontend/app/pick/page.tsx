@@ -1,6 +1,7 @@
 "use client";
 
-import { type CSSProperties, useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useLayoutEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import Icon from "@/components/Icon";
@@ -9,6 +10,19 @@ import { NEIGHBORHOOD_COORDS } from "@/lib/neighborhoods";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// Screen and round changes run inside a view transition, so the same
+// restaurant photo travels between states: a shortlist thumbnail grows into
+// a this-or-that photo, and the winner flies into the result cover.
+// Without browser support (or with reduced motion) the change is instant.
+function go(update: () => void) {
+  const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+  if (!doc.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    update();
+    return;
+  }
+  doc.startViewTransition(() => flushSync(update));
+}
 
 // Fine steps at walking distance, whole miles after that.
 const DIST_STEPS = [0.2, 0.4, 0.6, 0.8, 1, 2, 3, 4, 5];
@@ -156,7 +170,9 @@ export default function PickPage() {
     };
   }, [location, locStatus, distIdx, cuisines, prices, onlyNew, visitedIds]);
 
-  useEffect(() => {
+  // Layout effect so the new screen is already at the top when the view
+  // transition takes its "after" snapshot.
+  useLayoutEffect(() => {
     window.scrollTo({ top: 0 });
   }, [screen]);
 
@@ -167,21 +183,24 @@ export default function PickPage() {
   }
 
   function start() {
-    if (shortlist.length === 1) return finish(shortlist[0], null);
-    setChamp(shortlist[0]);
-    setQueue(shortlist.slice(1));
-    setRound(1);
-    setRounds(shortlist.length - 1);
-    setScreen("compare");
+    go(() => {
+      if (shortlist.length === 1) return finish(shortlist[0], null);
+      setChamp(shortlist[0]);
+      setQueue(shortlist.slice(1));
+      setRound(1);
+      setRounds(shortlist.length - 1);
+      setScreen("compare");
+    });
   }
 
   function choose(keepChamp: boolean) {
     if (!champ || !queue.length || picked !== null) return;
     setPicked(keepChamp);
-    setTimeout(() => {
+    // A beat to see the choice register, then the winner glides into place.
+    setTimeout(() => go(() => {
       setPicked(null);
       advance(keepChamp);
-    }, 280);
+    }), 170);
   }
 
   function advance(keepChamp: boolean) {
@@ -400,7 +419,7 @@ export default function PickPage() {
               {notice && <p className="text-[14px] leading-snug px-3.5 py-3 mb-4 rounded-xl" style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}>{notice}</p>}
               {!loading && count === 0 && <p className="text-[14px]" style={{ color: "var(--text-secondary)" }}>Nothing open fits yet. Try fewer filters.</p>}
               <ul className="flex flex-col gap-5 transition-opacity" style={{ opacity: loading ? 0.45 : 1 }}>
-                {shortlist.map((c) => <li key={c.restaurant_id}><PlaceRow c={c} /></li>)}
+                {shortlist.map((c, i) => <li key={c.restaurant_id} className="rise" style={{ "--i": i } as CSSProperties}><PlaceRow c={c} shared /></li>)}
               </ul>
               <div className="hidden md:block mt-7">
                 <button onClick={start} disabled={loading || count === 0} className="cta-btn w-full px-6 text-[16px]">
@@ -426,7 +445,7 @@ export default function PickPage() {
         <>
           <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-3 md:pt-8 pb-6">
             <div className="flex items-center justify-between">
-              <button onClick={() => setScreen("prefs")} className="inline-flex items-center gap-1.5 text-[15px] font-medium min-h-[44px] transition-opacity hover:opacity-70">
+              <button onClick={() => go(() => setScreen("prefs"))} className="inline-flex items-center gap-1.5 text-[15px] font-medium min-h-[44px] transition-opacity hover:opacity-70">
                 <Icon name="arrow-left" size={17} /> Change answers
               </button>
               <span className="text-[14px] tabular-nums" style={{ color: "var(--text-secondary)" }}>Round {round} of {rounds}</span>
@@ -457,7 +476,7 @@ export default function PickPage() {
                 <kbd className="inline-flex items-center justify-center w-6 h-6 rounded-md" style={{ backgroundColor: "var(--bg-subtle)" }}><Icon name="arrow-right" size={12} /></kbd>
                 <span className="ml-1">to choose</span>
               </p>
-              <button onClick={() => finish(champ, queue[0])} className="soft-btn w-full md:w-auto md:min-w-[220px] px-6 text-[15px]">
+              <button onClick={() => go(() => finish(champ, queue[0]))} className="soft-btn w-full md:w-auto md:min-w-[220px] px-6 text-[15px]">
                 Just pick for me
               </button>
             </div>
@@ -473,33 +492,33 @@ export default function PickPage() {
             <PickPhoto key={`bg-${result.restaurant_id}`} c={result} sizes="40vw" className="scene-backdrop" />
             <div className="scene-scrim" />
           </div>
-          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4 md:pt-10 pb-12 grid md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-6 md:gap-12 items-start fade-up" key={result.restaurant_id}>
-            <div className="relative rounded-[22px] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.45)] md:sticky md:top-[88px]">
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4 md:pt-10 pb-12 grid md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-6 md:gap-12 items-start" key={result.restaurant_id}>
+            <div className="relative rounded-[22px] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.45)] md:sticky md:top-[88px]" style={{ viewTransitionName: `p-${result.restaurant_id}` }}>
               <PickPhoto c={result} sizes="(max-width: 768px) 100vw, 520px" priority className="relative block aspect-[4/3] md:aspect-[4/5]" />
             </div>
             <div className="min-w-0">
-              <h1 className="font-display text-[34px] md:text-[44px] text-balance">{result.name}</h1>
-              <div className="flex flex-col gap-1 mt-3 text-[15px]" style={{ color: "var(--text-secondary)" }}>
+              <h1 className="font-display text-[34px] md:text-[44px] text-balance rise" style={{ "--i": 0 } as CSSProperties}>{result.name}</h1>
+              <div className="flex flex-col gap-1 mt-3 text-[15px] rise" style={{ color: "var(--text-secondary)", "--i": 1 } as CSSProperties}>
                 <span className="flex items-center gap-2"><Icon name="map-pin" size={15} />{[result.neighborhood, result.distance_mi != null ? `${fmtDistance(result.distance_mi)} away` : null].filter(Boolean).join(" · ")}</span>
                 <span className="flex items-center gap-2"><Icon name="utensils" size={15} />{[result.cuisine !== "Restaurant" ? result.cuisine : null, priceLabel(result.price_midpoint)].filter(Boolean).join(" · ")}</span>
                 <span className="flex items-center gap-2"><Icon name="star" size={15} />Locals rate it {result.local_weighted_rating.toFixed(1)}</span>
               </div>
-              <div className="flex flex-wrap gap-1.5 mt-3.5">
+              <div className="flex flex-wrap gap-1.5 mt-3.5 rise" style={{ "--i": 2 } as CSSProperties}>
                 <span className="tag tag-pick">Your pick</span>
                 <span className="tag tag-open">Open now</span>
               </div>
 
-              <a href={directions} target="_blank" rel="noopener noreferrer" className="cta-btn flex items-center justify-center gap-2 w-full mt-6 text-[16px]">
+              <a href={directions} target="_blank" rel="noopener noreferrer" className="cta-btn flex items-center justify-center gap-2 w-full mt-6 text-[16px] rise" style={{ "--i": 3 } as CSSProperties}>
                 <Icon name="navigation" size={16} /> Let&rsquo;s go
               </a>
-              <div className="grid grid-cols-3 gap-2 mt-2.5">
+              <div className="grid grid-cols-3 gap-2 mt-2.5 rise" style={{ "--i": 4 } as CSSProperties}>
                 <Link href={`/restaurant/${result.restaurant_id}`} className="tile-btn"><Icon name="info" size={19} />Details</Link>
                 <button onClick={() => share(result)} className="tile-btn"><Icon name="share" size={19} />{copied ? "Copied" : "Share"}</button>
-                <button onClick={() => setScreen("prefs")} className="tile-btn"><Icon name="rotate-ccw" size={19} />Pick again</button>
+                <button onClick={() => go(() => setScreen("prefs"))} className="tile-btn"><Icon name="rotate-ccw" size={19} />Pick again</button>
               </div>
 
               {result.dishes.length > 0 && (
-                <section className="mt-9">
+                <section className="mt-9 rise" style={{ "--i": 5 } as CSSProperties}>
                   <h2 className="text-[17px] font-semibold mb-2">What to order</h2>
                   <ol className="flex flex-col">
                     {result.dishes.map((d, i) => (
@@ -512,26 +531,26 @@ export default function PickPage() {
                 </section>
               )}
               {result.vibe && (
-                <section className="mt-7">
+                <section className="mt-7 rise" style={{ "--i": 6 } as CSSProperties}>
                   <h2 className="text-[17px] font-semibold mb-1.5">The vibe</h2>
                   <p className="text-[16px] leading-relaxed max-w-[60ch]" style={{ color: "var(--text-secondary)" }}>{result.vibe}</p>
                 </section>
               )}
               {result.wait_note && (
-                <section className="mt-7">
+                <section className="mt-7 rise" style={{ "--i": 7 } as CSSProperties}>
                   <h2 className="text-[17px] font-semibold mb-1.5">Heads up</h2>
                   <p className="text-[15px] leading-relaxed max-w-[60ch]" style={{ color: "var(--text-secondary)" }}>{result.wait_note}</p>
                 </section>
               )}
               {runnerUp && (
-                <section className="mt-9">
+                <section className="mt-9 rise" style={{ "--i": 8 } as CSSProperties}>
                   <h2 className="text-[17px] font-semibold mb-3">Close second</h2>
                   <button
-                    onClick={() => { setResult(runnerUp); setRunnerUp(result); }}
+                    onClick={() => go(() => { setResult(runnerUp); setRunnerUp(result); })}
                     className="w-full text-left rounded-2xl p-2.5 -m-2.5 transition-colors hover:bg-[var(--bg-card)]"
                     aria-label={`Switch to ${runnerUp.name}`}
                   >
-                    <PlaceRow c={runnerUp} />
+                    <PlaceRow c={runnerUp} shared />
                   </button>
                 </section>
               )}

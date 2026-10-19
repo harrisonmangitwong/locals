@@ -1,7 +1,9 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import Icon from "@/components/Icon";
-import { type Candidate, PickPhoto, PlaceRow } from "@/components/PickCard";
+import { type CSSProperties } from "react";
+import Collage from "@/components/Collage";
+import { type Candidate, PlaceRow } from "@/components/PickCard";
 import { REVIEW_COUNT_LABEL, RESTAURANT_POOL_LABEL } from "@/lib/stats";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -21,16 +23,6 @@ async function getOpenNow(): Promise<Candidate[]> {
   }
 }
 
-// Where each photo floats, as % of the collage box, plus a slight tilt.
-const TILES = [
-  { left: 2, top: 26, rot: -7, size: 0.86 },
-  { left: 17, top: 58, rot: 5, size: 0.8 },
-  { left: 31, top: 6, rot: -2, size: 1 },
-  { left: 51, top: 44, rot: 4, size: 0.94 },
-  { left: 65, top: 4, rot: -5, size: 0.84 },
-  { left: 77, top: 50, rot: 6, size: 0.8 },
-];
-
 export default async function Home() {
   const places = await getOpenNow();
 
@@ -39,35 +31,13 @@ export default async function Home() {
       <SiteHeader />
 
       <section id="main-content" className="w-full px-4 sm:px-6 pt-6 md:pt-10 pb-12 text-center overflow-x-clip">
-        {places.length >= TILES.length && (
-          <div className="relative mx-auto max-w-5xl h-[230px] sm:h-[320px] md:h-[400px] lg:h-[440px]" aria-hidden="true">
-            {TILES.map((t, i) => (
-              <div
-                key={places[i].restaurant_id}
-                className="absolute"
-                style={{
-                  left: `${t.left}%`,
-                  top: `${t.top}%`,
-                  width: `calc(clamp(82px, 17vw, 210px) * ${t.size})`,
-                  transform: `rotate(${t.rot}deg)`,
-                }}
-              >
-                <PickPhoto
-                  c={places[i]}
-                  sizes="160px"
-                  priority={i < 3}
-                  className="collage-tile relative block aspect-square"
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        <Collage places={places} />
 
-        <h1 className="font-display text-[46px] sm:text-[58px] md:text-[66px] mt-4">Let&rsquo;s eat.</h1>
-        <p className="text-[17px] sm:text-[19px] leading-snug mt-3 mx-auto max-w-[30ch] text-pretty" style={{ color: "var(--text-secondary)" }}>
+        <h1 className="font-display text-[46px] sm:text-[58px] md:text-[66px] mt-4 rise" style={{ "--i": 4 } as CSSProperties}>Let&rsquo;s eat.</h1>
+        <p className="text-[17px] sm:text-[19px] leading-snug mt-3 mx-auto max-w-[30ch] text-pretty rise" style={{ color: "var(--text-secondary)", "--i": 5 } as CSSProperties}>
           Most food apps give you endless recs. Locals tells you where to go tonight.
         </p>
-        <div className="flex flex-col sm:flex-row items-stretch justify-center gap-2.5 mt-7 mx-auto max-w-sm sm:max-w-none">
+        <div className="flex flex-col sm:flex-row items-stretch justify-center gap-2.5 mt-7 mx-auto max-w-sm sm:max-w-none rise" style={{ "--i": 6 } as CSSProperties}>
           <Link href="/pick" className="cta-btn inline-flex items-center justify-center px-8 text-[16px]">
             Help me pick
           </Link>
@@ -91,7 +61,7 @@ export default async function Home() {
           <ul className="grid sm:grid-cols-2 gap-x-10 gap-y-6">
             {places.slice(0, 4).map((c) => (
               <li key={c.restaurant_id}>
-                <Link href={`/restaurant/${c.restaurant_id}`} className="block rounded-2xl p-2 -m-2 transition-colors hover:bg-[var(--bg-subtle)]">
+                <Link href={`/restaurant/${c.restaurant_id}`} className="row-link block rounded-2xl p-2 -m-2">
                   <PlaceRow c={c} />
                 </Link>
               </li>

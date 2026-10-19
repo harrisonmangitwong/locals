@@ -576,6 +576,145 @@ a, button, [role="button"] {
   transform: scale(0.97);
 }
 
+/* ── Motion ──
+   One curve for arrivals (--spring: fast start, long soft settle, no
+   overshoot), press feedback on everything tappable, and photos that
+   travel between screens via view transitions. Reduced motion keeps the
+   state changes and drops the movement (see the end of this block). */
+:root {
+  --spring: cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+/* Press: every tappable thing gives a little under the finger. */
+.filter-pill { transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out), transform 140ms var(--ease-out); }
+.filter-pill:active { transform: scale(0.95); }
+.tab-item { transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out), transform 140ms var(--ease-out); }
+.tab-item:active { transform: scale(0.92); }
+
+/* Rows: a soft highlight and a slow photo zoom on hover, a press on tap. */
+.row-link {
+  transition: background-color 180ms var(--ease-out), transform 160ms var(--ease-out);
+}
+.row-link:active { transform: scale(0.985); }
+.row-thumb img { transition: transform 420ms var(--spring); }
+@media (hover: hover) {
+  .row-link:hover { background-color: var(--bg-subtle); }
+  .row-link:hover .row-thumb img { transform: scale(1.07); }
+  .pick-choice:hover .pick-photo img { transform: scale(1.035); }
+}
+.pick-choice .pick-photo img { transition: transform 520ms var(--spring); }
+
+/* Staged arrival for a short sequence of siblings (cap: ~7 steps). */
+.rise {
+  animation: rise 560ms var(--spring) backwards;
+  animation-delay: calc(var(--i, 0) * 60ms + 60ms);
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Homepage collage: photos drop into their tilt one after another, then
+   drift with the pointer by depth; hovering straightens and names one. */
+.collage-item {
+  z-index: 1;
+  transform: translate3d(calc(var(--mx, 0) * var(--d, 1) * 22px), calc(var(--my, 0) * var(--d, 1) * 14px), 0) rotate(var(--rot, 0deg));
+  transition: transform 900ms var(--spring);
+  animation: tile-in 820ms var(--spring) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+@keyframes tile-in {
+  from { opacity: 0; translate: 0 34px; scale: 0.84; }
+  to { opacity: 1; translate: 0 0; scale: 1; }
+}
+.collage-tile {
+  transition: transform 380ms var(--spring), box-shadow 380ms var(--spring);
+}
+.collage-label {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 10px);
+  translate: -50% 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: var(--cta-bg);
+  color: var(--cta-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms var(--ease-out), translate 260ms var(--spring);
+}
+@media (hover: hover) {
+  .collage-item:hover { z-index: 5; }
+  .collage-item:hover .collage-tile {
+    transform: rotate(calc(var(--rot, 0deg) * -1)) scale(1.08);
+    box-shadow: 0 26px 60px rgba(0,0,0,0.24);
+  }
+  .collage-item:hover .collage-label { opacity: 1; translate: -50% 0; }
+}
+.collage-item:focus-visible { z-index: 5; outline-offset: 6px; border-radius: 18px; }
+.collage-item:focus-visible .collage-label { opacity: 1; translate: -50% 0; }
+.collage-item:active .collage-tile { transform: rotate(calc(var(--rot, 0deg) * -1)) scale(1.02); }
+
+/* The result scene: the blurred photo blooms in behind the cover. */
+.scene-backdrop { animation: backdrop-in 900ms var(--spring) backwards; }
+@keyframes backdrop-in {
+  from { opacity: 0; transform: scale(1.25); }
+  to { opacity: 1; transform: scale(1.1); }
+}
+
+/* View transitions: the named restaurant photo (p-<id>) travels between
+   screens; whatever has no partner fades out quickly or rises in. */
+::view-transition-group(*) {
+  animation-duration: 460ms;
+  animation-timing-function: var(--spring);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 240ms;
+}
+::view-transition-old(*),
+::view-transition-new(*) {
+  height: 100%;
+  object-fit: cover;
+  overflow: clip;
+}
+::view-transition-new(*):only-child {
+  animation: vt-in 420ms var(--spring) both;
+}
+::view-transition-old(*):only-child {
+  animation: vt-out 200ms var(--ease-out) both;
+}
+@keyframes vt-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.94); }
+}
+@keyframes vt-out {
+  to { opacity: 0; transform: scale(0.96); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collage-item {
+    animation: none;
+    transition: none;
+    transform: rotate(var(--rot, 0deg));
+  }
+  .collage-item:hover .collage-tile,
+  .collage-item:active .collage-tile {
+    transform: none;
+  }
+  .rise,
+  .scene-backdrop {
+    animation: none;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 /* ── Floating tab bar (phones) ──
    Frosted like iOS's own bar: a native material here, not decoration. */
 .tab-bar {
