@@ -699,6 +699,13 @@ a, button, [role="button"] {
 
 /* The result scene: the blurred photo blooms in behind the cover. */
 .scene-backdrop { animation: backdrop-in 900ms var(--ease-settle) backwards; }
+/* A cover photo arriving without a view transition (restaurant page)
+   settles in from slightly larger. */
+.cover-in { animation: cover-in 700ms var(--ease-settle) backwards; }
+@keyframes cover-in {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: 1; transform: none; }
+}
 @keyframes backdrop-in {
   from { opacity: 0; transform: scale(1.25); }
   to { opacity: 1; transform: scale(1.1); }
@@ -744,6 +751,7 @@ a, button, [role="button"] {
     transform: none;
   }
   .rise,
+  .cover-in,
   .scene-backdrop {
     animation: none;
   }

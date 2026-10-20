@@ -280,7 +280,7 @@ Two curves. **Ease Out** (`--ease-out`, cubic-bezier(0.22, 1, 0.36, 1)) for stat
 Phones have no hover, so scrolling drives the same responses. The homepage collage moves with page scroll by depth (nearer photos rise faster, the pile straightens over the first 600px). In row lists (Open right now, Your shortlist), the single row whose center is nearest the middle of the screen (within 22% of the viewport height) gets the hover treatment (white card, large soft shadow, 3px lift, photo zoom) via `.is-focus`, one row at a time.
 
 ### Scope Limits
-Today the system is fully expressed on the homepage and Help me pick. Browse, restaurant detail, saved, visited and profile pages inherit the tokens, the buttons and the tab bar but still carry older component layouts; those layouts are not part of this system and should be brought onto it rather than copied.
+Today the system is fully expressed on the homepage, Help me pick and the restaurant page (which reuses the result scene: tinted backdrop, sticky cover, one Get directions pill, Save / Share / Call tiles, then The local take, What to order, The vibe, Heads up, Hours and info, and More in the neighborhood as rows). Browse, saved, visited and profile pages inherit the tokens, the buttons and the tab bar but still carry older component layouts; those layouts are not part of this system and should be brought onto it rather than copied.
 
 ## Do's and Don'ts
 

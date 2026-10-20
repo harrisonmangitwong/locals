@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import SiteHeader from "@/components/SiteHeader";
 import SignInPrompt from "@/components/SignInPrompt";
+import Icon, { type IconName } from "@/components/Icon";
+import ScrollSpotlight from "@/components/ScrollSpotlight";
+import { type Candidate, PlaceRow } from "@/components/PickCard";
 import { getPhotoUrl, pickHeroPhoto } from "@/lib/photoFallback";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { getVerdict } from "@/lib/verdict";
@@ -85,62 +88,54 @@ function parseReviewThemes(json: string | undefined): ReviewThemes | null {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-// Only used over the hero photo, so always white regardless of theme.
-function MiniStars({ rating }: { rating: number }) {
-  const stars = Math.round(rating * 2) / 2;
-  const full = Math.floor(stars);
-  const half = stars - full >= 0.5;
+const DAYS_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function parseHours(hoursJson: string | undefined): HoursEntry[] {
+  if (!hoursJson) return [];
+  try {
+    const entries = JSON.parse(hoursJson);
+    return Array.isArray(entries) ? entries : [];
+  } catch {
+    return [];
+  }
+}
+
+function nycToday() {
+  return new Date().toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" });
+}
+
+// "Hidden Gem" -> "Hidden gem": the archetype reads as plain text, not a badge.
+function sentenceCase(s: string) {
+  return s.charAt(0) + s.slice(1).toLowerCase();
+}
+
+function Fact({ icon, children }: { icon: IconName; children: ReactNode }) {
   return (
-    <span className="flex items-center gap-0.5" aria-label={`${rating.toFixed(1)} out of 5 stars`}>
-      {Array.from({ length: 5 }).map((_, i) => {
-        if (i < full) return <span key={i} style={{ color: "#ffffff", fontSize: 13 }}>&#9733;</span>;
-        if (i === full && half) return (
-          <span key={i} className="relative inline-block" style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>
-            &#9733;
-            <span className="absolute inset-0 overflow-hidden" style={{ width: "50%", color: "#ffffff" }}>&#9733;</span>
-          </span>
-        );
-        return <span key={i} style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>&#9733;</span>;
-      })}
+    <span className="flex items-start gap-2">
+      <Icon name={icon} size={15} className="shrink-0 mt-[3px]" />
+      <span className="min-w-0 tabular-nums">{children}</span>
     </span>
   );
 }
 
-const DAYS_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-
-function getTodayEntry(hoursJson: string | undefined): HoursEntry | null {
-  if (!hoursJson) return null;
-  try {
-    const entries: HoursEntry[] = JSON.parse(hoursJson);
-    const today = new Date().toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" });
-    return entries.find(e => e.day === today) ?? null;
-  } catch {
-    return null;
-  }
-}
-
-function WeeklyHours({ hoursJson }: { hoursJson: string }) {
-  let entries: HoursEntry[] = [];
-  try { entries = JSON.parse(hoursJson); } catch { return null; }
-  if (!entries.length) return null;
-
-  const today = new Date().toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" });
-
-  return (
-    <div className="space-y-1">
-      {DAYS_ORDER.map(day => {
-        const entry = entries.find(e => e.day === day);
-        if (!entry) return null;
-        const isToday = day === today;
-        return (
-          <div key={day} className="flex justify-between text-xs" style={{ fontWeight: isToday ? 600 : 400, color: isToday ? "var(--text)" : "var(--text-muted)" }}>
-            <span style={{ width: 100 }}>{day}</span>
-            <span>{entry.hours}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
+// The rest of the neighborhood, as the same rows the homepage uses.
+function toCandidate(s: SimilarRestaurant): Candidate {
+  return {
+    restaurant_id: s.restaurant_id,
+    name: s.name,
+    neighborhood: s.neighborhood,
+    cuisine: s.cuisine,
+    price_midpoint: s.price_midpoint ?? null,
+    image_url: s.image_url || null,
+    lat: 0,
+    lng: 0,
+    local_weighted_rating: s.local_weighted_rating ?? s.total_score,
+    tourist_weighted_rating: s.tourist_weighted_rating ?? s.total_score,
+    distance_mi: null,
+    dishes: [],
+    vibe: null,
+    wait_note: null,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -153,12 +148,17 @@ interface SimilarRestaurant {
   neighborhood: string;
   cuisine: string;
   total_score: number;
-  rank: number;
   image_url: string;
+  price_midpoint?: number | null;
+  local_weighted_rating?: number;
+  tourist_weighted_rating?: number;
 }
+
+const rise = (i: number) => ({ "--i": i }) as CSSProperties;
 
 export default function RestaurantPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
   const [restaurant, setRestaurant] = useState<RestaurantDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -166,9 +166,8 @@ export default function RestaurantPage() {
   const [saved, setSaved] = useState(false);
   const [bucket, setBucket] = useState<Bucket | null>(null);
   const [savePop, setSavePop] = useState(false);
-  const [showSavedMsg, setShowSavedMsg] = useState(false);
-  const [showSaveError, setShowSaveError] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [similar, setSimilar] = useState<SimilarRestaurant[]>([]);
   const { user } = useCurrentUser();
   const [signInReason, setSignInReason] = useState<string | null>(null);
@@ -183,15 +182,15 @@ export default function RestaurantPage() {
         setRestaurant(data);
         setHeroTier(0);
 
-        // Fetch similar restaurants once we have neighborhood + cuisine
+        // The neighborhood's other top places, in ranked order.
         try {
-          const params = new URLSearchParams({ neighborhood: data.neighborhood, cuisine: data.cuisine, page_size: "6" });
+          const params = new URLSearchParams({ neighborhood: data.neighborhood, page_size: "6" });
           const simRes = await fetch(`${API_BASE}/api/recommendations?${params}`);
           if (simRes.ok) {
             const simData = await simRes.json();
             const filtered = (simData.results as SimilarRestaurant[])
               .filter((r) => r.restaurant_id !== id)
-              .slice(0, 3);
+              .slice(0, 4);
             setSimilar(filtered);
           }
         } catch { /* non-critical */ }
@@ -220,17 +219,23 @@ export default function RestaurantPage() {
     loadRating();
   }, [id]);
 
+  function back() {
+    if (window.history.length > 1) router.back();
+    else router.push("/recommendations");
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)" }}>
-        <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4" style={{ backgroundColor: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
-          <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>Locals</Link>
-        </header>
-        <div className="skeleton w-full" style={{ height: "clamp(260px, 40vw, 420px)" }} />
-        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 pt-8 space-y-3">
-          <div className="skeleton h-7 w-2/3 rounded" />
-          <div className="skeleton h-4 w-full rounded" />
-          <div className="skeleton h-4 w-3/4 rounded" />
+        <SiteHeader />
+        <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-14 md:pt-[72px] grid md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-6 md:gap-12" aria-busy="true" aria-label="Loading restaurant">
+          <div className="skeleton rounded-[22px] aspect-[4/3] md:aspect-[4/5]" />
+          <div className="space-y-3">
+            <div className="skeleton h-10 w-3/4 rounded-lg" />
+            <div className="skeleton h-4 w-1/2 rounded" />
+            <div className="skeleton h-4 w-2/5 rounded" />
+            <div className="skeleton h-[50px] w-full rounded-full !mt-7" />
+          </div>
         </div>
       </div>
     );
@@ -240,18 +245,14 @@ export default function RestaurantPage() {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
         <SiteHeader />
-        <div id="main-content" className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
-          <p className="font-display text-xl" style={{ color: "var(--text)" }}>{friendlyDetailError(error)}</p>
-          <p className="text-sm max-w-sm" style={{ color: "var(--text-muted)" }}>
+        <div id="main-content" className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center">
+          <p className="font-display text-[26px]">{friendlyDetailError(error)}</p>
+          <p className="text-[15px] max-w-sm" style={{ color: "var(--text-secondary)" }}>
             It may have moved, or the link might be out of date.
           </p>
-          <div className="flex items-center gap-4 mt-2">
-            <Link href="/recommendations" className="cta-btn inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold">
-              Browse recommendations
-            </Link>
-            <Link href="/" className="text-sm transition-opacity hover:opacity-75 active:opacity-60" style={{ color: "var(--text-muted)" }}>
-              Go home
-            </Link>
+          <div className="flex flex-col sm:flex-row gap-2.5 mt-4 w-full max-w-xs sm:max-w-none sm:w-auto">
+            <Link href="/recommendations" className="cta-btn inline-flex items-center justify-center px-7 text-[15px]">Browse all places</Link>
+            <Link href="/" className="soft-btn inline-flex items-center justify-center px-7 text-[15px]">Go home</Link>
           </div>
         </div>
       </div>
@@ -270,349 +271,218 @@ export default function RestaurantPage() {
   const heroUrl = heroCandidates[Math.min(heroTier, heroCandidates.length - 1)];
 
   const price = priceLabel(r.price_midpoint);
+  const whatLine = [r.cuisine !== "Restaurant" ? r.cuisine : null, price].filter(Boolean).join(" · ");
   const verdictText = getVerdict(r.local_weighted_rating ?? 0, r.tourist_weighted_rating ?? 0);
-  const hasMoreDetails = !!(r.phone || r.website || r.opening_hours);
   const themes = parseReviewThemes(r.review_themes as string | undefined);
-  const todayEntry = getTodayEntry(r.opening_hours as string | undefined);
+  const hours = parseHours(r.opening_hours as string | undefined);
+  const today = nycToday();
+  const todayHours = hours.find((e) => e.day === today)?.hours;
+  // The green tag already says "Open now", so the hours line only says closed.
+  const openLine = r.is_open_now === false ? "Closed now" : null;
+  const contactTile = r.phone
+    ? { href: `tel:${r.phone}`, icon: "phone" as const, label: "Call", external: false }
+    : r.website
+      ? { href: r.website, icon: "globe" as const, label: "Website", external: true }
+      : null;
+
+  function toggleSave() {
+    if (!user) {
+      setSignInReason("Sign in to save restaurants");
+      return;
+    }
+    const wasSaved = saved;
+    const nowSaved = !wasSaved;
+    setSaved(nowSaved);
+    setSaveError(false);
+    if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); }
+    fetch("/api/saved", {
+      method: nowSaved ? "POST" : "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ restaurant_id: r.restaurant_id }),
+    }).then((res) => {
+      if (!res.ok) { setSaved(wasSaved); setSaveError(true); }
+    }).catch(() => { setSaved(wasSaved); setSaveError(true); });
+  }
+
+  async function share() {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: r.name, text: `${r.name} on Locals`, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Share sheet dismissed, or clipboard blocked: nothing to undo.
+    }
+  }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
-
-      {/* Header */}
+    <div className="min-h-screen flex flex-col scene" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader />
 
-      {/* Hero -- the real photo's native resolution (~400px wide) can't cover
-          this full-bleed width without visibly pixelating, so a soft blur
-          disguises the upscale as a deliberate stylistic choice instead of
-          a technical defect. Still the one real photo of this restaurant,
-          no stock or AI-generated imagery. Blur scales with viewport width
-          because the upscale factor does too (barely any at mobile widths
-          close to the source's native ~400px, much more on a wide desktop
-          hero) -- a fixed blur amount looked right on mobile but left
-          visible blockiness on wider screens. */}
-      <div className="relative w-full overflow-hidden" style={{ height: "clamp(260px, 40vw, 420px)", backgroundColor: "var(--bg-inset)" }}>
-        <Image
-          src={heroUrl}
-          alt={r.name}
-          fill
-          sizes="100vw"
-          className="object-cover"
-          style={{ filter: "blur(clamp(4px, 1.3vw, 24px))", transform: "scale(1.1)" }}
-          priority
-          onError={() => setHeroTier((t) => Math.min(t + 1, heroCandidates.length - 1))}
-        />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.1) 75%, transparent 100%)" }} />
-
-        {/* Rank badge */}
-        <span
-          className="absolute top-4 left-4 text-xs font-bold px-2.5 py-1 rounded-full"
-          style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
-          title="Overall rank across all NYC restaurants, weighted by local ratings"
-        >
-          #{r.rank}
-        </span>
-
-        {/* Bookmark + confirmation -- hidden once visited/rated, since saved
-            and visited are mutually exclusive */}
-        {!bucket && (
-          <div className="absolute top-4 right-4 flex items-center gap-1.5">
-            {showSavedMsg && (
-              <span
-                className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
-                onAnimationEnd={() => setShowSavedMsg(false)}
-                style={{ backgroundColor: "var(--success-strong)", color: "#fff", backdropFilter: "blur(4px)" }}
-              >
-                Saved
-              </span>
-            )}
-            {showSaveError && (
-              <span
-                className="save-confirm-pill text-xs font-semibold px-2 py-0.5 rounded-full"
-                onAnimationEnd={() => setShowSaveError(false)}
-                style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)", backdropFilter: "blur(4px)" }}
-              >
-                Couldn&apos;t save — try again
-              </span>
-            )}
-            <button
-              onClick={() => {
-                if (!user) {
-                  setSignInReason("Sign in to save restaurants");
-                  return;
-                }
-                const nowSaved = !saved;
-                setSaved(nowSaved);
-                if (nowSaved) { setSavePop(true); setTimeout(() => setSavePop(false), 400); setShowSavedMsg(true); }
-                fetch("/api/saved", {
-                  method: nowSaved ? "POST" : "DELETE",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ restaurant_id: r.restaurant_id }),
-                }).then((res) => {
-                  if (!res.ok) { setSaved(saved); setShowSaveError(true); }
-                }).catch(() => { setSaved(saved); setShowSaveError(true); });
-              }}
-              className={`heart-btn flex items-center justify-center w-11 h-11 rounded-full${savePop ? " heart-pop" : ""}`}
-              style={{ backgroundColor: saved ? "var(--cta-bg)" : "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
-              aria-label={saved ? "Remove from saved" : "Save restaurant"}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"
-                fill={saved ? "var(--cta-text)" : "none"} stroke={saved ? "var(--cta-text)" : "#ffffff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-              </svg>
-            </button>
+      <main id="main-content" className="relative flex-1">
+        {/* The page takes on the restaurant's own colors: its photo,
+            blurred behind a scrim that follows the theme (see .scene). */}
+        <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div className="scene-backdrop">
+            <Image src={heroUrl} alt="" fill sizes="40vw" className="object-cover" />
           </div>
-        )}
-
-        {/* Name + meta overlay */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>{r.neighborhood}</span>
-            <span style={{ color: "rgba(255,255,255,0.35)" }}>·</span>
-            <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>{r.cuisine}</span>
-            {price && (
-              <>
-                <span style={{ color: "rgba(255,255,255,0.35)" }}>·</span>
-                <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>{price}</span>
-              </>
-            )}
-            {r.is_open_now === true && (
-              <span className="text-xs font-semibold px-1.5 py-0.5 rounded" style={{ backgroundColor: "var(--success-strong)", color: "#ffffff", backdropFilter: "blur(4px)" }}>Open</span>
-            )}
-            {r.is_open_now === false && (
-              <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(0,0,0,0.55)", color: "#ffffff", backdropFilter: "blur(4px)" }}>Closed</span>
-            )}
-          </div>
-          {r.archetype && (
-            <span
-              className="inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-1.5"
-              style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
-              title="A real, computed signal from reviewer-localness scoring across this restaurant's reviews — not a decorative label"
-            >
-              {r.archetype}
-            </span>
-          )}
-          <h1 className="font-display text-2xl sm:text-3xl leading-tight line-clamp-2" style={{ color: "#ffffff" }}>{r.name}</h1>
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <MiniStars rating={r.total_score} />
-            <span className="text-sm" style={{ color: "rgba(255,255,255,0.75)" }}>{r.total_score.toFixed(1)}</span>
-            <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>({(r.review_count ?? r.num_reviews ?? 0).toLocaleString()} reviews)</span>
-          </div>
+          <div className="scene-scrim" />
         </div>
-      </div>
 
-      {/* Quick facts: address + today's hours, surfaced immediately */}
-      {r.address && (
-        <div
-          className="w-full flex flex-col gap-1.5 px-4 sm:px-6 py-3.5"
-          style={{ backgroundColor: "var(--bg-subtle)", borderBottom: "1px solid var(--border)" }}
-        >
-          <div className="max-w-2xl mx-auto w-full flex items-center gap-2.5">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" style={{ color: "var(--text-muted)" }}>
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            <span className="flex-1 text-sm truncate" style={{ color: "var(--text)" }}>{r.address}</span>
-          </div>
-          {todayEntry && (
-            <div className="max-w-2xl mx-auto w-full flex items-center gap-2.5">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" style={{ color: r.is_open_now === true ? "var(--success-strong)" : "var(--text-muted)" }}>
-                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-              </svg>
-              <span className="text-sm font-semibold" style={{ color: r.is_open_now === true ? "var(--success-strong)" : "var(--text-muted)" }}>
-                {r.is_open_now === true ? "Open" : r.is_open_now === false ? "Closed" : "Hours"} · {todayEntry.hours}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Body */}
-      <main id="main-content" className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-10">
-
-        {/* The local take */}
-        <section>
-          <h2 className="font-semibold text-lg mb-3" style={{ color: "var(--text)" }}>The local take</h2>
-
-          <p className="text-base leading-relaxed mb-5" style={{ color: "var(--text)" }}>{verdictText}</p>
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--bg-subtle)" }}>
-              <div
-                className="bar-fill h-full rounded-full"
-                style={{
-                  width: `${Math.round((r.avg_localness ?? 0) * 100)}%`,
-                  backgroundColor: "var(--success)",
-                  animationDelay: "150ms",
-                }}
-              />
-            </div>
-            <span className="text-xs whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
-              {Math.round((r.avg_localness ?? 0) * 100)}% NYC locals
-            </span>
-          </div>
-        </section>
-
-        {/* What people are saying */}
-        {themes && (
-          <section style={{ borderTop: "1px solid var(--border)", paddingTop: "2.5rem" }}>
-            <h2 className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>What people are saying</h2>
-
-            {themes.standout_dishes.length > 0 && (
-              <div className="mb-4">
-                <p className="text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Popular dishes</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {themes.standout_dishes.map((dish, i) => (
-                    <span
-                      key={i}
-                      className="text-xs font-medium px-2.5 py-1 rounded-full"
-                      style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent-text)" }}
-                    >
-                      {dish}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {themes.vibe_and_service.length > 0 && (
-              <ul className="space-y-1 mb-3">
-                {themes.vibe_and_service.map((item, i) => (
-                  <li key={i} className="text-sm leading-relaxed flex gap-2" style={{ color: "var(--text-secondary)" }}>
-                    <span style={{ color: "var(--text-muted)" }}>·</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {themes.wait_time_note && (
-              <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                {themes.wait_time_note}
-              </p>
-            )}
-          </section>
-        )}
-
-        {/* More in neighborhood */}
-        {similar.length > 0 && (
-          <section style={{ borderTop: "1px solid var(--border)", paddingTop: "2.5rem" }}>
-            <h2 className="font-semibold text-lg mb-5" style={{ color: "var(--text)" }}>
-              More in {r.neighborhood}
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {similar.map((s) => (
-                <Link key={s.restaurant_id} href={`/restaurant/${s.restaurant_id}`} className="group flex flex-col overflow-hidden rounded-xl" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
-                  <div className="relative overflow-hidden h-24">
-                    <Image
-                      src={s.image_url || getPhotoUrl(s.cuisine)}
-                      alt={s.name}
-                      fill
-                      sizes="(max-width: 640px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-[220ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <span
-                      className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
-                      title="Overall rank across all NYC restaurants, weighted by local ratings"
-                    >
-                      #{s.rank}
-                    </span>
-                  </div>
-                  <div className="p-2.5">
-                    <p className="text-xs font-semibold leading-snug line-clamp-2" style={{ color: "var(--text)" }}>{s.name}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{s.total_score.toFixed(1)} · {s.cuisine}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* See full hours (+ phone/website) */}
-        {hasMoreDetails && (
-          <section style={{ borderTop: "1px solid var(--border)", paddingTop: "2.5rem" }}>
-            <button
-              onClick={() => setDetailsOpen(v => !v)}
-              className="flex items-center justify-between w-full text-left transition-opacity hover:opacity-70 active:opacity-55"
-              aria-expanded={detailsOpen}
-            >
-              <h2 className="font-semibold text-lg" style={{ color: "var(--text)" }}>See full hours</h2>
-              <svg
-                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                strokeLinecap="round" strokeLinejoin="round"
-                style={{ color: "var(--text-muted)", transform: detailsOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s", flexShrink: 0 }}
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-
-            <div className={`filter-expand${detailsOpen ? " open" : ""}`}>
-              <div className="filter-expand-inner">
-                <div className="pt-4 space-y-3">
-                  {r.phone && (
-                    <div className="flex items-center gap-2.5 text-sm">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" style={{ color: "var(--text-muted)" }}>
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.84a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-                      </svg>
-                      <a href={`tel:${r.phone}`} className="transition-opacity hover:opacity-75 active:opacity-60" style={{ color: "var(--text-secondary)" }}>{r.phone}</a>
-                    </div>
-                  )}
-                  {r.website && (
-                    <div className="flex items-center gap-2.5 text-sm">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" style={{ color: "var(--text-muted)" }}>
-                        <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                      </svg>
-                      <a href={r.website} target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-75 active:opacity-60 truncate max-w-xs" style={{ color: "var(--accent-text)" }}>
-                        {r.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                      </a>
-                    </div>
-                  )}
-                  {r.opening_hours && (
-                    <WeeklyHours hoursJson={r.opening_hours as string} />
-                  )}
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Get directions + Share */}
-        <div className="pt-2 pb-8 flex items-center gap-3 flex-wrap">
-          <a
-            href={r.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            Get directions
-          </a>
-          <button
-            onClick={() => {
-              const url = window.location.href;
-              const text = `Check out ${r.name} on Locals — ranked #${r.rank}, locals rate it ${(r.local_weighted_rating ?? 0).toFixed(1)} vs. tourists' ${(r.tourist_weighted_rating ?? 0).toFixed(1)}.`;
-              if (navigator.share) {
-                navigator.share({ title: r.name, text, url }).catch(() => {});
-              } else {
-                navigator.clipboard.writeText(`${text} ${url}`).catch(() => {});
-              }
-            }}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold cursor-pointer transition-all duration-150 hover:opacity-75 active:scale-95 min-h-[44px]"
-            style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-            </svg>
-            Share
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-3 md:pt-6 pb-14">
+          <button onClick={back} className="inline-flex items-center gap-1.5 min-h-[44px] -ml-1 px-1 text-[15px] font-medium transition-opacity hover:opacity-70">
+            <Icon name="arrow-left" size={17} /> Back
           </button>
-          <Link href="/recommendations" className="text-sm transition-opacity hover:opacity-75 active:opacity-60 ml-auto min-h-[44px] flex items-center" style={{ color: "var(--text-muted)" }}>
-            ← Back
-          </Link>
-        </div>
 
+          <div className="grid md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-6 md:gap-12 items-start mt-2">
+            {/* Cover: the one sharp photo on the page. */}
+            <div className="cover-in relative rounded-[22px] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.3)] md:sticky md:top-[88px] aspect-[4/3] md:aspect-[4/5]" style={{ backgroundColor: "var(--bg-inset)" }}>
+              <div className="absolute inset-0">
+                <Image
+                  src={heroUrl}
+                  alt={`${r.name} in ${r.neighborhood}`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 520px"
+                  className="object-cover"
+                  priority
+                  onError={() => setHeroTier((t) => Math.min(t + 1, heroCandidates.length - 1))}
+                />
+              </div>
+            </div>
+
+            <div className="min-w-0">
+              <h1 className="font-display text-[34px] md:text-[44px] text-balance rise" style={rise(0)}>{r.name}</h1>
+              <div className="flex flex-col gap-1 mt-3 text-[15px] rise" style={{ color: "var(--text-secondary)", ...rise(1) }}>
+                <Fact icon="map-pin">{r.neighborhood}</Fact>
+                {whatLine && <Fact icon="utensils">{whatLine}</Fact>}
+                <Fact icon="star">
+                  Locals rate it {(r.local_weighted_rating ?? r.total_score).toFixed(1)}
+                  {r.archetype ? ` · ${sentenceCase(r.archetype)}` : ""}
+                </Fact>
+                {(openLine || todayHours) && (
+                  <Fact icon="clock">{[openLine, todayHours ? `Today ${todayHours}` : null].filter(Boolean).join(" · ")}</Fact>
+                )}
+              </div>
+              {r.is_open_now === true && (
+                <div className="flex flex-wrap gap-1.5 mt-3.5 rise" style={rise(2)}>
+                  <span className="tag tag-open">Open now</span>
+                </div>
+              )}
+
+              <a href={r.url} target="_blank" rel="noopener noreferrer" className="cta-btn flex items-center justify-center gap-2 w-full mt-6 text-[16px] rise" style={rise(3)}>
+                <Icon name="navigation" size={16} /> Get directions
+              </a>
+              <div className={`grid ${contactTile ? "grid-cols-3" : "grid-cols-2"} gap-2 mt-2.5 rise`} style={rise(4)}>
+                {bucket ? (
+                  <Link href="/visited" className="tile-btn"><Icon name="circle-check" size={19} />Visited</Link>
+                ) : (
+                  <button onClick={toggleSave} className="tile-btn" aria-pressed={saved} aria-label={saved ? "Remove from saved" : "Save restaurant"}>
+                    <span className={savePop ? "heart-pop" : undefined}>
+                      <Icon name="bookmark" size={19} className={saved ? "fill-current" : undefined} />
+                    </span>
+                    {saveError ? "Try again" : saved ? "Saved" : "Save"}
+                  </button>
+                )}
+                <button onClick={share} className="tile-btn"><Icon name="share" size={19} />{copied ? "Copied" : "Share"}</button>
+                {contactTile && (
+                  <a href={contactTile.href} className="tile-btn" {...(contactTile.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                    <Icon name={contactTile.icon} size={19} />{contactTile.label}
+                  </a>
+                )}
+              </div>
+
+              <section className="mt-9 rise" style={rise(5)}>
+                <h2 className="text-[17px] font-semibold mb-1.5">The local take</h2>
+                <p className="text-[16px] leading-relaxed max-w-[60ch]" style={{ color: "var(--text-secondary)" }}>{verdictText}</p>
+              </section>
+
+              {themes && themes.standout_dishes.length > 0 && (
+                <section className="mt-8 rise" style={rise(6)}>
+                  <h2 className="text-[17px] font-semibold mb-2">What to order</h2>
+                  <ol className="flex flex-col">
+                    {themes.standout_dishes.map((d, i) => (
+                      <li key={d} className="flex items-baseline gap-3 py-2.5 text-[16px]" style={{ borderTop: i ? "1px solid var(--border)" : undefined }}>
+                        <span className="tabular-nums text-[14px] w-4 shrink-0" style={{ color: "var(--text-muted)" }}>{i + 1}</span>
+                        {d}
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              )}
+
+              {themes && themes.vibe_and_service.length > 0 && (
+                <section className="mt-8 rise" style={rise(7)}>
+                  <h2 className="text-[17px] font-semibold mb-1.5">The vibe</h2>
+                  <div className="flex flex-col gap-2 max-w-[60ch]">
+                    {themes.vibe_and_service.map((v) => (
+                      <p key={v} className="text-[16px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>{v}</p>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {themes?.wait_time_note && (
+                <section className="mt-8">
+                  <h2 className="text-[17px] font-semibold mb-1.5">Heads up</h2>
+                  <p className="text-[15px] leading-relaxed max-w-[60ch]" style={{ color: "var(--text-secondary)" }}>{themes.wait_time_note}</p>
+                </section>
+              )}
+
+              {(r.address || hours.length > 0 || r.website) && (
+                <section className="mt-8">
+                  <h2 className="text-[17px] font-semibold mb-2">Hours and info</h2>
+                  {hours.length > 0 && (
+                    <dl className="flex flex-col text-[15px] tabular-nums">
+                      {DAYS_ORDER.map((day) => {
+                        const entry = hours.find((e) => e.day === day);
+                        if (!entry) return null;
+                        const isToday = day === today;
+                        return (
+                          <div key={day} className="flex justify-between gap-4 py-1.5" style={{ color: isToday ? "var(--text)" : "var(--text-secondary)", fontWeight: isToday ? 600 : 400 }}>
+                            <dt>{day}</dt>
+                            <dd className="text-right">{entry.hours}</dd>
+                          </div>
+                        );
+                      })}
+                    </dl>
+                  )}
+                  <div className="flex flex-col gap-2 mt-4 text-[15px]" style={{ color: "var(--text-secondary)" }}>
+                    {r.address && <Fact icon="map-pin">{r.address}</Fact>}
+                    {r.phone && <Fact icon="phone"><a href={`tel:${r.phone}`} className="underline-offset-4 hover:underline">{r.phone}</a></Fact>}
+                    {r.website && (
+                      <Fact icon="globe">
+                        <a href={r.website} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:underline break-all">
+                          {r.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
+                        </a>
+                      </Fact>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {similar.length > 0 && (
+                <section className="mt-10">
+                  <h2 className="text-[17px] font-semibold mb-4">More in {r.neighborhood}</h2>
+                  <ScrollSpotlight watch={similar.map((s) => s.restaurant_id).join(",")}>
+                    <ul className="flex flex-col gap-5">
+                      {similar.map((s) => (
+                        <li key={s.restaurant_id}>
+                          <Link href={`/restaurant/${s.restaurant_id}`} className="row-link block rounded-2xl p-2.5 -m-2.5">
+                            <PlaceRow c={toCandidate(s)} />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </ScrollSpotlight>
+                </section>
+              )}
+            </div>
+          </div>
+        </div>
       </main>
 
       <SignInPrompt
