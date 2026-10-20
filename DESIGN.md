@@ -255,6 +255,7 @@ The list unit for places. A 76px rounded-square photo with an optional tag overl
 A whole choice is one button: a large 18px-radius photo (144px / 224px / 288px tall by breakpoint) with facts beneath it, including a "Known for" or "The vibe" line. No box at rest; on hover the whole choice lifts 3px into a white 28px-radius card with the Lift shadow and the photo zooms slightly, the same behavior as shortlist rows. The chosen choice keeps the card with a 2px ink ring; the passed one fades to 35% and scales to 0.97. The incoming contender fades up.
 
 ### Inputs / Fields
+- **Search:** a soft-gray full pill, 44px, no border, a search icon inside on the left and a clear button on the right; focus deepens the fill one step.
 - **Select:** soft-gray fill, no border, 12px radius, 15px text, 12px by 16px padding.
 - **Slider:** 6px pill track in soft-gray-pressed with an ink fill, 20px ink thumb ringed in the ground color.
 - **Focus:** a 2px ink outline offset 2px everywhere (4px on choice cards).
@@ -280,7 +281,7 @@ Two curves. **Ease Out** (`--ease-out`, cubic-bezier(0.22, 1, 0.36, 1)) for stat
 Phones have no hover, so scrolling drives the same responses. The homepage collage moves with page scroll by depth (nearer photos rise faster, the pile straightens over the first 600px). In row lists (Open right now, Your shortlist), the single row whose center is nearest the middle of the screen (within 22% of the viewport height) gets the hover treatment (white card, large soft shadow, 3px lift, photo zoom) via `.is-focus`, one row at a time.
 
 ### Scope Limits
-Today the system is fully expressed on the homepage, Help me pick and the restaurant page (which reuses the result scene: tinted backdrop, sticky cover, one Get directions pill, Save / Share / Call tiles, then The local take, What to order, The vibe, Heads up, Hours and info, and More in the neighborhood as rows). Browse, saved, visited and profile pages inherit the tokens, the buttons and the tab bar but still carry older component layouts; those layouts are not part of this system and should be brought onto it rather than copied.
+Today the system is fully expressed on the homepage, Help me pick and the restaurant page (which reuses the result scene: tinted backdrop, sticky cover, one Get directions pill, Save / Share / Call tiles, then The local take, What to order, The vibe, Heads up, Hours and info, and More in the neighborhood as rows) and Browse (a sticky soft-pill search with a sideways-scrolling chip row, where many-valued filters are native selects dressed as chips that flip to ink when set; places as rows in two columns from 768px, each with quiet 44px save and been-here icon buttons; soft-pill pagination). Saved, visited and profile pages inherit the tokens, the buttons and the tab bar but still carry older component layouts; those layouts are not part of this system and should be brought onto it rather than copied.
 
 ## Do's and Don'ts
 

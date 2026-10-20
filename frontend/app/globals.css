@@ -313,6 +313,54 @@ a, button, [role="button"] {
   background-color: var(--bg-inset);
 }
 
+/* Search field: a soft-gray pill like the chips, no border; the ring
+   shows only for keyboard focus. */
+.search-field {
+  background-color: var(--bg-subtle);
+  color: var(--text);
+  border: none;
+  outline: none;
+  transition: background-color 150ms var(--ease-out);
+}
+.search-field::placeholder { color: var(--text-muted); }
+.search-field:focus { background-color: var(--bg-inset); }
+.search-field:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.search-field::-webkit-search-cancel-button { display: none; }
+
+/* Browse's sticky search and filters: page ground, with a short fade
+   below so rows slide under it instead of being cut by a hard edge. */
+.browse-toolbar { background-color: var(--bg); }
+.browse-toolbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 14px;
+  background: linear-gradient(var(--bg), transparent);
+  pointer-events: none;
+}
+
+/* A row of chips that scrolls sideways on phones, without a scrollbar. */
+.chip-scroll { scrollbar-width: none; }
+.chip-scroll::-webkit-scrollbar { display: none; }
+
+/* Quiet icon buttons at the end of a row (save, been here): 44px targets,
+   gray until hovered or on, never a filled chip. */
+.row-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  color: var(--text-muted);
+  transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out), transform 140ms var(--ease-out);
+}
+.row-action:hover { background-color: var(--bg-subtle); color: var(--text); }
+.row-action:active { transform: scale(0.9); }
+.row-action[aria-pressed="true"], .row-action.is-on { color: var(--text); }
+
 /* ── Status tags: small, colored only when the color means something ── */
 .tag {
   display: inline-flex;
@@ -540,6 +588,7 @@ a, button, [role="button"] {
   .pick-choice,
   .pick-choice .pick-photo img,
   .row-link,
+  .row-action,
   .row-thumb img,
   .filter-pill,
   .tab-item,

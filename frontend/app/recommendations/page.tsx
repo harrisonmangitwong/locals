@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef, Suspense } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import RestaurantCard from "@/components/RestaurantCard";
+import BrowseRow from "@/components/BrowseRow";
+import Icon from "@/components/Icon";
+import ScrollSpotlight from "@/components/ScrollSpotlight";
+import type { Candidate } from "@/components/PickCard";
 import SiteHeader from "@/components/SiteHeader";
 import RequestRestaurantForm from "@/components/RequestRestaurantForm";
 import type { Bucket } from "@/lib/ranking";
@@ -27,8 +30,51 @@ interface Restaurant {
   image_url: string;
   price_midpoint?: number;
   is_open_now?: boolean | null;
+  local_weighted_rating?: number;
+  tourist_weighted_rating?: number;
   [key: string]: unknown;
 }
+
+function toCandidate(r: Restaurant): Candidate {
+  return {
+    restaurant_id: r.restaurant_id,
+    name: r.name,
+    neighborhood: r.neighborhood,
+    cuisine: r.cuisine,
+    price_midpoint: r.price_midpoint ?? null,
+    image_url: r.image_url || null,
+    lat: 0,
+    lng: 0,
+    local_weighted_rating: r.local_weighted_rating ?? r.total_score,
+    tourist_weighted_rating: r.tourist_weighted_rating ?? r.total_score,
+    distance_mi: null,
+    dishes: [],
+    vibe: null,
+    wait_note: null,
+  };
+}
+
+// A filter that has many values (neighborhood, cuisine, price) as a chip:
+// a native select dressed as a soft pill that flips to ink once set.
+function SelectChip({ id, label, value, onChange, children }: { id: string; label: string; value: string; onChange: (v: string) => void; children: ReactNode }) {
+  return (
+    <span className="relative shrink-0 flex" style={{ color: value ? "var(--cta-text)" : "var(--text)" }}>
+      <label htmlFor={id} className="sr-only">{label}</label>
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`filter-pill appearance-none h-11 pl-4 pr-9 text-[15px] font-medium cursor-pointer max-w-[220px] truncate${value ? " is-active" : ""}`}
+        style={{ colorScheme: "light dark", fieldSizing: "content" } as CSSProperties}
+      >
+        {children}
+      </select>
+      <Icon name="chevron-down" size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+    </span>
+  );
+}
+
+const optionStyle: CSSProperties = { backgroundColor: "var(--bg-card)", color: "var(--text)" };
 
 interface ApiResponse {
   total: number;
@@ -64,9 +110,7 @@ function RecommendationsContent() {
   const [ratings, setRatings] = useState<Record<string, Bucket>>({});
   const [saveCounts, setSaveCounts] = useState<Record<string, number>>({});
   const [followedSaveCounts, setFollowedSaveCounts] = useState<Record<string, number>>({});
-  const [filtersExpanded, setFiltersExpanded] = useState(!!(neighborhood || cuisine || price || openNow));
-  const activeFilterCount = [neighborhood, cuisine, price, openNow ? "open" : ""].filter(Boolean).length;
-  const hasAnyFilter = activeFilterCount > 0 || !!search;
+  const hasAnyFilter = !!(neighborhood || cuisine || price || openNow || search);
   const forYouEligible = savedIds.size + Object.keys(ratings).length >= 5;
   useEffect(() => {
     Promise.all([
@@ -202,393 +246,203 @@ function RecommendationsContent() {
   const restaurants = data?.results ?? [];
   const totalPages = data?.total_pages ?? 1;
 
+  const total = data?.total ?? 0;
+  const ids = restaurants.map((r) => r.restaurant_id).join(",");
+  const pageHref = (n: number) => {
+    const p = new URLSearchParams(searchParams.toString());
+    p.set("page", String(n));
+    return `/recommendations?${p.toString()}`;
+  };
+  function clearAll() {
+    setSearchInput("");
+    router.push("/recommendations");
+  }
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader current="recs" />
 
-      <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* Search + filter toolbar */}
-        <div className="flex items-center gap-2 mb-1">
-          <label htmlFor="search-restaurants" className="sr-only">Search restaurants</label>
-          <div className="relative flex-1">
-            <input
-              id="search-restaurants"
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  updateParams({ search: searchInput });
-                }
-              }}
-              placeholder="Search restaurants..."
-              className="search-input w-full rounded-lg pl-4 pr-10 py-2.5 text-sm min-h-[44px]"
-              style={{
-                backgroundColor: "var(--bg-subtle)",
-                color: "var(--text)",
-                border: "1px solid var(--border)",
-                outline: "none",
-              }}
-            />
-            <button
-              onClick={() => updateParams({ search: searchInput })}
-              className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-75 active:opacity-60"
-              aria-label="Search"
-              style={{ color: "var(--text-muted)" }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-            </button>
+      <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 md:pt-10 pb-14">
+        <div className="flex items-end justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="font-display text-[34px] md:text-[44px]">All places</h1>
+            <p className="text-[15px] mt-1.5" style={{ color: "var(--text-secondary)" }}>
+              {data ? `${total.toLocaleString()} ${total === 1 ? "place" : "places"}, best first` : "Ranked by what locals think"}
+            </p>
           </div>
-          <button
-            onClick={() => setFiltersExpanded((v) => !v)}
-            className="flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-75 active:opacity-60 whitespace-nowrap min-h-[44px] px-1"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
-              <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
-              <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
-              <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
-            </svg>
-            Filters
-            {activeFilterCount > 0 && (
-              <span
-                className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)", lineHeight: 1.4 }}
-              >
-                {activeFilterCount}
-              </span>
-            )}
-            <svg
-              width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-              strokeLinecap="round" strokeLinejoin="round"
-              style={{ transition: "transform 0.2s", transform: filtersExpanded ? "rotate(180deg)" : "none" }}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-          {hasAnyFilter && (
-            <button
-              onClick={() => {
-                setSearchInput("");
-                router.push("/recommendations");
-              }}
-              className="text-xs font-medium whitespace-nowrap transition-opacity hover:opacity-75 active:opacity-60 min-h-[44px] px-2 flex items-center fade-in"
-              style={{ color: "var(--text-muted)" }}
-            >
-              Clear all
-            </button>
-          )}
-          <Link
-            href="/pick"
-            className="cta-btn hidden sm:flex text-sm font-semibold px-4 rounded-full min-h-[44px] items-center whitespace-nowrap"
-          >
+          <Link href="/pick" className="cta-btn hidden sm:inline-flex items-center justify-center px-7 text-[15px] shrink-0">
             Help me pick
           </Link>
         </div>
 
-        {/* For You toggle -- only shown once someone has enough signal to personalize on */}
-        {forYouEligible && (
-          <div className="flex items-center gap-2 mt-3">
-            <button
-              onClick={() => updateParams({ for_you: "" })}
-              aria-pressed={!forYou}
-              className={`filter-pill text-xs font-semibold px-3 py-2 rounded-full min-h-[44px] flex items-center active:scale-95${!forYou ? " is-active" : ""}`}
-            >
-              All restaurants
-            </button>
-            <button
-              onClick={() => updateParams({ for_you: "1" })}
-              aria-pressed={forYou}
-              className={`filter-pill text-xs font-semibold px-3 py-2 rounded-full min-h-[44px] flex items-center active:scale-95${forYou ? " is-active" : ""}`}
-            >
-              For You
-            </button>
-          </div>
-        )}
-
-        {/* Collapsible filter panel */}
-        <div className={`filter-expand${filtersExpanded ? " open" : ""} mb-10`}>
-          <div className="filter-expand-inner">
-            <div className="flex flex-col sm:flex-row gap-3 pt-3 pb-1">
-              <div className="flex gap-2 w-full sm:w-auto">
-                <label htmlFor="filter-neighborhood" className="sr-only">Filter by neighborhood</label>
-                <select
-                  id="filter-neighborhood"
-                  value={neighborhood}
-                  onChange={(e) => updateParams({ neighborhood: e.target.value })}
-                  className="filter-control flex-1 sm:flex-none rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
-                  style={{
-                    backgroundColor: "var(--bg-subtle)",
-                    color: "var(--text)",
-                    border: "1px solid var(--border)",
-                    outline: "none",
-                    colorScheme: "light dark",
-                  }}
-                >
-                  <option value="" style={{ backgroundColor: "var(--bg-card)" }}>
-                    All neighborhoods
-                  </option>
-                  {BOROUGH_NEIGHBORHOODS.map((group) => {
-                    const available = group.neighborhoods.filter((n) => allNeighborhoods.includes(n));
-                    if (available.length === 0) return null;
-                    return (
-                      <optgroup key={group.borough} label={group.borough} style={{ backgroundColor: "var(--bg-card)", color: "var(--text-secondary)", fontWeight: 600 }}>
-                        {available.map((n) => (
-                          <option key={n} value={n} style={{ backgroundColor: "var(--bg-card)", color: "var(--text)", fontWeight: 400 }}>
-                            {n}
-                          </option>
-                        ))}
-                      </optgroup>
-                    );
-                  })}
-                </select>
-                <button
-                  onClick={handleNearMe}
-                  disabled={locating}
-                  className="filter-control px-3.5 py-3 sm:py-2 rounded-lg text-sm font-medium whitespace-nowrap"
-                  style={{
-                    backgroundColor: "var(--bg-subtle)",
-                    color: "var(--text-secondary)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  {locating ? "Locating..." : "Near me"}
-                </button>
-                {locationError && (
-                  <p className="text-xs w-full" style={{ color: "var(--accent-text)" }}>
-                    {locationError}
-                  </p>
-                )}
-              </div>
-
-              <label htmlFor="filter-cuisine" className="sr-only">Filter by cuisine</label>
-              <select
-                id="filter-cuisine"
-                value={cuisine}
-                onChange={(e) => updateParams({ cuisine: e.target.value })}
-                className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
-                style={{
-                  backgroundColor: "var(--bg-subtle)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border)",
-                  outline: "none",
-                  colorScheme: "light dark",
-                }}
-              >
-                <option value="" style={{ backgroundColor: "var(--bg-card)" }}>
-                  All cuisines
-                </option>
-                {allCuisines.map((c) => (
-                  <option key={c} value={c} style={{ backgroundColor: "var(--bg-card)" }}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-              <label htmlFor="filter-price" className="sr-only">Filter by price</label>
-              <select
-                id="filter-price"
-                value={price}
-                onChange={(e) => updateParams({ price: e.target.value })}
-                className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium cursor-pointer"
-                style={{
-                  backgroundColor: "var(--bg-subtle)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border)",
-                  outline: "none",
-                  colorScheme: "light dark",
-                }}
-              >
-                <option value="" style={{ backgroundColor: "var(--bg-card)" }}>All prices</option>
-                <option value="$" style={{ backgroundColor: "var(--bg-card)" }}>$ (under $15)</option>
-                <option value="$$" style={{ backgroundColor: "var(--bg-card)" }}>$$ ($15-30)</option>
-                <option value="$$$" style={{ backgroundColor: "var(--bg-card)" }}>$$$ ($30-60)</option>
-                <option value="$$$$" style={{ backgroundColor: "var(--bg-card)" }}>$$$$ ($60+)</option>
-              </select>
+        {/* Search and filters stay in reach while the list scrolls. */}
+        <div className="browse-toolbar sticky top-14 z-30 -mx-4 px-4 sm:-mx-6 sm:px-6 pt-4 pb-3 mt-2">
+          <div className="relative">
+            <label htmlFor="search-restaurants" className="sr-only">Search restaurants</label>
+            <Icon name="search" size={17} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              id="search-restaurants"
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") updateParams({ search: searchInput }); }}
+              placeholder="Search by name"
+              className="search-field w-full h-11 rounded-full pl-11 pr-11 text-[15px]"
+            />
+            {searchInput && (
               <button
-                onClick={() => updateParams({ open_now: openNow ? "" : "1" })}
-                aria-pressed={openNow}
-                className="filter-control w-full sm:w-auto rounded-lg px-3 py-3 sm:py-2 text-sm font-medium whitespace-nowrap transition-colors"
-                style={{
-                  backgroundColor: openNow ? "var(--success-strong)" : "var(--bg-subtle)",
-                  color: openNow ? "#ffffff" : "var(--text-secondary)",
-                  border: `1px solid ${openNow ? "var(--success-strong)" : "var(--border)"}`,
-                }}
+                onClick={() => { setSearchInput(""); updateParams({ search: "" }); }}
+                className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full transition-opacity hover:opacity-70"
+                aria-label="Clear search"
+                style={{ color: "var(--text-secondary)" }}
               >
-                Open now
+                <Icon name="x" size={16} />
               </button>
-            </div>
+            )}
           </div>
+
+          <div className="chip-scroll flex items-center gap-2 mt-2.5 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+            {forYouEligible && (
+              <button
+                onClick={() => updateParams({ for_you: forYou ? "" : "1" })}
+                aria-pressed={forYou}
+                className={`filter-pill shrink-0 h-11 px-4 text-[15px] font-medium${forYou ? " is-active" : ""}`}
+              >
+                For you
+              </button>
+            )}
+            <button
+              onClick={() => updateParams({ open_now: openNow ? "" : "1" })}
+              aria-pressed={openNow}
+              className={`filter-pill shrink-0 h-11 px-4 text-[15px] font-medium${openNow ? " is-active" : ""}`}
+            >
+              Open now
+            </button>
+            <button
+              onClick={handleNearMe}
+              disabled={locating}
+              className="filter-pill shrink-0 h-11 px-4 text-[15px] font-medium inline-flex items-center gap-1.5 disabled:opacity-60"
+            >
+              <Icon name="locate" size={15} />
+              {locating ? "Locating…" : "Near me"}
+            </button>
+            <SelectChip id="filter-neighborhood" label="Filter by neighborhood" value={neighborhood} onChange={(v) => updateParams({ neighborhood: v })}>
+              <option value="" style={optionStyle}>Neighborhood</option>
+              {BOROUGH_NEIGHBORHOODS.map((group) => {
+                const available = group.neighborhoods.filter((n) => allNeighborhoods.includes(n));
+                if (available.length === 0) return null;
+                return (
+                  <optgroup key={group.borough} label={group.borough} style={optionStyle}>
+                    {available.map((n) => <option key={n} value={n} style={optionStyle}>{n}</option>)}
+                  </optgroup>
+                );
+              })}
+            </SelectChip>
+            <SelectChip id="filter-cuisine" label="Filter by cuisine" value={cuisine} onChange={(v) => updateParams({ cuisine: v })}>
+              <option value="" style={optionStyle}>Cuisine</option>
+              {allCuisines.map((c) => <option key={c} value={c} style={optionStyle}>{c}</option>)}
+            </SelectChip>
+            <SelectChip id="filter-price" label="Filter by price" value={price} onChange={(v) => updateParams({ price: v })}>
+              <option value="" style={optionStyle}>Price</option>
+              <option value="$" style={optionStyle}>$ · under $15</option>
+              <option value="$$" style={optionStyle}>$$ · $15 to 30</option>
+              <option value="$$$" style={optionStyle}>$$$ · $30 to 60</option>
+              <option value="$$$$" style={optionStyle}>$$$$ · $60+</option>
+            </SelectChip>
+            {hasAnyFilter && (
+              <button
+                onClick={clearAll}
+                className="shrink-0 h-11 px-3 text-[15px] font-medium inline-flex items-center gap-1 transition-opacity hover:opacity-70 fade-in"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                <Icon name="x" size={15} /> Clear
+              </button>
+            )}
+          </div>
+          {locationError && (
+            <p className="text-[13px] mt-2" style={{ color: "var(--text-secondary)" }}>{locationError}</p>
+          )}
         </div>
 
-        {/* Loading — full skeleton only on the very first load. A filter/search
-            commit on an already-loaded page keeps the existing grid visible
-            (dimmed below) instead of tearing it down, so refining filters
-            reads as "updating," not "reloading." */}
+        {/* First load only: row skeletons. A later filter change keeps the
+            current rows up, dimmed, so refining reads as "updating." */}
         {loading && !data && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl overflow-hidden"
-                style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}
-              >
-                <div className="skeleton h-52 sm:h-48" />
-                <div className="p-4 space-y-3">
-                  <div className="skeleton h-4 w-3/4 rounded" />
-                  <div className="skeleton h-3 w-1/2 rounded" />
+          <ul className="grid md:grid-cols-2 gap-x-10 gap-y-6 mt-5" aria-busy="true" aria-label="Loading restaurants">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <li key={i} className="grid grid-cols-[76px_minmax(0,1fr)] gap-3.5">
+                <div className="skeleton w-[76px] h-[76px] rounded-xl" />
+                <div className="space-y-2 pt-1">
+                  <div className="skeleton h-4 w-3/5 rounded" />
+                  <div className="skeleton h-3 w-2/5 rounded" />
                   <div className="skeleton h-3 w-1/3 rounded" />
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
 
-        {/* Error state */}
         {error && !loading && (
-          <div
-            className="rounded-xl p-6 text-center"
-            style={{
-              backgroundColor: "var(--accent-soft)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <p className="text-sm font-medium" style={{ color: "var(--accent)" }}>
-              {/\d{3}/.test(error ?? "") || (error ?? "").includes("API error") ? "Having trouble loading restaurants — please try again." : error}
-            </p>
-            <button
-              onClick={fetchData}
-              className="mt-3 text-xs font-medium underline transition-opacity hover:opacity-70 active:opacity-55"
-              style={{ color: "var(--text-muted)" }}
-            >
-              Try again
-            </button>
+          <div className="flex flex-col items-center text-center py-20 gap-3">
+            <p className="text-[17px] font-semibold">Couldn&rsquo;t load restaurants</p>
+            <p className="text-[15px]" style={{ color: "var(--text-secondary)" }}>Check your connection and try again.</p>
+            <button onClick={fetchData} className="soft-btn px-6 text-[15px] mt-2">Try again</button>
           </div>
         )}
 
-        {/* Restaurant grid -- stays mounted through a refresh (loading && data
-            both true) so an in-place filter change doesn't flash to skeletons;
-            it just dims slightly and ignores pointer events until the new
-            page lands. */}
         {!error && restaurants.length > 0 && (
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 transition-opacity duration-150"
-            style={loading ? { opacity: 0.5, pointerEvents: "none" } : undefined}
-          >
-            {restaurants.map((r, i) => {
-              const isFeatured = i === 0 && page === 1;
-              return (
-                <div key={r.restaurant_id} className={`card-enter${isFeatured ? " md:col-span-2" : ""}`} style={{ animationDelay: `${i * 50}ms` }}>
-                  <RestaurantCard
-                    restaurantId={r.restaurant_id}
-                    rank={r.rank}
-                    name={r.name}
-                    neighborhood={r.neighborhood}
-                    cuisine={r.cuisine}
-                    reviews={r.review_count ?? r.num_reviews ?? 0}
-                    rating={r.total_score ?? 0}
-                    mapsUrl={r.url}
-                    photoUrl={r.image_url}
-                    price={r.price_midpoint ? (r.price_midpoint <= 15 ? "$" : r.price_midpoint <= 30 ? "$$" : r.price_midpoint <= 60 ? "$$$" : "$$$$") : undefined}
+          <ScrollSpotlight watch={ids}>
+            <ul
+              className="grid md:grid-cols-2 gap-x-10 gap-y-6 mt-5 transition-opacity duration-150"
+              style={loading ? { opacity: 0.5, pointerEvents: "none" } : undefined}
+            >
+              {restaurants.map((r, i) => (
+                <li key={r.restaurant_id} className="rise" style={{ "--i": Math.min(i, 7) } as CSSProperties}>
+                  <BrowseRow
+                    c={toCandidate(r)}
                     isOpenNow={r.is_open_now}
                     initialSaved={savedIds.has(r.restaurant_id)}
                     initialBucket={ratings[r.restaurant_id] ?? null}
-                    onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: bucket }))}
-                    featured={isFeatured}
                     saveCount={saveCounts[r.restaurant_id]}
                     followedSaveCount={followedSaveCounts[r.restaurant_id]}
+                    onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: bucket }))}
                   />
-                </div>
-              );
-            })}
-          </div>
+                </li>
+              ))}
+            </ul>
+          </ScrollSpotlight>
         )}
 
-        {/* Empty state */}
         {!loading && !error && restaurants.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
-              No matches found
+          <div className="flex flex-col items-center text-center py-20">
+            <p className="text-[19px] font-semibold">Nothing matches that</p>
+            <p className="text-[15px] mt-1.5 max-w-sm" style={{ color: "var(--text-secondary)" }}>
+              Try removing a filter, or tell us about a place we should add.
             </p>
-            <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
-              That combination might be too specific — try broadening one filter.
-            </p>
-            <button
-              onClick={() => {
-                setSearchInput("");
-                router.push("/recommendations");
-              }}
-              className="text-sm font-medium mb-6 transition-opacity hover:opacity-70 active:opacity-55"
-              style={{ color: "var(--accent-text)" }}
-            >
-              Clear all filters
-            </button>
-            <div id="request-restaurant">
+            <button onClick={clearAll} className="soft-btn px-6 text-[15px] mt-5">Clear filters</button>
+            <div id="request-restaurant" className="mt-8">
               <RequestRestaurantForm />
             </div>
           </div>
         )}
 
-        {/* Pagination -- also stays mounted through a refresh, same reasoning
-            as the grid above (prevents a flash, and ignores clicks mid-fetch
-            to avoid racing requests). */}
         {!error && totalPages > 1 && (
-          <div
-            className="flex items-center justify-center gap-4 py-4 transition-opacity duration-150"
+          <nav
+            className="flex items-center justify-center gap-3 mt-12 transition-opacity duration-150"
             style={loading ? { opacity: 0.5, pointerEvents: "none" } : undefined}
+            aria-label="Pages"
           >
-            {(() => {
-              const prevParams = new URLSearchParams(searchParams.toString());
-              prevParams.set("page", String(page - 1));
-              const nextParams = new URLSearchParams(searchParams.toString());
-              nextParams.set("page", String(page + 1));
-              return (
-                <>
-                  <Link
-                    href={page <= 1 ? "#" : `/recommendations?${prevParams.toString()}`}
-                    aria-disabled={page <= 1}
-                    tabIndex={page <= 1 ? -1 : undefined}
-                    className="page-btn px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium min-w-[44px] min-h-[44px]"
-                    style={{
-                      backgroundColor: "var(--bg-subtle)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      opacity: page <= 1 ? 0.3 : 1,
-                      pointerEvents: page <= 1 ? "none" : "auto",
-                    }}
-                  >
-                    Prev
-                  </Link>
-
-                  <span className="text-sm" style={{ color: "var(--text-muted)" }}>
-                    {page} of {totalPages}
-                  </span>
-
-                  <Link
-                    href={page >= totalPages ? "#" : `/recommendations?${nextParams.toString()}`}
-                    aria-disabled={page >= totalPages}
-                    tabIndex={page >= totalPages ? -1 : undefined}
-                    className="page-btn px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium min-w-[44px] min-h-[44px]"
-                    style={{
-                      backgroundColor: "var(--bg-subtle)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      opacity: page >= totalPages ? 0.3 : 1,
-                      pointerEvents: page >= totalPages ? "none" : "auto",
-                    }}
-                  >
-                    Next
-                  </Link>
-                </>
-              );
-            })()}
-          </div>
+            {page > 1 ? (
+              <Link href={pageHref(page - 1)} className="soft-btn inline-flex items-center gap-1.5 px-5 text-[15px]"><Icon name="arrow-left" size={16} />Previous</Link>
+            ) : <span className="w-[118px]" aria-hidden="true" />}
+            <span className="text-[14px] tabular-nums min-w-[72px] text-center" style={{ color: "var(--text-secondary)" }}>{page} of {totalPages}</span>
+            {page < totalPages ? (
+              <Link href={pageHref(page + 1)} className="soft-btn inline-flex items-center gap-1.5 px-5 text-[15px]">Next<Icon name="arrow-right" size={16} /></Link>
+            ) : <span className="w-[118px]" aria-hidden="true" />}
+          </nav>
         )}
 
         {!error && restaurants.length > 0 && (
-          <div id="request-restaurant" className="flex justify-center py-6">
+          <div id="request-restaurant" className="flex justify-center mt-10">
             <RequestRestaurantForm />
           </div>
         )}
