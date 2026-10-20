@@ -54,9 +54,8 @@ export default function NeighborhoodPicker({
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search neighborhoods..."
-        className="search-input w-full rounded-lg px-3 py-2.5 text-sm min-h-[44px] mb-3"
-        style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", outline: "none" }}
+        placeholder="Search neighborhoods"
+        className="search-field w-full h-11 rounded-full px-4 text-[15px] mb-3"
       />
 
       {trimmed ? (

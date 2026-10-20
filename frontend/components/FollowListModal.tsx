@@ -99,7 +99,7 @@ export default function FollowListModal({ open, onClose, userId, type }: FollowL
                 ) : (
                   <div
                     className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold"
-                    style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
+                    style={{ backgroundColor: "var(--bg-inset)", color: "var(--text)" }}
                   >
                     {p.name[0]}
                   </div>

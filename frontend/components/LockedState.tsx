@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 interface LockedStateProps {
   heading: string;
   body: string;
-  cta: ReactNode;
+  cta?: ReactNode;
 }
 
 // Signed-out and empty states: a short heading, one line of why, one action.

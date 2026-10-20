@@ -1,13 +1,14 @@
-const SIZES: Record<"sm" | "md" | "lg", { box: string; text: string }> = {
+const SIZES: Record<"sm" | "md" | "lg" | "xl", { box: string; text: string }> = {
   sm: { box: "w-9 h-9", text: "text-xs" },
   md: { box: "w-11 h-11", text: "text-sm" },
   lg: { box: "w-16 h-16", text: "text-xl" },
+  xl: { box: "w-24 h-24", text: "text-[34px]" },
 };
 
 interface AvatarProps {
   url?: string | null;
   name?: string | null;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 export default function Avatar({ url, name, size = "md" }: AvatarProps) {
@@ -30,7 +31,7 @@ export default function Avatar({ url, name, size = "md" }: AvatarProps) {
   return (
     <div
       className={`${box} rounded-full flex items-center justify-center font-semibold shrink-0 ${text}`}
-      style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
+      style={{ backgroundColor: "var(--bg-inset)", color: "var(--text)" }}
     >
       {letter}
     </div>

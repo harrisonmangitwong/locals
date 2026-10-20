@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import Link from "next/link";
-import RestaurantCard from "@/components/RestaurantCard";
+import BrowseRow, { RowsSkeleton, rowCandidate } from "@/components/BrowseRow";
+import Icon from "@/components/Icon";
+import LockedState from "@/components/LockedState";
+import ScrollSpotlight from "@/components/ScrollSpotlight";
+import SiteHeader from "@/components/SiteHeader";
 import SignInPrompt from "@/components/SignInPrompt";
 import FollowListModal from "@/components/FollowListModal";
 import FollowCounts from "@/components/FollowCounts";
 import Avatar from "@/components/Avatar";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import type { Bucket } from "@/lib/ranking";
 
 interface Restaurant {
   restaurant_id: string;
@@ -49,6 +54,24 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
   const [listModalType, setListModalType] = useState<"followers" | "following" | null>(null);
   const { user } = useCurrentUser();
   const [signInReason, setSignInReason] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  // The viewer's own saves and ratings, so their bookmark shows true state
+  // on someone else's list.
+  const [mySaved, setMySaved] = useState<Set<string>>(new Set());
+  const [myRatings, setMyRatings] = useState<Record<string, Bucket>>({});
+
+  useEffect(() => {
+    if (!user) return;
+    Promise.all([
+      fetch("/api/saved").then((r) => r.json()).catch(() => ({ ids: [] })),
+      fetch("/api/ratings").then((r) => r.json()).catch(() => ({ ratings: [] })),
+    ]).then(([saved, ratings]) => {
+      setMySaved(new Set(saved.ids ?? []));
+      const map: Record<string, Bucket> = {};
+      for (const r of ratings.ratings ?? []) map[r.restaurant_id] = r.bucket;
+      setMyRatings(map);
+    });
+  }, [user]);
 
   const identityQuery = userIdProp ? `userId=${userIdProp}` : `username=${username}`;
 
@@ -136,7 +159,10 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
     if (navigator.share) {
       navigator.share({ title: `${ownerName ?? "Someone"}'s NYC picks on Locals`, url }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(url).catch(() => {});
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {});
     }
   }
 
@@ -147,188 +173,110 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
   // "gated" (the safe default) rather than briefly showing content.
   const isGated = ownerIsPrivate && followStatus !== "self" && followStatus !== "accepted";
 
+  const firstName = ownerName?.split(" ")[0] ?? null;
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
-      {/* Topbar */}
-      <header
-        className="sticky top-0 z-50 flex items-center justify-between px-6 py-4"
-        style={{ backgroundColor: "var(--bg)", borderBottom: "1px solid var(--border)" }}
-      >
-        <Link href="/" className="font-display text-xl" style={{ color: "var(--text)" }}>
-          Locals
-        </Link>
-        <Link
-          href="/recommendations"
-          className="text-sm transition-colors hover:opacity-75"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          Browse restaurants →
-        </Link>
-      </header>
+      <SiteHeader />
 
-      <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-8 md:pt-12 pb-14">
         {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
-                <div className="skeleton h-52 sm:h-48" />
-                <div className="p-4 space-y-3">
-                  <div className="skeleton h-4 w-3/4 rounded" />
-                  <div className="skeleton h-3 w-1/2 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <>
+            <div className="flex flex-col items-center gap-3 mb-10" aria-hidden="true">
+              <div className="skeleton w-24 h-24 rounded-full" />
+              <div className="skeleton h-8 w-48 rounded-lg" />
+              <div className="skeleton h-4 w-32 rounded" />
+            </div>
+            <RowsSkeleton count={4} />
+          </>
         )}
 
         {!loading && notFound && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
-              Couldn&apos;t find that profile
-            </p>
-            <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
-              This link may be out of date.
-            </p>
-            <Link
-              href="/recommendations"
-              className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-            >
-              Browse restaurants
-            </Link>
-          </div>
+          <LockedState
+            heading="Couldn't find that profile"
+            body="This link may be out of date."
+            cta={<Link href="/recommendations" className="cta-btn inline-flex items-center justify-center px-7 text-[15px]">Browse all places</Link>}
+          />
         )}
 
         {!loading && !notFound && resolvedUserId && (
           <>
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <Avatar url={ownerAvatarUrl} name={ownerName} size="lg" />
-                <div>
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h1 className="font-display text-3xl line-clamp-2" style={{ color: "var(--text)" }}>
-                      {ownerName ? `${ownerName}'s picks` : "Saved restaurants"}
-                    </h1>
-                    {ownerIsActiveLocal && (
-                      <span
-                        className="text-xs font-medium px-2 py-0.5 rounded-full shrink-0"
-                        style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
-                      >
-                        Active locally
-                      </span>
-                    )}
-                  </div>
-                  {ownerBio && (
-                    <p className="text-sm mb-2 max-w-md" style={{ color: "var(--text-secondary)" }}>
-                      {ownerBio}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-3 flex-wrap">
-                    {!isGated && (
-                      <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                        {restaurants.length} spot{restaurants.length !== 1 ? "s" : ""} saved on Locals
-                      </p>
-                    )}
-                    {followCounts && (
-                      <FollowCounts
-                        followers={followCounts.followers}
-                        following={followCounts.following}
-                        onSelect={setListModalType}
-                      />
-                    )}
-                  </div>
+            {/* Who: centered, like a profile on iOS. */}
+            <div className="flex flex-col items-center text-center rise" style={{ "--i": 0 } as CSSProperties}>
+              <Avatar url={ownerAvatarUrl} name={ownerName} size="xl" />
+              <h1 className="font-display text-[30px] md:text-[38px] text-balance mt-4">{ownerName ?? "Locals member"}</h1>
+              {ownerIsActiveLocal && (
+                <p className="flex items-center gap-1.5 text-[14px] mt-1" style={{ color: "var(--text-secondary)" }}>
+                  <Icon name="map-pin" size={14} /> Active locally
+                </p>
+              )}
+              {ownerBio && (
+                <p className="text-[16px] leading-relaxed mt-3 max-w-[44ch] text-pretty" style={{ color: "var(--text-secondary)" }}>
+                  {ownerBio}
+                </p>
+              )}
+              {followCounts && (
+                <div className="mt-2">
+                  <FollowCounts followers={followCounts.followers} following={followCounts.following} onSelect={setListModalType} />
                 </div>
-              </div>
-              <div className="flex-shrink-0 flex items-center gap-2">
+              )}
+              <div className="flex items-center gap-2.5 mt-4 w-full max-w-xs">
                 {followStatus === "none" && (
-                  <button
-                    onClick={handleFollow}
-                    disabled={followBusy}
-                    className="px-4 py-2 rounded-full text-sm font-semibold transition-opacity hover:opacity-90 min-h-[44px] disabled:opacity-50"
-                    style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
-                  >
+                  <button onClick={handleFollow} disabled={followBusy} className="cta-btn flex-1 text-[15px] disabled:opacity-50">
                     Follow
                   </button>
                 )}
-                {followStatus === "pending" && (
-                  <button
-                    onClick={handleUnfollow}
-                    disabled={followBusy}
-                    className="px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-75 min-h-[44px] disabled:opacity-50"
-                    style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
-                  >
-                    Requested
+                {(followStatus === "pending" || followStatus === "accepted") && (
+                  <button onClick={handleUnfollow} disabled={followBusy} className="soft-btn flex-1 text-[15px] disabled:opacity-50">
+                    {followStatus === "pending" ? "Requested" : "Following"}
                   </button>
                 )}
-                {followStatus === "accepted" && (
-                  <button
-                    onClick={handleUnfollow}
-                    disabled={followBusy}
-                    className="px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-75 min-h-[44px] disabled:opacity-50"
-                    style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
-                  >
-                    Following
-                  </button>
+                {followStatus === "self" && (
+                  <Link href="/profile" className="soft-btn flex-1 inline-flex items-center justify-center text-[15px]">Edit profile</Link>
                 )}
-                <button
-                  onClick={handleShare}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-75 min-h-[44px]"
-                  style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                  </svg>
-                  Share list
+                <button onClick={handleShare} className={`soft-btn inline-flex items-center justify-center gap-2 text-[15px] ${followStatus === null ? "flex-1" : "px-5"}`}>
+                  <Icon name="share" size={16} />
+                  {copied ? "Copied" : "Share"}
                 </button>
               </div>
             </div>
 
-            {isGated ? (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-muted)" }} className="mb-3">
-                  <rect x="3" y="11" width="18" height="11" rx="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-                <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>This account is private</p>
-                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                  Follow {ownerName ?? "them"} to see their saved spots.
-                </p>
-              </div>
-            ) : restaurants.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
-                <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>No saved restaurants yet</p>
-                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                  {ownerName ?? "They"} haven&apos;t saved anything on Locals yet.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {restaurants.map((r, i) => (
-                  <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
-                    <RestaurantCard
-                      restaurantId={r.restaurant_id}
-                      rank={r.rank}
-                      name={r.name}
-                      neighborhood={r.neighborhood}
-                      cuisine={r.cuisine}
-                      reviews={r.review_count ?? r.num_reviews ?? 0}
-                      rating={r.total_score ?? 0}
-                      mapsUrl={r.url}
-                      photoUrl={r.image_url}
-                      followedSaveCount={followedSaveCounts[r.restaurant_id]}
-                      price={
-                        r.price_midpoint
-                          ? r.price_midpoint <= 15 ? "$"
-                          : r.price_midpoint <= 30 ? "$$"
-                          : r.price_midpoint <= 60 ? "$$$"
-                          : "$$$$"
-                          : undefined
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <section className="mt-12 rise" style={{ "--i": 1 } as CSSProperties} aria-labelledby="their-saves">
+              <h2 id="their-saves" className="text-[21px] font-semibold tracking-[-0.015em] mb-5">
+                {firstName ? `${firstName}\u2019s saved places` : "Saved places"}
+                {!isGated && restaurants.length > 0 && (
+                  <span className="font-normal tabular-nums ml-1.5" style={{ color: "var(--text-muted)" }}>{restaurants.length}</span>
+                )}
+              </h2>
+
+              {isGated ? (
+                <LockedState
+                  heading="This account is private"
+                  body={`Follow ${firstName ?? "them"} to see their saved places.`}
+                />
+              ) : restaurants.length === 0 ? (
+                <LockedState
+                  heading="Nothing saved yet"
+                  body={`${firstName ?? "They"} haven\u2019t saved anything on Locals yet.`}
+                />
+              ) : (
+                <ScrollSpotlight watch={restaurants.map((r) => r.restaurant_id).join(",")}>
+                  <ul className="grid md:grid-cols-2 gap-x-10 gap-y-6">
+                    {restaurants.map((r, i) => (
+                      <li key={r.restaurant_id} className="rise" style={{ "--i": Math.min(i + 2, 8) } as CSSProperties}>
+                        <BrowseRow
+                          c={rowCandidate(r)}
+                          initialSaved={mySaved.has(r.restaurant_id)}
+                          initialBucket={myRatings[r.restaurant_id] ?? null}
+                          followedSaveCount={followedSaveCounts[r.restaurant_id]}
+                          onRated={(id, bucket) => setMyRatings((prev) => ({ ...prev, [id]: bucket }))}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </ScrollSpotlight>
+              )}
+            </section>
           </>
         )}
       </main>

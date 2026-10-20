@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import FollowListModal from "@/components/FollowListModal";
@@ -9,6 +9,7 @@ import PriceSlider from "@/components/PriceSlider";
 import ExpandableChipGroup from "@/components/ExpandableChipGroup";
 import NeighborhoodPicker from "@/components/NeighborhoodPicker";
 import Avatar from "@/components/Avatar";
+import Icon from "@/components/Icon";
 import { CUISINE_ORIGINS } from "@/lib/cuisineOrigins";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { createClient } from "@/lib/supabase/client";
@@ -29,6 +30,42 @@ interface ProfileData {
   preferredPrice: number | null;
   bio: string | null;
   avatarUrl: string | null;
+}
+
+// One line of a settings list: label on the left, value or action on the
+// right, a hairline between lines. Editing expands below it in place.
+function SettingRow({ label, value, action, children, first }: { label: string; value?: ReactNode; action?: ReactNode; children?: ReactNode; first?: boolean }) {
+  return (
+    <div className="py-3.5" style={{ borderTop: first ? undefined : "1px solid var(--border)" }}>
+      <div className="flex items-center justify-between gap-4 min-h-[44px]">
+        <div className="min-w-0">
+          <p className="text-[16px] font-medium">{label}</p>
+          {value != null && <div className="text-[15px] mt-0.5" style={{ color: "var(--text-secondary)" }}>{value}</div>}
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function TextAction({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+  return (
+    <button onClick={onClick} className="min-h-[44px] px-3 -mr-3 rounded-full text-[15px] font-medium transition-colors hover:bg-[var(--bg-subtle)]">
+      {children}
+    </button>
+  );
+}
+
+function SaveCancel({ saving, disabled, onCancel, onSave }: { saving: boolean; disabled?: boolean; onCancel: () => void; onSave?: () => void }) {
+  return (
+    <div className="flex items-center gap-2 mt-1">
+      <button type={onSave ? "button" : "submit"} onClick={onSave} disabled={saving || disabled} className="cta-btn px-6 text-[15px] disabled:opacity-40">
+        {saving ? "Saving…" : "Save"}
+      </button>
+      <button type="button" onClick={onCancel} className="soft-btn px-6 text-[15px]">Cancel</button>
+    </div>
+  );
 }
 
 export default function ProfilePage() {
@@ -249,378 +286,205 @@ export default function ProfilePage() {
     }
   }
 
+  const hasPrefs = !!profile && (profile.preferredCuisines.length > 0 || profile.preferredPrice !== null || profile.preferredNeighborhoods.length > 0);
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader />
 
-      <main id="main-content" className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-8">
-        <h1 className="font-display text-3xl mb-6" style={{ color: "var(--text)" }}>
-          Your profile
-        </h1>
+      <main id="main-content" className="flex-1 w-full max-w-xl mx-auto px-4 sm:px-6 pt-8 md:pt-12 pb-14">
+        <h1 className="sr-only">Your profile</h1>
 
         {loading && (
-          <div className="flex flex-col gap-3">
-            <div className="skeleton h-16 w-16 rounded-full" />
-            <div className="skeleton h-4 w-1/2 rounded" />
+          <div className="flex flex-col items-center gap-3" aria-busy="true" aria-label="Loading profile">
+            <div className="skeleton w-24 h-24 rounded-full" />
+            <div className="skeleton h-7 w-40 rounded-lg" />
+            <div className="skeleton h-4 w-28 rounded" />
           </div>
         )}
 
         {!loading && fetchError && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
-              Couldn&apos;t load your profile
-            </p>
-            <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
-              Something went wrong. Try again.
-            </p>
-            <button
-              onClick={loadProfile}
-              className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-            >
-              Retry
-            </button>
+          <div className="flex flex-col items-center text-center py-20 gap-3">
+            <p className="text-[19px] font-semibold">Couldn&rsquo;t load your profile</p>
+            <p className="text-[15px]" style={{ color: "var(--text-secondary)" }}>Check your connection and try again.</p>
+            <button onClick={loadProfile} className="soft-btn px-6 text-[15px] mt-2">Try again</button>
           </div>
         )}
 
         {!loading && !fetchError && profile && (
-          <div className="flex flex-col gap-8">
-            <div className="flex items-center gap-4">
-              <div className="relative shrink-0">
-                <Avatar url={profile.avatarUrl ?? accountAvatarUrl} name={accountName} size="lg" />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingAvatar}
-                  className="absolute -bottom-1 -right-1 flex items-center justify-center w-6 h-6 rounded-full transition-opacity hover:opacity-80 active:opacity-65 disabled:opacity-50"
-                  style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border-strong)", boxShadow: "var(--shadow-sm)" }}
-                  aria-label="Change profile photo"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-secondary)" }}>
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                    <circle cx="12" cy="13" r="4" />
-                  </svg>
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleAvatarChange}
-                  className="sr-only"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                {accountName && (
-                  <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
-                    Hi, {accountName}
-                  </p>
-                )}
-                {profile.isActiveLocal && (
-                  <span
-                    className="text-xs font-medium px-2 py-0.5 rounded-full self-start"
-                    style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
-                  >
-                    Active locally
-                  </span>
-                )}
-                {profile.username && !editing && (
-                  <Link
-                    href={`/u/${profile.username}`}
-                    className="text-sm transition-opacity hover:opacity-75 active:opacity-60"
-                    style={{ color: "var(--accent-text)" }}
-                  >
-                    View your public profile →
+          <>
+            {/* Who you are, as others see it. */}
+            <div className="flex flex-col items-center text-center rise" style={{ "--i": 0 } as React.CSSProperties}>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="rounded-full transition-opacity hover:opacity-85 disabled:opacity-50"
+                aria-label="Change profile photo"
+              >
+                <Avatar url={profile.avatarUrl ?? accountAvatarUrl} name={accountName} size="xl" />
+              </button>
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} className="sr-only" />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="min-h-[36px] px-3 mt-1 rounded-full text-[14px] font-medium transition-colors hover:bg-[var(--bg-subtle)]"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {uploadingAvatar ? "Uploading…" : "Change photo"}
+              </button>
+              {avatarError && <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>{avatarError}</p>}
+
+              <p className="font-display text-[30px] md:text-[34px] text-balance mt-2">{accountName ?? "You"}</p>
+              {profile.isActiveLocal && (
+                <p className="flex items-center gap-1.5 text-[14px] mt-1" style={{ color: "var(--text-secondary)" }}>
+                  <Icon name="map-pin" size={14} /> Active locally
+                </p>
+              )}
+              {followCounts && (
+                <div className="mt-2">
+                  <FollowCounts followers={followCounts.followers} following={followCounts.following} onSelect={setListModalType} />
+                </div>
+              )}
+              <div className="flex items-center gap-2.5 mt-3 w-full max-w-xs">
+                {profile.username && (
+                  <Link href={`/u/${profile.username}`} className="soft-btn flex-1 inline-flex items-center justify-center text-[15px]">
+                    Public profile
                   </Link>
                 )}
-                {uploadingAvatar && (
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>Uploading…</p>
-                )}
-                {avatarError && (
-                  <p className="text-xs" style={{ color: "var(--accent)" }}>{avatarError}</p>
-                )}
+                <button onClick={handleInvite} className={`soft-btn inline-flex items-center justify-center gap-2 text-[15px] ${profile.username ? "px-5" : "flex-1"}`}>
+                  <Icon name="share" size={16} />
+                  {copied ? "Copied" : "Share"}
+                </button>
               </div>
-            </div>
-
-            <div>
-              <h2 className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
-                On Locals
-              </h2>
-              <div className="flex items-center gap-2 text-sm">
-                <Link
-                  href="/favorites"
-                  className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75 active:opacity-60"
-                  style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}
-                >
-                  <strong style={{ color: "var(--text)" }}>{profile.savedCount}</strong> saved
-                </Link>
-                <Link
-                  href="/visited"
-                  className="flex items-center gap-1 px-3 min-h-[44px] rounded-full transition-colors hover:opacity-75 active:opacity-60"
-                  style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)" }}
-                >
-                  <strong style={{ color: "var(--text)" }}>{profile.visitedCount}</strong> visited
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <h2 className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
-                Username
-              </h2>
-              <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
-                This becomes your public link — locals-nyc.com/u/{profile.username ?? "yourname"}
-              </p>
-              {!editing && (
-                <div className="flex items-center gap-3">
-                  <p className="text-sm" style={{ color: profile.username ? "var(--text)" : "var(--text-muted)" }}>
-                    {profile.username ? `@${profile.username}` : "Not set yet"}
-                  </p>
-                  <button
-                    onClick={() => setEditing(true)}
-                    className="text-sm font-medium underline transition-opacity hover:opacity-75 active:opacity-60"
-                    style={{ color: "var(--accent-text)" }}
-                  >
-                    {profile.username ? "Change" : "Choose one"}
-                  </button>
-                </div>
-              )}
-              {editing && (
-                <form onSubmit={handleSaveUsername} className="flex flex-col gap-2 max-w-sm">
-                  <label htmlFor="username-input" className="sr-only">Username</label>
-                  <input
-                    id="username-input"
-                    type="text"
-                    value={usernameInput}
-                    onChange={(e) => setUsernameInput(e.target.value)}
-                    placeholder="your_username"
-                    maxLength={20}
-                    className="search-input rounded-lg px-3 py-2.5 text-sm min-h-[44px]"
-                    style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", outline: "none" }}
-                  />
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    3-20 characters: lowercase letters, numbers, and underscores only.
-                  </p>
-                  {error && (
-                    <p className="text-xs" style={{ color: "var(--accent)" }}>{error}</p>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="submit"
-                      disabled={saving || !usernameInput.trim()}
-                      className="cta-btn self-start px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50"
-                    >
-                      {saving ? "Saving…" : "Save"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditing(false);
-                        setError(null);
-                        setUsernameInput(profile.username ?? "");
-                      }}
-                      className="text-sm font-medium"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
+              {followCounts && followCounts.followers === 0 && (
+                <p className="text-[13px] mt-3 max-w-[34ch]" style={{ color: "var(--text-muted)" }}>
+                  You&rsquo;re one of the first Locals here. Share your profile to get followers.
+                </p>
               )}
             </div>
 
-            <div>
-              <h2 className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
-                Bio
-              </h2>
-              {!editingBio && (
-                <div className="flex items-center gap-3">
-                  <p className="text-sm" style={{ color: profile.bio ? "var(--text)" : "var(--text-muted)" }}>
-                    {profile.bio || "Not set yet"}
-                  </p>
-                  <button
-                    onClick={startEditingBio}
-                    className="text-sm font-medium underline transition-opacity hover:opacity-75 active:opacity-60 shrink-0"
-                    style={{ color: "var(--accent-text)" }}
-                  >
-                    {profile.bio ? "Change" : "Add bio"}
-                  </button>
-                </div>
-              )}
-              {editingBio && (
-                <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-sm">
-                  <label htmlFor="bio-input" className="sr-only">Bio</label>
-                  <textarea
-                    id="bio-input"
-                    value={bioInput}
-                    onChange={(e) => setBioInput(e.target.value)}
-                    placeholder="A line about you and how you eat around the city"
-                    maxLength={MAX_BIO_LENGTH}
-                    rows={3}
-                    className="search-input rounded-lg px-3 py-2.5 text-sm resize-none"
-                    style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", outline: "none" }}
-                  />
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    {bioInput.length}/{MAX_BIO_LENGTH}
-                  </p>
-                  {bioError && (
-                    <p className="text-xs" style={{ color: "var(--accent)" }}>{bioError}</p>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="submit"
-                      disabled={savingBio}
-                      className="cta-btn self-start px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50"
-                    >
-                      {savingBio ? "Saving…" : "Save"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingBio(false);
-                        setBioError(null);
-                      }}
-                      className="text-sm font-medium"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
+            <section className="mt-10 rise" style={{ "--i": 1 } as React.CSSProperties} aria-label="Your lists">
+              <Link href="/favorites" className="flex items-center justify-between min-h-[52px] py-2 transition-opacity hover:opacity-70">
+                <span className="text-[16px] font-medium">Saved</span>
+                <span className="flex items-center gap-1 text-[15px] tabular-nums" style={{ color: "var(--text-secondary)" }}>{profile.savedCount}<Icon name="chevron-right" size={16} /></span>
+              </Link>
+              <Link href="/visited" className="flex items-center justify-between min-h-[52px] py-2 transition-opacity hover:opacity-70" style={{ borderTop: "1px solid var(--border)" }}>
+                <span className="text-[16px] font-medium">Visited</span>
+                <span className="flex items-center gap-1 text-[15px] tabular-nums" style={{ color: "var(--text-secondary)" }}>{profile.visitedCount}<Icon name="chevron-right" size={16} /></span>
+              </Link>
+            </section>
 
-            <div>
-              <h2 className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
-                Preferences
-              </h2>
-              <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>
-                Used to seed your recommendations — changeable anytime.
-              </p>
+            <section className="mt-8 rise" style={{ "--i": 2 } as React.CSSProperties} aria-labelledby="settings-heading">
+              <h2 id="settings-heading" className="text-[21px] font-semibold tracking-[-0.015em] mb-1">Profile</h2>
 
-              {!editingPrefs && (
-                <div className="flex flex-col gap-2">
-                  {profile.preferredCuisines.length === 0 &&
-                  profile.preferredPrice === null &&
-                  profile.preferredNeighborhoods.length === 0 ? (
-                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>Not set yet</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-1.5">
-                      {profile.preferredPrice !== null && (
-                        <span
-                          className="text-xs font-medium px-2 py-0.5 rounded-full"
-                          style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
-                        >
-                          {profile.preferredPrice >= 100 ? "$100+ per person" : `~$${profile.preferredPrice} per person`}
-                        </span>
+              <SettingRow
+                first
+                label="Username"
+                value={editing ? `locals-nyc.com/u/${usernameInput || "yourname"}` : profile.username ? `@${profile.username}` : "Not set yet"}
+                action={!editing && <TextAction onClick={() => setEditing(true)}>{profile.username ? "Change" : "Choose one"}</TextAction>}
+              >
+                {editing && (
+                  <form onSubmit={handleSaveUsername} className="flex flex-col gap-2 mt-3">
+                    <label htmlFor="username-input" className="sr-only">Username</label>
+                    <input
+                      id="username-input"
+                      type="text"
+                      value={usernameInput}
+                      onChange={(e) => setUsernameInput(e.target.value)}
+                      placeholder="your_username"
+                      maxLength={20}
+                      autoFocus
+                      className="search-field h-11 rounded-xl px-4 text-[15px]"
+                    />
+                    <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>3 to 20 characters: lowercase letters, numbers and underscores.</p>
+                    {error && <p className="text-[13px]" style={{ color: "var(--text)" }}>{error}</p>}
+                    <SaveCancel
+                      saving={saving}
+                      disabled={!usernameInput.trim()}
+                      onCancel={() => { setEditing(false); setError(null); setUsernameInput(profile.username ?? ""); }}
+                    />
+                  </form>
+                )}
+              </SettingRow>
+
+              <SettingRow
+                label="Bio"
+                value={!editingBio && (profile.bio || "Not set yet")}
+                action={!editingBio && <TextAction onClick={startEditingBio}>{profile.bio ? "Change" : "Add"}</TextAction>}
+              >
+                {editingBio && (
+                  <form onSubmit={handleSaveBio} className="flex flex-col gap-2 mt-3">
+                    <label htmlFor="bio-input" className="sr-only">Bio</label>
+                    <textarea
+                      id="bio-input"
+                      value={bioInput}
+                      onChange={(e) => setBioInput(e.target.value)}
+                      placeholder="A line about you and how you eat around the city"
+                      maxLength={MAX_BIO_LENGTH}
+                      rows={3}
+                      autoFocus
+                      className="search-field rounded-xl px-4 py-3 text-[15px] resize-none"
+                    />
+                    <p className="text-[13px] tabular-nums" style={{ color: "var(--text-muted)" }}>{bioInput.length}/{MAX_BIO_LENGTH}</p>
+                    {bioError && <p className="text-[13px]" style={{ color: "var(--text)" }}>{bioError}</p>}
+                    <SaveCancel saving={savingBio} onCancel={() => { setEditingBio(false); setBioError(null); }} />
+                  </form>
+                )}
+              </SettingRow>
+
+              <SettingRow
+                label="Taste"
+                value={!editingPrefs && (hasPrefs
+                  ? [
+                      profile.preferredPrice !== null ? (profile.preferredPrice >= 100 ? "$100+ a person" : `About $${profile.preferredPrice} a person`) : null,
+                      ...profile.preferredCuisines,
+                      ...profile.preferredNeighborhoods,
+                    ].filter(Boolean).join(" · ")
+                  : "Not set yet")}
+                action={!editingPrefs && <TextAction onClick={startEditingPrefs}>{hasPrefs ? "Change" : "Add"}</TextAction>}
+              >
+                {editingPrefs && (
+                  <div className="flex flex-col gap-6 mt-3">
+                    <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>Used to start your recommendations. Change it anytime.</p>
+                    <div>
+                      <h3 className="text-[15px] font-semibold mb-2">Cuisines</h3>
+                      {!filterOptions ? (
+                        <div className="skeleton h-10 w-full rounded-full" />
+                      ) : (
+                        <ExpandableChipGroup
+                          options={filterOptions.cuisines.filter((c) => CUISINE_ORIGINS.has(c))}
+                          selected={draftCuisines}
+                          onToggle={(c) => toggleDraft(draftCuisines, setDraftCuisines, c)}
+                          expanded={showAllCuisines}
+                          onToggleExpanded={() => setShowAllCuisines((v) => !v)}
+                        />
                       )}
-                      {[...profile.preferredCuisines, ...profile.preferredNeighborhoods].map((v) => (
-                        <span
-                          key={v}
-                          className="text-xs font-medium px-2 py-0.5 rounded-full"
-                          style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
-                        >
-                          {v}
-                        </span>
-                      ))}
                     </div>
-                  )}
-                  <button
-                    onClick={startEditingPrefs}
-                    className="text-sm font-medium underline transition-opacity hover:opacity-75 active:opacity-60 self-start"
-                    style={{ color: "var(--accent-text)" }}
-                  >
-                    Change
-                  </button>
-                </div>
-              )}
-
-              {editingPrefs && (
-                <div className="flex flex-col gap-6 max-w-xl">
-                  <div>
-                    <h3 className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Cuisines</h3>
-                    {!filterOptions ? (
-                      <div className="skeleton h-10 w-full rounded-full" />
-                    ) : (
-                      <ExpandableChipGroup
-                        options={filterOptions.cuisines.filter((c) => CUISINE_ORIGINS.has(c))}
-                        selected={draftCuisines}
-                        onToggle={(c) => toggleDraft(draftCuisines, setDraftCuisines, c)}
-                        expanded={showAllCuisines}
-                        onToggleExpanded={() => setShowAllCuisines((v) => !v)}
-                      />
-                    )}
+                    <div>
+                      <h3 className="text-[15px] font-semibold mb-2">Typical price</h3>
+                      <PriceSlider value={draftPrice} onChange={setDraftPrice} />
+                    </div>
+                    <div>
+                      <h3 className="text-[15px] font-semibold mb-2">Neighborhoods</h3>
+                      {!filterOptions ? (
+                        <div className="skeleton h-10 w-full rounded-full" />
+                      ) : (
+                        <NeighborhoodPicker
+                          options={filterOptions.neighborhoods}
+                          selected={draftNeighborhoods}
+                          onToggle={(n) => toggleDraft(draftNeighborhoods, setDraftNeighborhoods, n)}
+                        />
+                      )}
+                    </div>
+                    {prefsError && <p className="text-[13px]" style={{ color: "var(--text)" }}>{prefsError}</p>}
+                    <SaveCancel saving={savingPrefs} onSave={handleSavePreferences} onCancel={() => { setEditingPrefs(false); setPrefsError(null); }} />
                   </div>
-                  <div>
-                    <h3 className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Typical price range</h3>
-                    <PriceSlider value={draftPrice} onChange={setDraftPrice} />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Neighborhoods</h3>
-                    {!filterOptions ? (
-                      <div className="skeleton h-10 w-full rounded-full" />
-                    ) : (
-                      <NeighborhoodPicker
-                        options={filterOptions.neighborhoods}
-                        selected={draftNeighborhoods}
-                        onToggle={(n) => toggleDraft(draftNeighborhoods, setDraftNeighborhoods, n)}
-                      />
-                    )}
-                  </div>
-
-                  {prefsError && (
-                    <p className="text-xs" style={{ color: "var(--accent)" }}>{prefsError}</p>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleSavePreferences}
-                      disabled={savingPrefs}
-                      className="cta-btn self-start px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50"
-                    >
-                      {savingPrefs ? "Saving…" : "Save"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingPrefs(false);
-                        setPrefsError(null);
-                      }}
-                      className="text-sm font-medium"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {followCounts && (
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <FollowCounts
-                    followers={followCounts.followers}
-                    following={followCounts.following}
-                    onSelect={setListModalType}
-                  />
-                  <button
-                    onClick={handleInvite}
-                    className="flex items-center gap-2 px-4 min-h-[44px] rounded-full text-sm font-medium transition-opacity hover:opacity-75 active:opacity-60"
-                    style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                    </svg>
-                    {copied ? "Link copied!" : "Share"}
-                  </button>
-                </div>
-                {followCounts.followers === 0 && (
-                  <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
-                    You&apos;re one of the first Locals here — share your profile to get followers.
-                  </p>
                 )}
-              </div>
-            )}
-          </div>
+              </SettingRow>
+            </section>
+          </>
         )}
       </main>
 

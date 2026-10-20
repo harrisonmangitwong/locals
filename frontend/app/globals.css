@@ -115,72 +115,6 @@ a, button, [role="button"] {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ── Card ── */
-.restaurant-card {
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.restaurant-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-card-hover);
-}
-
-.restaurant-card .card-photo {
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.restaurant-card:hover .card-photo {
-  transform: scale(1.03);
-}
-
-/* On touch devices there's no real :hover, so the same lift/shadow/zoom is
-   triggered by scroll position instead (via IntersectionObserver toggling
-   .in-view -- see useScrollActive in lib/). Scoped to (hover: none) so it
-   never doubles up with real mouse hover on desktop. This is the fallback
-   for browsers without scroll-driven-animation support (below) -- a binary
-   snap rather than a continuous scroll-linked motion. */
-@media (hover: none) {
-  .restaurant-card.in-view {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-card-hover);
-  }
-  .restaurant-card.in-view .card-photo {
-    transform: scale(1.03);
-  }
-}
-
-/* Where supported (Safari 18+, Chrome/Edge), replace the JS-driven snap
-   above with a true scroll-linked animation: progress is tied directly to
-   the card's position in the viewport, runs on the compositor thread (not
-   React), and eases continuously instead of popping at a threshold -- this
-   is what makes native scroll effects feel fluid rather than triggered. */
-@media (hover: none) {
-  @supports (animation-timeline: view()) {
-    /* CSS animations override normal declarations in the cascade regardless
-       of specificity, so this supersedes the .in-view rule above for every
-       browser that reaches this block -- the JS class still gets toggled
-       (useScrollActive keeps running) but has nothing left to control. */
-    .restaurant-card {
-      animation: card-scroll-lift linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 35%;
-    }
-    .restaurant-card .card-photo {
-      animation: card-scroll-zoom linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 35%;
-    }
-  }
-}
-
-@keyframes card-scroll-lift {
-  0%, 100% { transform: translateY(0); box-shadow: var(--shadow); }
-  50%, 85% { transform: translateY(-4px); box-shadow: var(--shadow-card-hover); }
-}
-
-@keyframes card-scroll-zoom {
-  0%, 100% { transform: scale(1); }
-  50%, 85% { transform: scale(1.03); }
-}
-
 /* ── Scrollbar ── */
 .hide-scrollbar {
   -ms-overflow-style: none;
@@ -199,33 +133,10 @@ a, button, [role="button"] {
   background-color: var(--bg-subtle) !important;
 }
 
-/* ── Pagination ── */
-.page-btn {
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.page-btn:hover:not(:disabled) {
-  background-color: var(--bg-subtle) !important;
-  border-color: var(--border-strong) !important;
-  transform: translateY(-1px);
-}
-
-/* ── Heart ── */
-.heart-btn {
-  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1), opacity 150ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.heart-btn:hover {
-  opacity: 0.85;
-  transform: scale(1.12);
-}
-.heart-btn:active {
-  transform: scale(0.9);
-}
-
-/* Heart pop on favorite */
+/* Save pop: the bookmark swells slightly and settles, no overshoot. */
 @keyframes heart-pop {
   0% { transform: scale(1); }
-  30% { transform: scale(1.35); }
-  60% { transform: scale(0.95); }
+  40% { transform: scale(1.18); }
   100% { transform: scale(1); }
 }
 .heart-pop {
@@ -390,15 +301,6 @@ a, button, [role="button"] {
   box-shadow: var(--shadow-sm);
 }
 
-/* ── Card stagger entrance ── */
-@keyframes card-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.card-enter {
-  animation: card-in 350ms ease-out both;
-}
-
 /* ── Global focus-visible ── */
 :focus-visible {
   outline: 2px solid var(--accent);
@@ -526,17 +428,6 @@ a, button, [role="button"] {
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
-/* ── Save confirmation pill ── */
-@keyframes save-confirm {
-  0%   { opacity: 0; transform: translateY(-2px); }
-  15%  { opacity: 1; transform: translateY(0); }
-  75%  { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-2px); }
-}
-.save-confirm-pill {
-  animation: save-confirm 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
 /* ── Dropdown entrance ── */
 @keyframes menu-drop {
   from { opacity: 0; transform: translateY(-6px) scale(0.97); }
@@ -545,15 +436,6 @@ a, button, [role="button"] {
 .menu-drop {
   animation: menu-drop 150ms cubic-bezier(0.25, 1, 0.5, 1) both;
   transform-origin: top right;
-}
-
-/* ── Reaction prompt reveal ── */
-@keyframes reaction-reveal {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.reaction-reveal {
-  animation: reaction-reveal 250ms cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
 /* ── Generic fade in ── */
@@ -567,19 +449,12 @@ a, button, [role="button"] {
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .restaurant-card,
-  .restaurant-card .card-photo,
-  .heart-btn,
   .heart-pop,
   .filter-control,
-  .page-btn,
   .cta-btn,
-  .card-enter,
   .bar-fill,
-  .save-confirm-pill,
   .skeleton,
   .menu-drop,
-  .reaction-reveal,
   .fade-in,
   .filter-expand,
   .filter-expand-inner,
