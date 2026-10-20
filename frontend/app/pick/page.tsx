@@ -507,7 +507,7 @@ export default function PickPage() {
               <PickPhoto c={result} sizes="(max-width: 768px) 100vw, 520px" priority className="relative block aspect-[4/3] md:aspect-[4/5]" />
             </div>
             <div className="min-w-0">
-              <h1 className="font-display text-[34px] md:text-[44px] text-balance rise" style={{ "--i": 0 } as CSSProperties}>{result.name}</h1>
+              <h1 className="font-display text-[34px] md:text-[44px] text-balance [overflow-wrap:anywhere] rise" style={{ "--i": 0 } as CSSProperties}>{result.name}</h1>
               <div className="flex flex-col gap-1 mt-3 text-[15px] rise" style={{ color: "var(--text-secondary)", "--i": 1 } as CSSProperties}>
                 <span className="flex items-center gap-2"><Icon name="map-pin" size={15} />{[result.neighborhood, result.distance_mi != null ? `${fmtDistance(result.distance_mi)} away` : null].filter(Boolean).join(" · ")}</span>
                 <span className="flex items-center gap-2"><Icon name="utensils" size={15} />{[result.cuisine !== "Restaurant" ? result.cuisine : null, priceLabel(result.price_midpoint)].filter(Boolean).join(" · ")}</span>

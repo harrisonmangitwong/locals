@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import RateRestaurantFlow from "@/components/RateRestaurantFlow";
@@ -48,6 +47,9 @@ export default function BrowseRow({
   const [rating, setRating] = useState(false);
   const [signInReason, setSignInReason] = useState<string | null>(null);
   const { user } = useCurrentUser();
+  // One save request at a time: a double tap can't race itself into the
+  // wrong state.
+  const saving = useRef(false);
 
   useEffect(() => { setSaved(initialSaved); }, [initialSaved]);
   useEffect(() => { setBucket(initialBucket); }, [initialBucket]);
@@ -57,6 +59,8 @@ export default function BrowseRow({
       setSignInReason("Sign in to save restaurants");
       return;
     }
+    if (saving.current) return;
+    saving.current = true;
     const was = saved;
     setSaved(!was);
     setSaveError(false);
@@ -67,8 +71,14 @@ export default function BrowseRow({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ restaurant_id: c.restaurant_id }),
     }).then((res) => {
+      if (res.status === 401) {
+        setSaved(was);
+        setSignInReason("Your session ended. Sign in again to save.");
+        return;
+      }
       if (!res.ok) throw new Error();
-    }).catch(() => { setSaved(was); setSaveError(true); });
+    }).catch(() => { setSaved(was); setSaveError(true); })
+      .finally(() => { saving.current = false; });
   }
 
   const yours = bucket && ratingScore != null
@@ -118,9 +128,9 @@ export default function BrowseRow({
         </button>
       </div>
 
-      {/* Portaled: the row transforms when it lifts, which would trap a
-          fixed-position modal inside it. */}
-      {rating && createPortal(
+      {/* Both dialogs portal themselves to <body>, so the row's lift
+          transform can't trap their fixed positioning. */}
+      {rating && (
         <RateRestaurantFlow
           restaurantId={c.restaurant_id}
           restaurantName={c.name}
@@ -132,13 +142,9 @@ export default function BrowseRow({
             setSaved(false);
             onRated?.(c.restaurant_id, b);
           }}
-        />,
-        document.body,
+        />
       )}
-      {signInReason !== null && createPortal(
-        <SignInPrompt open reason={signInReason} onClose={() => setSignInReason(null)} />,
-        document.body,
-      )}
+      <SignInPrompt open={signInReason !== null} reason={signInReason ?? ""} onClose={() => setSignInReason(null)} />
     </div>
   );
 }

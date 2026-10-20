@@ -275,6 +275,9 @@ a, button, [role="button"] {
 .google-signin-btn:hover { background-color: var(--bg-inset) !important; }
 .google-signin-btn:active { transform: scale(0.98); }
 
+/* Dialog panels take focus only so Tab starts inside them; no ring. */
+[role="dialog"]:focus { outline: none; }
+
 /* ── Global focus-visible ── */
 :focus-visible {
   outline: 2px solid var(--text);

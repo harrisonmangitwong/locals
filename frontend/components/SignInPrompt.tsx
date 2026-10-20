@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import GoogleSignInButton from "./GoogleSignInButton";
-import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
+import { useDialog } from "@/lib/useDialog";
 
 interface SignInPromptProps {
   open: boolean;
@@ -14,7 +14,7 @@ interface SignInPromptProps {
 export default function SignInPrompt({ open, onClose, reason }: SignInPromptProps) {
   const [mounted, setMounted] = useState(false);
 
-  useBodyScrollLock(open);
+  const { panelProps, titleId } = useDialog(open, onClose);
 
   useEffect(() => {
     // Defers portal mounting until after hydration -- document.body isn't
@@ -24,14 +24,6 @@ export default function SignInPrompt({ open, onClose, reason }: SignInPromptProp
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
 
   if (!mounted || !open) return null;
 
@@ -45,8 +37,9 @@ export default function SignInPrompt({ open, onClose, reason }: SignInPromptProp
         className="menu-drop w-full max-w-sm rounded-2xl p-6 text-center"
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "var(--shadow-lg)" }}
         onClick={(e) => e.stopPropagation()}
+        {...panelProps}
       >
-        <h2 className="font-semibold text-lg mb-5" style={{ color: "var(--text)" }}>
+        <h2 id={titleId} className="font-semibold text-lg mb-5" style={{ color: "var(--text)" }}>
           {reason}
         </h2>
         <GoogleSignInButton className="w-full mb-2" />

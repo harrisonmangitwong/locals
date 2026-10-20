@@ -204,14 +204,14 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
             {/* Who: centered, like a profile on iOS. */}
             <div className="flex flex-col items-center text-center rise" style={{ "--i": 0 } as CSSProperties}>
               <Avatar url={ownerAvatarUrl} name={ownerName} size="xl" />
-              <h1 className="font-display text-[30px] md:text-[38px] text-balance mt-4">{ownerName ?? "Locals member"}</h1>
+              <h1 className="font-display text-[30px] md:text-[38px] text-balance [overflow-wrap:anywhere] mt-4">{ownerName ?? "Locals member"}</h1>
               {ownerIsActiveLocal && (
                 <p className="flex items-center gap-1.5 text-[14px] mt-1" style={{ color: "var(--text-secondary)" }}>
                   <Icon name="map-pin" size={14} /> Active locally
                 </p>
               )}
               {ownerBio && (
-                <p className="text-[16px] leading-relaxed mt-3 max-w-[44ch] text-pretty" style={{ color: "var(--text-secondary)" }}>
+                <p className="text-[16px] leading-relaxed mt-3 max-w-[44ch] text-pretty [overflow-wrap:anywhere]" style={{ color: "var(--text-secondary)" }}>
                   {ownerBio}
                 </p>
               )}
@@ -242,7 +242,7 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
             </div>
 
             <section className="mt-12 rise" style={{ "--i": 1 } as CSSProperties} aria-labelledby="their-saves">
-              <h2 id="their-saves" className="text-[21px] font-semibold tracking-[-0.015em] mb-5">
+              <h2 id="their-saves" className="text-[21px] font-semibold tracking-[-0.015em] mb-5 [overflow-wrap:anywhere]">
                 {firstName ? `${firstName}\u2019s saved places` : "Saved places"}
                 {!isGated && restaurants.length > 0 && (
                   <span className="font-normal tabular-nums ml-1.5" style={{ color: "var(--text-muted)" }}>{restaurants.length}</span>

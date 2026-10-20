@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -64,10 +64,10 @@ function priceLabel(mid: number | null | undefined): string | null {
 }
 
 
-function friendlyDetailError(err: string | null): string {
-  if (!err) return "Restaurant not found.";
-  if (err.includes("404")) return "We couldn't find this restaurant.";
-  return "Something went wrong — try going back and refreshing.";
+// A 404 means the place isn't in Locals (an old link); anything else is a
+// connection or server problem worth retrying.
+function isNotFound(err: string | null) {
+  return !!err && err.includes("404");
 }
 
 function parseReviewThemes(json: string | undefined): ReviewThemes | null {
@@ -172,6 +172,8 @@ export default function RestaurantPage() {
   const { user } = useCurrentUser();
   const [signInReason, setSignInReason] = useState<string | null>(null);
   const [heroTier, setHeroTier] = useState(0);
+  const [attempt, setAttempt] = useState(0);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     async function loadRestaurant() {
@@ -217,7 +219,13 @@ export default function RestaurantPage() {
     loadRestaurant();
     loadSaved();
     loadRating();
-  }, [id]);
+  }, [id, attempt]);
+
+  function retry() {
+    setError(null);
+    setLoading(true);
+    setAttempt((a) => a + 1);
+  }
 
   function back() {
     if (window.history.length > 1) router.back();
@@ -228,7 +236,7 @@ export default function RestaurantPage() {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)" }}>
         <SiteHeader />
-        <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-14 md:pt-[72px] grid md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-6 md:gap-12" aria-busy="true" aria-label="Loading restaurant">
+        <main id="main-content" className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-14 md:pt-[72px] grid md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-6 md:gap-12" aria-busy="true" aria-label="Loading restaurant">
           <div className="skeleton rounded-[22px] aspect-[4/3] md:aspect-[4/5]" />
           <div className="space-y-3">
             <div className="skeleton h-10 w-3/4 rounded-lg" />
@@ -236,7 +244,7 @@ export default function RestaurantPage() {
             <div className="skeleton h-4 w-2/5 rounded" />
             <div className="skeleton h-[50px] w-full rounded-full !mt-7" />
           </div>
-        </div>
+        </main>
       </div>
     );
   }
@@ -245,16 +253,22 @@ export default function RestaurantPage() {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
         <SiteHeader />
-        <div id="main-content" className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center">
-          <p className="font-display text-[26px]">{friendlyDetailError(error)}</p>
+        <main id="main-content" className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center">
+          <h1 className="text-[21px] font-semibold tracking-[-0.015em]">
+            {isNotFound(error) ? "This place isn\u2019t on Locals" : "Couldn\u2019t load this restaurant"}
+          </h1>
           <p className="text-[15px] max-w-sm" style={{ color: "var(--text-secondary)" }}>
-            It may have moved, or the link might be out of date.
+            {isNotFound(error) ? "The link may be out of date." : "Check your connection and try again."}
           </p>
           <div className="flex flex-col sm:flex-row gap-2.5 mt-4 w-full max-w-xs sm:max-w-none sm:w-auto">
-            <Link href="/recommendations" className="cta-btn inline-flex items-center justify-center px-7 text-[15px]">Browse all places</Link>
+            {isNotFound(error) ? (
+              <Link href="/recommendations" className="cta-btn inline-flex items-center justify-center px-7 text-[15px]">Browse all places</Link>
+            ) : (
+              <button onClick={retry} className="cta-btn inline-flex items-center justify-center px-7 text-[15px]">Try again</button>
+            )}
             <Link href="/" className="soft-btn inline-flex items-center justify-center px-7 text-[15px]">Go home</Link>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
@@ -290,6 +304,8 @@ export default function RestaurantPage() {
       setSignInReason("Sign in to save restaurants");
       return;
     }
+    if (savingRef.current) return;
+    savingRef.current = true;
     const wasSaved = saved;
     const nowSaved = !wasSaved;
     setSaved(nowSaved);
@@ -300,8 +316,10 @@ export default function RestaurantPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ restaurant_id: r.restaurant_id }),
     }).then((res) => {
+      if (res.status === 401) { setSaved(wasSaved); setSignInReason("Your session ended. Sign in again to save."); return; }
       if (!res.ok) { setSaved(wasSaved); setSaveError(true); }
-    }).catch(() => { setSaved(wasSaved); setSaveError(true); });
+    }).catch(() => { setSaved(wasSaved); setSaveError(true); })
+      .finally(() => { savingRef.current = false; });
   }
 
   async function share() {
@@ -355,7 +373,7 @@ export default function RestaurantPage() {
             </div>
 
             <div className="min-w-0">
-              <h1 className="font-display text-[34px] md:text-[44px] text-balance rise" style={rise(0)}>{r.name}</h1>
+              <h1 className="font-display text-[34px] md:text-[44px] text-balance [overflow-wrap:anywhere] rise" style={rise(0)}>{r.name}</h1>
               <div className="flex flex-col gap-1 mt-3 text-[15px] rise" style={{ color: "var(--text-secondary)", ...rise(1) }}>
                 <Fact icon="map-pin">{r.neighborhood}</Fact>
                 {whatLine && <Fact icon="utensils">{whatLine}</Fact>}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
+import { useDialog } from "@/lib/useDialog";
 
 interface Person {
   userId: string;
@@ -25,20 +25,12 @@ export default function FindPeopleModal({ open, onClose }: FindPeopleModalProps)
   const [people, setPeople] = useState<Person[]>([]);
   const [searched, setSearched] = useState(false);
 
-  useBodyScrollLock(open);
+  const { panelProps, titleId } = useDialog(open, onClose);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
 
   // Reset on close so reopening doesn't show a stale search.
   useEffect(() => {
@@ -84,8 +76,9 @@ export default function FindPeopleModal({ open, onClose }: FindPeopleModalProps)
         className="menu-drop w-full max-w-sm rounded-2xl p-6 max-h-[70vh] flex flex-col"
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "var(--shadow-lg)" }}
         onClick={(e) => e.stopPropagation()}
+        {...panelProps}
       >
-        <h2 className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>Find people</h2>
+        <h2 id={titleId} className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>Find people</h2>
 
         <input
           type="text"

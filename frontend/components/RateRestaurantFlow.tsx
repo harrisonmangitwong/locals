@@ -16,7 +16,7 @@ import {
   applyComparisonResult,
   type ComparisonState,
 } from "@/lib/ranking";
-import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
+import { useDialog } from "@/lib/useDialog";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -56,17 +56,10 @@ export default function RateRestaurantFlow({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  useBodyScrollLock(true);
+  const { panelProps, titleId } = useDialog(true, onClose);
 
   useEffect(() => { setMounted(true); }, []);
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
 
   async function pickBucket(b: Bucket) {
     setBucket(b);
@@ -154,10 +147,11 @@ export default function RateRestaurantFlow({
         className="menu-drop w-full max-w-sm rounded-2xl p-6"
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "var(--shadow-lg)" }}
         onClick={(e) => e.stopPropagation()}
+        {...panelProps}
       >
         {step === "bucket" && (
           <>
-            <h2 className="text-[21px] font-semibold tracking-[-0.015em] text-balance">
+            <h2 id={titleId} className="text-[21px] font-semibold tracking-[-0.015em] text-balance">
               How was {restaurantName}?
             </h2>
             <p className="text-[15px] mt-1 mb-5" style={{ color: "var(--text-secondary)" }}>
@@ -179,14 +173,14 @@ export default function RateRestaurantFlow({
         )}
 
         {step === "loading" && (
-          <div className="py-10 text-center text-[15px]" style={{ color: "var(--text-secondary)" }} role="status">
+          <div id={titleId} className="py-10 text-center text-[15px]" style={{ color: "var(--text-secondary)" }} role="status">
             Loading your rankings…
           </div>
         )}
 
         {step === "error" && (
           <div className="py-6 text-center">
-            <p role="alert" className="text-[15px] mb-4" style={{ color: "var(--text)" }}>{errorMsg}</p>
+            <p id={titleId} role="alert" className="text-[15px] mb-4" style={{ color: "var(--text)" }}>{errorMsg}</p>
             <button onClick={() => bucket && pickBucket(bucket)} className="soft-btn px-6 text-[15px]">
               Try again
             </button>
@@ -195,7 +189,7 @@ export default function RateRestaurantFlow({
 
         {step === "comparison" && compareTarget && (
           <>
-            <h2 className="text-[21px] font-semibold tracking-[-0.015em] mb-5 text-center">
+            <h2 id={titleId} className="text-[21px] font-semibold tracking-[-0.015em] mb-5 text-center">
               Which did you like more?
             </h2>
             {/* The same this-or-that as Help me pick: no box until hover. */}
@@ -217,7 +211,7 @@ export default function RateRestaurantFlow({
 
         {(step === "tags" || step === "submitting") && bucket && (
           <>
-            <h2 className="text-[21px] font-semibold tracking-[-0.015em] mb-4">
+            <h2 id={titleId} className="text-[21px] font-semibold tracking-[-0.015em] mb-4">
               {BUCKETS.find((b) => b.key === bucket)!.prompt}
             </h2>
             <div className="flex flex-wrap gap-2 mb-5">

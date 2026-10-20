@@ -40,7 +40,7 @@ function SettingRow({ label, value, action, children, first }: { label: string; 
       <div className="flex items-center justify-between gap-4 min-h-[44px]">
         <div className="min-w-0">
           <p className="text-[16px] font-medium">{label}</p>
-          {value != null && <div className="text-[15px] mt-0.5" style={{ color: "var(--text-secondary)" }}>{value}</div>}
+          {value != null && <div className="text-[15px] mt-0.5 [overflow-wrap:anywhere]" style={{ color: "var(--text-secondary)" }}>{value}</div>}
         </div>
         {action && <div className="shrink-0">{action}</div>}
       </div>
@@ -147,13 +147,13 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong — try again?");
+        setError(data.error ?? "Couldn't save that. Try again?");
         return;
       }
       setProfile((prev) => (prev ? { ...prev, username: data.username } : prev));
       setEditing(false);
     } catch {
-      setError("Something went wrong — try again?");
+      setError("Couldn't save that. Try again?");
     } finally {
       setSaving(false);
     }
@@ -177,13 +177,13 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setBioError(data.error ?? "Something went wrong — try again?");
+        setBioError(data.error ?? "Couldn't save that. Try again?");
         return;
       }
       setProfile((prev) => (prev ? { ...prev, bio: data.bio } : prev));
       setEditingBio(false);
     } catch {
-      setBioError("Something went wrong — try again?");
+      setBioError("Couldn't save that. Try again?");
     } finally {
       setSavingBio(false);
     }
@@ -224,7 +224,7 @@ export default function ProfilePage() {
 
       setProfile((prev) => (prev ? { ...prev, avatarUrl } : prev));
     } catch {
-      setAvatarError("Couldn't upload that photo — try again?");
+      setAvatarError("Couldn't upload that photo. Try again?");
     } finally {
       setUploadingAvatar(false);
     }
@@ -267,7 +267,7 @@ export default function ProfilePage() {
       );
       setEditingPrefs(false);
     } catch {
-      setPrefsError("Something went wrong — try again?");
+      setPrefsError("Couldn't save that. Try again?");
     } finally {
       setSavingPrefs(false);
     }
@@ -324,7 +324,7 @@ export default function ProfilePage() {
               >
                 <Avatar url={profile.avatarUrl ?? accountAvatarUrl} name={accountName} size="xl" />
               </button>
-              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} className="sr-only" />
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} className="sr-only" tabIndex={-1} aria-label="Upload a profile photo" />
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -334,9 +334,9 @@ export default function ProfilePage() {
               >
                 {uploadingAvatar ? "Uploading…" : "Change photo"}
               </button>
-              {avatarError && <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>{avatarError}</p>}
+              {avatarError && <p role="alert" className="text-[13px]" style={{ color: "var(--text)" }}>{avatarError}</p>}
 
-              <p className="font-display text-[30px] md:text-[34px] text-balance mt-2">{accountName ?? "You"}</p>
+              <p className="font-display text-[30px] md:text-[34px] text-balance [overflow-wrap:anywhere] mt-2">{accountName ?? "You"}</p>
               {profile.isActiveLocal && (
                 <p className="flex items-center gap-1.5 text-[14px] mt-1" style={{ color: "var(--text-secondary)" }}>
                   <Icon name="map-pin" size={14} /> Active locally
@@ -396,10 +396,15 @@ export default function ProfilePage() {
                       placeholder="your_username"
                       maxLength={20}
                       autoFocus
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      aria-invalid={!!error}
+                      aria-describedby={`username-hint${error ? " username-error" : ""}`}
                       className="search-field h-11 rounded-xl px-4 text-[15px]"
                     />
-                    <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>3 to 20 characters: lowercase letters, numbers and underscores.</p>
-                    {error && <p className="text-[13px]" style={{ color: "var(--text)" }}>{error}</p>}
+                    <p id="username-hint" className="text-[13px]" style={{ color: "var(--text-muted)" }}>3 to 20 characters: lowercase letters, numbers and underscores.</p>
+                    {error && <p id="username-error" role="alert" className="text-[13px]" style={{ color: "var(--text)" }}>{error}</p>}
                     <SaveCancel
                       saving={saving}
                       disabled={!usernameInput.trim()}
@@ -425,10 +430,12 @@ export default function ProfilePage() {
                       maxLength={MAX_BIO_LENGTH}
                       rows={3}
                       autoFocus
+                      aria-invalid={!!bioError}
+                      aria-describedby={`bio-count${bioError ? " bio-error" : ""}`}
                       className="search-field rounded-xl px-4 py-3 text-[15px] resize-none"
                     />
-                    <p className="text-[13px] tabular-nums" style={{ color: "var(--text-muted)" }}>{bioInput.length}/{MAX_BIO_LENGTH}</p>
-                    {bioError && <p className="text-[13px]" style={{ color: "var(--text)" }}>{bioError}</p>}
+                    <p id="bio-count" className="text-[13px] tabular-nums" style={{ color: "var(--text-muted)" }}>{bioInput.length}/{MAX_BIO_LENGTH}</p>
+                    {bioError && <p id="bio-error" role="alert" className="text-[13px]" style={{ color: "var(--text)" }}>{bioError}</p>}
                     <SaveCancel saving={savingBio} onCancel={() => { setEditingBio(false); setBioError(null); }} />
                   </form>
                 )}
@@ -478,7 +485,7 @@ export default function ProfilePage() {
                         />
                       )}
                     </div>
-                    {prefsError && <p className="text-[13px]" style={{ color: "var(--text)" }}>{prefsError}</p>}
+                    {prefsError && <p role="alert" className="text-[13px]" style={{ color: "var(--text)" }}>{prefsError}</p>}
                     <SaveCancel saving={savingPrefs} onSave={handleSavePreferences} onCancel={() => { setEditingPrefs(false); setPrefsError(null); }} />
                   </div>
                 )}

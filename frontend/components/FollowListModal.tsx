@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
+import { useDialog } from "@/lib/useDialog";
 
 interface Person {
   userId: string;
@@ -25,20 +25,12 @@ export default function FollowListModal({ open, onClose, userId, type }: FollowL
   const [loading, setLoading] = useState(true);
   const [people, setPeople] = useState<Person[]>([]);
 
-  useBodyScrollLock(open);
+  const { panelProps, titleId } = useDialog(open, onClose);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -69,8 +61,9 @@ export default function FollowListModal({ open, onClose, userId, type }: FollowL
         className="menu-drop w-full max-w-sm rounded-2xl p-6 max-h-[70vh] overflow-y-auto overscroll-contain"
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "var(--shadow-lg)" }}
         onClick={(e) => e.stopPropagation()}
+        {...panelProps}
       >
-        <h2 className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>
+        <h2 id={titleId} className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>
           {type === "followers" ? "Followers" : "Following"}
         </h2>
 
