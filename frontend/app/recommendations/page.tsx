@@ -266,13 +266,12 @@ function RecommendationsContent() {
         <div className="flex items-end justify-between gap-4">
           <div className="min-w-0">
             <h1 className="font-display text-[34px] md:text-[44px]">All places</h1>
-            <p className="text-[15px] mt-1.5" style={{ color: "var(--text-secondary)" }}>
-              {data
-                ? hasAnyFilter
-                  ? `${total.toLocaleString()} ${total === 1 ? "match" : "matches"}`
-                  : `${total.toLocaleString()} restaurants across the city`
-                : "\u00a0"}
-            </p>
+            {/* A count only helps once you've narrowed the list. */}
+            {data && hasAnyFilter && (
+              <p className="text-[15px] mt-1.5 tabular-nums" style={{ color: "var(--text-secondary)" }}>
+                {total.toLocaleString()} {total === 1 ? "match" : "matches"}
+              </p>
+            )}
           </div>
           <Link href="/pick" className="cta-btn hidden sm:inline-flex items-center justify-center px-7 text-[15px] shrink-0">
             Help me pick
