@@ -498,8 +498,8 @@ export default function PickPage() {
         <main id="main-content" className="relative flex-1">
           {/* Clipped in its own layer so <main> can stay unclipped, which
               lets the cover stick while the details scroll. */}
-          <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-            <PickPhoto key={`bg-${result.restaurant_id}`} c={result} sizes="40vw" className="scene-backdrop" />
+          <div className="scene-layer" aria-hidden="true">
+            <PickPhoto key={`bg-${result.restaurant_id}`} c={result} sizes="32px" className="scene-backdrop" />
             <div className="scene-scrim" />
           </div>
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4 md:pt-10 pb-12 grid md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-6 md:gap-12 items-start" key={result.restaurant_id}>

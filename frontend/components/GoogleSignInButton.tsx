@@ -1,7 +1,5 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
-
 interface GoogleSignInButtonProps {
   className?: string;
   label?: string;
@@ -14,7 +12,9 @@ export default function GoogleSignInButton({
   label = "Sign in with Google",
   compact = false,
 }: GoogleSignInButtonProps) {
+  // The Supabase client (~65KB gzipped) loads on tap, not with every page.
   async function handleSignIn() {
+    const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",

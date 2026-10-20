@@ -97,7 +97,7 @@ export default function SiteHeader({ current, tabBar = true }: SiteHeaderProps) 
           {!loading && !user && (
             <GoogleSignInButton compact label="Sign in" />
           )}
-          <UserMenu />
+          {user && <UserMenu />}
         </nav>
       </header>
       {tabBar && <TabBar />}

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { preconnect } from "react-dom";
 import "./globals.css";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export const metadata: Metadata = {
   title: "Locals | Where to eat in NYC tonight",
@@ -26,6 +29,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Browse, restaurant pages and Help me pick all fetch from the API after
+  // load; warming the connection now saves a DNS + TLS round trip there.
+  preconnect(API_BASE, { crossOrigin: "anonymous" });
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">

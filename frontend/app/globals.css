@@ -748,6 +748,18 @@ a, button, [role="button"] {
   --text-secondary: #45413b;
   --text-muted: #4a463f;
 }
+/* The tinted backdrop covers one screen (plus a little) and fades into the
+   page ground below. It used to span the whole page: a ~60MB blurred
+   layer on a 3x phone, almost all of it behind the scrim anyway. */
+.scene-layer {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: min(100%, calc(100svh + 160px));
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, #000 70%, transparent);
+}
 .scene-backdrop {
   position: absolute;
   inset: -80px;

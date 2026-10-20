@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import FindPeopleModal from "./FindPeopleModal";
 
@@ -14,9 +13,18 @@ export default function UserMenu() {
   const [findPeopleOpen, setFindPeopleOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Only mounted for signed-in visitors (see SiteHeader), and the Supabase
+  // client loads after the page is interactive rather than in its bundle.
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
+    let cancelled = false;
+    import("@/lib/supabase/client").then(({ createClient }) =>
+      createClient().auth.getUser().then(({ data }) => {
+        if (!cancelled) setUser(data.user ?? null);
+      }),
+    );
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -45,6 +53,7 @@ export default function UserMenu() {
   }, [open]);
 
   async function handleSignOut() {
+    const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = "/";

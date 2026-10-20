@@ -344,9 +344,10 @@ export default function RestaurantPage() {
       <main id="main-content" className="relative flex-1">
         {/* The page takes on the restaurant's own colors: its photo,
             blurred behind a scrim that follows the theme (see .scene). */}
-        <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div className="scene-layer" aria-hidden="true">
           <div className="scene-backdrop">
-            <Image src={heroUrl} alt="" fill sizes="40vw" className="object-cover" />
+            {/* Blurred 60px, so a thumbnail is plenty; the 640px copy was waste. */}
+            <Image src={heroUrl} alt="" fill sizes="32px" className="object-cover" />
           </div>
           <div className="scene-scrim" />
         </div>
