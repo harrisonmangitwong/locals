@@ -89,7 +89,7 @@ export default function RateRestaurantFlow({
       setDetails(map);
       setStep("comparison");
     } catch {
-      setErrorMsg("Couldn't load your rankings — try again?");
+      setErrorMsg("Couldn’t load your rankings. Try again?");
       setStep("error");
     }
   }
@@ -125,7 +125,7 @@ export default function RateRestaurantFlow({
       if (!res.ok) throw new Error();
       onComplete(bucket);
     } catch {
-      setErrorMsg("Something went wrong saving your rating — try again?");
+      setErrorMsg("Couldn’t save your rating. Try again?");
       setStep("tags");
     }
   }

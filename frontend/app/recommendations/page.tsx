@@ -115,7 +115,7 @@ function RecommendationsContent() {
 
   function handleNearMe() {
     if (!navigator.geolocation) {
-      setLocationError("Location isn't supported on this browser.");
+      setLocationError("Location isn’t supported on this browser.");
       return;
     }
     setLocating(true);
@@ -131,15 +131,15 @@ function RecommendationsContent() {
         if (nearest) {
           updateParams({ neighborhood: nearest });
         } else {
-          setLocationError("Couldn't match that to a neighborhood — try picking one instead.");
+          setLocationError("Couldn’t match that to a neighborhood. Try picking one instead.");
         }
       },
       (err) => {
         setLocating(false);
         setLocationError(
           err.code === err.PERMISSION_DENIED
-            ? "Location access was denied — try picking a neighborhood instead."
-            : "Couldn't get your location — try again or pick a neighborhood."
+            ? "Location is turned off. Pick a neighborhood instead."
+            : "Couldn’t get your location. Try again, or pick a neighborhood."
         );
       },
       { timeout: 10000 }

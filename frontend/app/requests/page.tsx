@@ -64,7 +64,7 @@ export default function RequestsPage() {
         {!loading && requests.length === 0 && (
           <LockedState
             heading="No requests right now"
-            body="When someone asks to follow your private account, they'll show up here."
+            body="When someone asks to follow your private account, they’ll show up here."
           />
         )}
 

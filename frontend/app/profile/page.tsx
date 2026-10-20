@@ -147,13 +147,13 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Couldn't save that. Try again?");
+        setError(data.error ?? "Couldn’t save that. Try again?");
         return;
       }
       setProfile((prev) => (prev ? { ...prev, username: data.username } : prev));
       setEditing(false);
     } catch {
-      setError("Couldn't save that. Try again?");
+      setError("Couldn’t save that. Try again?");
     } finally {
       setSaving(false);
     }
@@ -177,13 +177,13 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setBioError(data.error ?? "Couldn't save that. Try again?");
+        setBioError(data.error ?? "Couldn’t save that. Try again?");
         return;
       }
       setProfile((prev) => (prev ? { ...prev, bio: data.bio } : prev));
       setEditingBio(false);
     } catch {
-      setBioError("Couldn't save that. Try again?");
+      setBioError("Couldn’t save that. Try again?");
     } finally {
       setSavingBio(false);
     }
@@ -224,7 +224,7 @@ export default function ProfilePage() {
 
       setProfile((prev) => (prev ? { ...prev, avatarUrl } : prev));
     } catch {
-      setAvatarError("Couldn't upload that photo. Try again?");
+      setAvatarError("Couldn’t upload that photo. Try again?");
     } finally {
       setUploadingAvatar(false);
     }
@@ -267,7 +267,7 @@ export default function ProfilePage() {
       );
       setEditingPrefs(false);
     } catch {
-      setPrefsError("Couldn't save that. Try again?");
+      setPrefsError("Couldn’t save that. Try again?");
     } finally {
       setSavingPrefs(false);
     }

@@ -89,23 +89,7 @@ a, button, [role="button"] {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ── Scrollbar ── */
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
 
-/* ── Filter controls ── */
-.filter-control {
-  transition: border-color 150ms cubic-bezier(0.16, 1, 0.3, 1), background-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.filter-control:hover {
-  border-color: var(--border-strong) !important;
-  background-color: var(--bg-subtle) !important;
-}
 
 /* Save pop: the bookmark swells slightly and settles, no overshoot. */
 @keyframes heart-pop {
@@ -264,7 +248,6 @@ a, button, [role="button"] {
 }
 .tag-open { background: var(--tag-open-bg); color: var(--tag-open-text); }
 .tag-pick { background: var(--tag-pick-bg); color: var(--tag-pick-text); }
-.tag-plain { background: var(--bg); color: var(--text); box-shadow: var(--shadow-sm); }
 
 /* ── Google sign-in button ── */
 /* Google's neutral button: a soft pill like any secondary action. */
@@ -302,12 +285,6 @@ a, button, [role="button"] {
   border-radius: 4px;
 }
 
-/* ── Search focus ── */
-.search-input:focus {
-  border-color: var(--text-secondary) !important;
-  box-shadow: 0 0 0 3px var(--border);
-  outline: none;
-}
 
 /* ── Price slider ── */
 /* The input is a full 44px touch row; the 6px track is drawn inside it,
@@ -379,16 +356,6 @@ a, button, [role="button"] {
   box-shadow: 0 0 0 3px var(--border-strong), var(--shadow);
 }
 
-/* ── Rating bar fill ── */
-@keyframes bar-fill {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
-}
-.bar-fill {
-  transform-origin: left;
-  animation: bar-fill 700ms cubic-bezier(0.25, 1, 0.5, 1) both;
-}
-
 /* ── Filter collapse ── */
 .filter-expand {
   display: grid;
@@ -454,9 +421,7 @@ a, button, [role="button"] {
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .heart-pop,
-  .filter-control,
   .cta-btn,
-  .bar-fill,
   .skeleton,
   .menu-drop,
   .fade-in,

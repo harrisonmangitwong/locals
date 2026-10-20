@@ -9,7 +9,7 @@ import SignInPrompt from "@/components/SignInPrompt";
 import Icon, { type IconName } from "@/components/Icon";
 import ScrollSpotlight from "@/components/ScrollSpotlight";
 import { type Candidate, PlaceRow } from "@/components/PickCard";
-import { getPhotoUrl, pickHeroPhoto } from "@/lib/photoFallback";
+import { getPhotoUrl } from "@/lib/photoFallback";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { getVerdict } from "@/lib/verdict";
 import type { Bucket } from "@/lib/ranking";
@@ -274,14 +274,10 @@ export default function RestaurantPage() {
   }
 
   const r = restaurant;
-  // Tiered so a pixelated hero never happens silently: prefer the real,
-  // full-resolution Google photo; fall back to the small mirrored copy,
-  // then the cuisine stock photo, only if each prior tier fails to load.
-  const heroCandidates = [
-    pickHeroPhoto(r.image_url, r.extra_image_urls as string | undefined),
-    r.image_url,
-    getPhotoUrl(r.cuisine, 1200, 80),
-  ].filter((u): u is string => !!u);
+  // The mirrored photo first, then the cuisine stock photo if it fails.
+  // (The scraped full-resolution Google links in extra_image_urls are signed
+  // URLs that have expired; every one returns 403, so they're skipped.)
+  const heroCandidates = [r.image_url, getPhotoUrl(r.cuisine, 1200, 80)].filter((u): u is string => !!u);
   const heroUrl = heroCandidates[Math.min(heroTier, heroCandidates.length - 1)];
 
   const price = priceLabel(r.price_midpoint);

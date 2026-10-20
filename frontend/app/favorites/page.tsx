@@ -142,7 +142,7 @@ export default function FavoritesPage() {
         {!authLoading && !user && (
           <LockedState
             heading="Sign in to see your saved places"
-            body="Save places as you browse and they'll wait here until you're ready."
+            body="Save places as you browse and they’ll wait here until you’re ready."
             cta={<GoogleSignInButton />}
           />
         )}
@@ -151,7 +151,7 @@ export default function FavoritesPage() {
 
         {user && !loading && fetchError && (
           <LockedState
-            heading="Couldn't load your saved places"
+            heading="Couldn’t load your saved places"
             body="Check your connection and try again."
             cta={<button onClick={() => window.location.reload()} className="soft-btn px-6 text-[15px]">Try again</button>}
           />
@@ -160,7 +160,7 @@ export default function FavoritesPage() {
         {user && showEmptyState && (
           <LockedState
             heading="Nothing saved yet"
-            body="When a place catches your eye, tap the bookmark. It'll be waiting here."
+            body="When a place catches your eye, tap the bookmark. It’ll be waiting here."
             cta={<Link href="/recommendations" className="cta-btn inline-flex items-center justify-center px-7 text-[15px]">Browse all places</Link>}
           />
         )}

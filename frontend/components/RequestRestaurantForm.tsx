@@ -41,7 +41,7 @@ export default function RequestRestaurantForm({
       if (!res.ok) throw new Error();
       setSubmitted(true);
     } catch {
-      setError("Couldn't send that. Try again?");
+      setError("Couldn’t send that. Try again?");
     } finally {
       setSubmitting(false);
     }
@@ -50,7 +50,7 @@ export default function RequestRestaurantForm({
   if (submitted) {
     return (
       <p role="status" className={`inline-flex items-center gap-1.5 text-[15px] fade-in ${className}`} style={{ color: "var(--text)" }}>
-        <Icon name="circle-check" size={16} /> Thanks, we&apos;ll take a look.
+        <Icon name="circle-check" size={16} /> Thanks, we&rsquo;ll take a look.
       </p>
     );
   }

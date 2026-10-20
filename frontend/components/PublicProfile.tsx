@@ -193,7 +193,7 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
 
         {!loading && notFound && (
           <LockedState
-            heading="Couldn't find that profile"
+            heading="Couldn’t find that profile"
             body="This link may be out of date."
             cta={<Link href="/recommendations" className="cta-btn inline-flex items-center justify-center px-7 text-[15px]">Browse all places</Link>}
           />
@@ -257,7 +257,7 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
               ) : restaurants.length === 0 ? (
                 <LockedState
                   heading="Nothing saved yet"
-                  body={`${firstName ?? "They"} haven\u2019t saved anything on Locals yet.`}
+                  body={firstName ? `${firstName} hasn\u2019t saved anything on Locals yet.` : "They haven\u2019t saved anything on Locals yet."}
                 />
               ) : (
                 <ScrollSpotlight watch={restaurants.map((r) => r.restaurant_id).join(",")}>

@@ -9,7 +9,7 @@ interface GoogleSignInButtonProps {
 
 export default function GoogleSignInButton({
   className = "",
-  label = "Sign in with Google",
+  label = "Continue with Google",
   compact = false,
 }: GoogleSignInButtonProps) {
   // The Supabase client (~65KB gzipped) loads on tap, not with every page.

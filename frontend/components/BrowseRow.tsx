@@ -101,7 +101,7 @@ export default function BrowseRow({
         <PlaceRow c={c} tag={isOpenNow ? "Open now" : undefined} />
         {(yours || social || saveError) && (
           <span className="block text-[13px] mt-1.5 pl-[90px]" style={{ color: yours || followedSaveCount ? "var(--text)" : "var(--text-muted)" }}>
-            {saveError ? "Couldn't save, try again" : yours ?? social}
+            {saveError ? "Couldn’t save. Try again?" : yours ?? social}
           </span>
         )}
       </Link>

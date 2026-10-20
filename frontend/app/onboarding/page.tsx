@@ -85,7 +85,7 @@ export default function OnboardingPage() {
       setTimeout(() => router.push("/recommendations"), 700);
     } catch {
       setSubmitting(false);
-      setSaveError("Couldn't save your picks. You can set them anytime from your profile.");
+      setSaveError("Couldn’t save your picks. You can set them anytime from your profile.");
     }
   }
 

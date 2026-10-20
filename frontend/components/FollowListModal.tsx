@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import Link from "next/link";
 import { useDialog } from "@/lib/useDialog";
+import PersonRow from "@/components/PersonRow";
 
 interface Person {
   userId: string;
@@ -63,49 +63,26 @@ export default function FollowListModal({ open, onClose, userId, type }: FollowL
         onClick={(e) => e.stopPropagation()}
         {...panelProps}
       >
-        <h2 id={titleId} className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>
+        <h2 id={titleId} className="text-[21px] font-semibold tracking-[-0.015em] mb-3">
           {type === "followers" ? "Followers" : "Following"}
         </h2>
 
-        {loading && (
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading…</p>
-        )}
+        {loading && <p className="text-[15px] py-2" style={{ color: "var(--text-secondary)" }} role="status">Loading…</p>}
 
         {!loading && people.length === 0 && (
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          <p className="text-[15px] py-2" style={{ color: "var(--text-secondary)" }}>
             {type === "followers" ? "No followers yet." : "Not following anyone yet."}
           </p>
         )}
 
         {!loading && people.length > 0 && (
-          <div className="flex flex-col gap-3">
+          <ul className="flex flex-col">
             {people.map((p) => (
-              <Link
-                key={p.userId}
-                href={p.username ? `/u/${p.username}` : `/list/${p.userId}`}
-                onClick={onClose}
-                className="flex items-center gap-3 transition-opacity hover:opacity-75 active:opacity-60"
-              >
-                {p.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.avatarUrl} alt="" aria-hidden="true" className="w-9 h-9 rounded-full" referrerPolicy="no-referrer" />
-                ) : (
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold"
-                    style={{ backgroundColor: "var(--bg-inset)", color: "var(--text)" }}
-                  >
-                    {p.name[0]}
-                  </div>
-                )}
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{p.name}</span>
-                  {p.isActiveLocal && (
-                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>Active locally</span>
-                  )}
-                </div>
-              </Link>
+              <li key={p.userId}>
+                <PersonRow p={p} meta={p.isActiveLocal ? "Active locally" : null} onSelect={onClose} />
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
     </div>,

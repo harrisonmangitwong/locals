@@ -238,9 +238,9 @@ export default function PickPage() {
     : cuisineOptions.filter((c) => COMMON_CUISINES.includes(c) || cuisines.has(c));
   const hiddenCuisineCount = cuisineOptions.length - visibleCuisines.length;
   const ctaHint = loading
-    ? "Finding places that fit..."
+    ? "Finding places that fit…"
     : fetchError
-      ? "Couldn't load places. Check your connection and try again."
+      ? "Couldn’t load places. Check your connection and try again."
       : count >= 2
         ? `We'll compare ${count} places that are open now`
         : count === 1
@@ -308,8 +308,8 @@ export default function PickPage() {
                       const c = NEIGHBORHOOD_COORDS[name];
                       setLocation(c ? { lat: c[0], lng: c[1], label: `Near ${name}` } : null);
                     }}
-                    className="filter-control w-full rounded-xl px-4 py-3 text-[15px] cursor-pointer"
-                    style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "none", colorScheme: "light dark" }}
+                    className="search-field w-full h-11 rounded-xl px-4 text-[15px] cursor-pointer"
+                    style={{ colorScheme: "light dark" }}
                   >
                     <option value="">{deviceLocation ? "My current location" : "Anywhere in NYC"}</option>
                     {Object.keys(NEIGHBORHOOD_COORDS).sort().map((n) => <option key={n} value={n}>{n}</option>)}
@@ -395,7 +395,7 @@ export default function PickPage() {
 
               {visitedIds.length > 0 && (
                 <section className="mt-8">
-                  <h2 className="text-[17px] font-semibold mb-3">Places you&apos;ve been</h2>
+                  <h2 className="text-[17px] font-semibold mb-3">Places you&rsquo;ve been</h2>
                   <div className="grid grid-cols-2 gap-2">
                     {[{ label: "Include them", value: false }, { label: "Only new to me", value: true }].map((o) => (
                       <button

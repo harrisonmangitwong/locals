@@ -31,7 +31,7 @@ const STEPS = [
   },
   {
     title: "Rated by people who live here",
-    body: "Every review counts, but reviews from New Yorkers count more. How local a reviewer is comes from where else they review, whether they've reviewed here over time or in one burst, and Google Local Guide status.",
+    body: "Every review counts, but reviews from New Yorkers count more. How local a reviewer is comes from where else they review, whether they’ve reviewed here over time or in one burst, and Google Local Guide status.",
   },
   {
     title: "Checked against the hype",
@@ -39,7 +39,7 @@ const STEPS = [
   },
   {
     title: "Then you choose",
-    body: "A few rounds of this or that, between places you haven't been, until there's one left. That's where you're going.",
+    body: "A few rounds of this or that, between places you haven’t been, until there’s one left. That’s where you’re going.",
   },
 ];
 
@@ -63,12 +63,12 @@ export default async function AboutPage() {
           </p>
           <p>
             Back in New York, it was the same problem with more apps. Beli, Google Maps, TikTok,
-            whatever friends had saved. I never had too few options. I&apos;d still end up somewhere
+            whatever friends had saved. I never had too few options. I&rsquo;d still end up somewhere
             overhyped, or too expensive for what it was, because the hard part was never finding
             a place. It was picking one.
           </p>
           <p>
-            So Locals does the picking. Tell it what you&apos;re in the mood for, compare a few
+            So Locals does the picking. Tell it what you&rsquo;re in the mood for, compare a few
             places that are open near you, and it hands you one. Behind that are {REVIEW_COUNT_LABEL}{" "}
             reviews of {restaurantCount ? `${restaurantCount.toLocaleString()} restaurants` : "restaurants"} across
             Manhattan, Brooklyn, Queens and the Bronx, weighted toward the people who actually live here.

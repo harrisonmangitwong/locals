@@ -116,8 +116,8 @@ export default function VisitedPage() {
 
         {!authLoading && !user && (
           <LockedState
-            heading="Sign in to see where you've been"
-            body="Rate the places you've been and build your own ranked list."
+            heading="Sign in to see where you’ve been"
+            body="Rate the places you’ve been and build your own ranked list."
             cta={<GoogleSignInButton />}
           />
         )}
@@ -126,7 +126,7 @@ export default function VisitedPage() {
 
         {user && !loading && fetchError && (
           <LockedState
-            heading="Couldn't load your places"
+            heading="Couldn’t load your places"
             body="Check your connection and try again."
             cta={<button onClick={() => window.location.reload()} className="soft-btn px-6 text-[15px]">Try again</button>}
           />
@@ -135,7 +135,7 @@ export default function VisitedPage() {
         {user && !loading && !fetchError && empty && (
           <LockedState
             heading="Nowhere yet"
-            body="After you've been somewhere, tap the check on it to rate it. Your list builds itself from there."
+            body="After you’ve been somewhere, tap the check on it to rate it. Your list builds itself from there."
             cta={<Link href="/recommendations" className="cta-btn inline-flex items-center justify-center px-7 text-[15px]">Browse all places</Link>}
           />
         )}
