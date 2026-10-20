@@ -8,9 +8,7 @@
    comes from the food photos and from small status tags, each of which
    means one thing: green = open now, purple = still in / your pick.
    DESIGN.md (repo root) is the spec; these variables are its source of
-   truth in code. Use --cta-bg / --cta-text for anything filled with ink.
-   --accent*, --warm*, --star-* and --success* are legacy aliases kept for
-   older pages; don't reach for them in new work. */
+   truth in code. Use --cta-bg / --cta-text for anything filled with ink. */
 :root {
   --bg: #f7f4ee;
   --bg-card: #ffffff;
@@ -22,10 +20,6 @@
   --cta-bg: #131517;
   --cta-bg-hover: #2e3135;
   --cta-text: #ffffff;
-  --accent: #131517;
-  --accent-hover: #2e3135;
-  --accent-soft: rgba(19,21,23,0.08);
-  --accent-text: #131517;
   --tag-open-bg: #e3f6e9;
   --tag-open-text: #11703a;
   --tag-pick-bg: #efe9ff;
@@ -35,16 +29,8 @@
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
   --shadow: 0 2px 10px rgba(0,0,0,0.08);
   --shadow-lg: 0 12px 36px rgba(0,0,0,0.12);
-  --shadow-card-hover: 0 14px 36px rgba(0,0,0,0.14);
   --shadow-float: 0 10px 34px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.06);
   --glass: rgba(247,244,238,0.8);
-  --star-fill: #131517;
-  --star-empty: rgba(19,21,23,0.15);
-  --success: #11703a;
-  --success-soft: #e3f6e9;
-  --success-strong: #1f9d55;
-  --warm: #131517;
-  --warm-soft: rgba(19,21,23,0.06);
   /* Google's "neutral" sign-in button (from its branding guidelines), so
      it sits in the header as a quiet secondary pill. */
   --gsi-bg: #eeeae2;
@@ -66,10 +52,6 @@
     --cta-bg: #ffffff;
     --cta-bg-hover: #e4e4e7;
     --cta-text: #131517;
-    --accent: #f5f5f7;
-    --accent-hover: #d9d9dc;
-    --accent-soft: rgba(245,245,247,0.12);
-    --accent-text: #f5f5f7;
     --tag-open-bg: #163322;
     --tag-open-text: #5fd68a;
     --tag-pick-bg: #2a2140;
@@ -79,16 +61,8 @@
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
     --shadow: 0 2px 10px rgba(0,0,0,0.4);
     --shadow-lg: 0 12px 36px rgba(0,0,0,0.5);
-    --shadow-card-hover: 0 14px 36px rgba(0,0,0,0.5);
     --shadow-float: 0 10px 34px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
     --glass: rgba(30,31,34,0.72);
-    --star-fill: #f5f5f7;
-    --star-empty: rgba(245,245,247,0.18);
-    --success: #5fd68a;
-    --success-soft: #163322;
-    --success-strong: #34c46a;
-    --warm: #f5f5f7;
-    --warm-soft: rgba(245,245,247,0.08);
     --gsi-bg: #2a2b2e;
     --gsi-text: #e3e3e3;
     --gsi-border: transparent;
@@ -176,6 +150,10 @@ a, button, [role="button"] {
 .soft-btn:hover {
   background-color: var(--bg-inset);
 }
+/* Inside list rows (e.g. Accept on a follow request): still a 44px target,
+   one step quieter than the 50px page-level pill. */
+.soft-btn.is-compact,
+.cta-btn.is-compact { min-height: 44px; }
 .soft-btn:active {
   transform: scale(0.98);
 }
@@ -289,21 +267,17 @@ a, button, [role="button"] {
 .tag-plain { background: var(--bg); color: var(--text); box-shadow: var(--shadow-sm); }
 
 /* ── Google sign-in button ── */
+/* Google's neutral button: a soft pill like any secondary action. */
 .google-signin-btn {
-  transition: box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 44px;
+  transition: background-color 150ms var(--ease-out), transform 140ms var(--ease-out);
 }
-.google-signin-btn:hover {
-  box-shadow: var(--shadow);
-  transform: translateY(-1px);
-}
-.google-signin-btn:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-sm);
-}
+.google-signin-btn:hover { background-color: var(--bg-inset) !important; }
+.google-signin-btn:active { transform: scale(0.98); }
 
 /* ── Global focus-visible ── */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -369,10 +343,10 @@ a, button, [role="button"] {
   outline: none;
 }
 .price-slider:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow);
+  box-shadow: 0 0 0 3px var(--border-strong), var(--shadow);
 }
 .price-slider:focus-visible::-moz-range-thumb {
-  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow);
+  box-shadow: 0 0 0 3px var(--border-strong), var(--shadow);
 }
 
 /* ── Rating bar fill ── */
@@ -499,7 +473,7 @@ a, button, [role="button"] {
   transform: scale(0.985);
 }
 .pick-choice:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--text);
   outline-offset: 4px;
 }
 .pick-choice.is-chosen {
@@ -739,6 +713,10 @@ a, button, [role="button"] {
 .scene {
   --bg-subtle: rgba(255,255,255,0.62);
   --bg-inset: rgba(255,255,255,0.86);
+  /* Grays sit on a photo wash here, not flat paper, so they run darker to
+     hold 4.5:1 (#66625b measured 3.1:1 on some photos; these hold 4.9+). */
+  --text-secondary: #45413b;
+  --text-muted: #4a463f;
 }
 .scene-backdrop {
   position: absolute;

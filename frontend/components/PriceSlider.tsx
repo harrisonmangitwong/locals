@@ -20,8 +20,8 @@ export default function PriceSlider({ value, onChange }: PriceSliderProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
-          {value === null ? "No preference set" : shown >= MAX_PRICE ? "$100+ per person" : `~$${shown} per person`}
+        <span className="text-[15px] font-medium tabular-nums" style={{ color: value === null ? "var(--text-secondary)" : "var(--text)" }}>
+          {value === null ? "No preference" : shown >= MAX_PRICE ? "$100+ a person" : `About $${shown} a person`}
         </span>
       </div>
       <input
@@ -35,7 +35,7 @@ export default function PriceSlider({ value, onChange }: PriceSliderProps) {
         className="price-slider"
         style={{ "--slider-pct": `${pct}%` } as CSSProperties}
       />
-      <div className="flex justify-between mt-1.5 text-xs" style={{ color: "var(--text-muted)" }}>
+      <div className="flex justify-between mt-1.5 text-[13px] tabular-nums" style={{ color: "var(--text-secondary)" }}>
         <span>$0</span>
         <span>$100+</span>
       </div>

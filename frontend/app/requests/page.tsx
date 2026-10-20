@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Avatar from "@/components/Avatar";
+import Icon from "@/components/Icon";
+import LockedState from "@/components/LockedState";
 import SiteHeader from "@/components/SiteHeader";
 
 interface FollowRequest {
@@ -44,75 +47,62 @@ export default function RequestsPage() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader />
 
-      <main id="main-content" className="flex-1 w-full max-w-lg mx-auto px-4 sm:px-6 py-8">
-        <h1 className="font-display text-3xl mb-6" style={{ color: "var(--text)" }}>Follow requests</h1>
+      <main id="main-content" className="flex-1 w-full max-w-xl mx-auto px-4 sm:px-6 pt-6 md:pt-10 pb-14">
+        <h1 className="font-display text-[34px] md:text-[44px]">Follow requests</h1>
 
         {loading && (
-          <div className="space-y-3">
+          <div className="mt-6 flex flex-col gap-4" aria-busy="true" aria-label="Loading requests">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="skeleton h-16 rounded-xl" />
+              <div key={i} className="flex items-center gap-3">
+                <div className="skeleton w-11 h-11 rounded-full" />
+                <div className="skeleton h-4 w-40 rounded" />
+              </div>
             ))}
           </div>
         )}
 
         {!loading && requests.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>No pending requests</p>
-            <p className="text-sm max-w-sm" style={{ color: "var(--text-muted)" }}>
-              When someone with a private account wants to follow you, it&apos;ll show up here.
-            </p>
-          </div>
+          <LockedState
+            heading="No requests right now"
+            body="When someone asks to follow your private account, they'll show up here."
+          />
         )}
 
         {!loading && requests.length > 0 && (
-          <div className="space-y-3">
-            {requests.map((r) => (
-              <div
+          <ul className="mt-5">
+            {requests.map((r, i) => (
+              <li
                 key={r.userId}
-                className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)" }}
+                className="flex items-center gap-3 py-3"
+                style={{ borderTop: i ? "1px solid var(--border)" : undefined }}
               >
-                {r.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.avatarUrl} alt="" className="w-10 h-10 rounded-full shrink-0" referrerPolicy="no-referrer" />
-                ) : (
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0"
-                    style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
-                  >
-                    {r.name[0]}
-                  </div>
-                )}
-                <div className="flex-1 min-w-0 flex items-center gap-2">
-                  <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>{r.name}</p>
+                <Avatar url={r.avatarUrl} name={r.name} size="md" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[16px] font-semibold truncate">{r.name}</p>
                   {r.isActiveLocal && (
-                    <span
-                      className="text-xs font-medium px-2 py-0.5 rounded-full shrink-0"
-                      style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
-                    >
-                      Active locally
-                    </span>
+                    <p className="flex items-center gap-1 text-[13px]" style={{ color: "var(--text-secondary)" }}>
+                      <Icon name="map-pin" size={12} /> Active locally
+                    </p>
                   )}
                 </div>
                 <button
-                  onClick={() => respond(r.userId, "decline")}
-                  disabled={respondingTo === r.userId}
-                  className="text-xs font-medium px-3 py-2 rounded-full min-h-[44px] transition-opacity hover:opacity-75 active:opacity-60 disabled:opacity-50"
-                  style={{ color: "var(--text-secondary)", border: "1px solid var(--border-strong)" }}
-                >
-                  Decline
-                </button>
-                <button
                   onClick={() => respond(r.userId, "accept")}
                   disabled={respondingTo === r.userId}
-                  className="text-xs font-semibold px-3 py-2 rounded-full min-h-[44px] transition-opacity hover:opacity-90 active:opacity-75 disabled:opacity-50"
-                  style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
+                  className="soft-btn is-compact px-5 text-[15px] disabled:opacity-40"
                 >
                   Accept
                 </button>
-              </div>
+                <button
+                  onClick={() => respond(r.userId, "decline")}
+                  disabled={respondingTo === r.userId}
+                  aria-label={`Decline ${r.name}`}
+                  className="row-action disabled:opacity-40"
+                >
+                  <Icon name="x" size={18} />
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </main>
     </div>

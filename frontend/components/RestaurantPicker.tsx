@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Icon from "@/components/Icon";
 import { getPhotoUrl } from "@/lib/photoFallback";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -62,17 +63,16 @@ export default function RestaurantPicker({ selected, onChange }: RestaurantPicke
           {selected.map((r) => (
             <button
               key={r.restaurant_id}
+              type="button"
               onClick={() => removeRestaurant(r.restaurant_id)}
-              className="flex items-center gap-1.5 text-xs font-medium pl-1 pr-2 min-h-[44px] rounded-full transition-opacity hover:opacity-75"
-              style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent-text)" }}
+              aria-label={`Remove ${r.name}`}
+              className="filter-pill is-active h-11 pl-1.5 pr-3 text-[15px] font-medium inline-flex items-center gap-2"
             >
-              <span className="relative w-5 h-5 rounded-full overflow-hidden shrink-0">
-                <Image src={r.image_url || getPhotoUrl(r.cuisine)} alt="" fill sizes="20px" className="object-cover" />
+              <span className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
+                <Image src={r.image_url || getPhotoUrl(r.cuisine)} alt="" fill sizes="32px" className="object-cover" />
               </span>
               {r.name}
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <Icon name="x" size={14} />
             </button>
           ))}
         </div>
@@ -84,32 +84,31 @@ export default function RestaurantPicker({ selected, onChange }: RestaurantPicke
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search for a restaurant..."
-        className="search-input w-full rounded-lg px-3 py-2.5 text-sm min-h-[44px]"
-        style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", outline: "none" }}
+        placeholder="Search for a restaurant"
+        className="search-field w-full h-11 rounded-full px-4 text-[15px]"
       />
 
       {query.trim() && (
-        <div className="mt-2 rounded-lg overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+        <div className="mt-2 flex flex-col" aria-live="polite">
           {searching && (
-            <div className="px-3 py-2.5 text-sm" style={{ color: "var(--text-muted)" }}>Searching…</div>
+            <p className="px-1 py-2.5 text-[15px]" style={{ color: "var(--text-secondary)" }}>Searching…</p>
           )}
           {!searching && results.length === 0 && (
-            <div className="px-3 py-2.5 text-sm" style={{ color: "var(--text-muted)" }}>No matches.</div>
+            <p className="px-1 py-2.5 text-[15px]" style={{ color: "var(--text-secondary)" }}>No matches.</p>
           )}
           {!searching && results.map((r) => (
             <button
               key={r.restaurant_id}
+              type="button"
               onClick={() => addRestaurant(r)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors hover:opacity-75"
-              style={{ backgroundColor: "var(--bg-card)" }}
+              className="w-full flex items-center gap-3 px-2 py-2 -mx-0 rounded-xl text-left transition-colors hover:bg-[var(--bg-subtle)]"
             >
-              <span className="relative w-9 h-9 rounded-lg overflow-hidden shrink-0">
-                <Image src={r.image_url || getPhotoUrl(r.cuisine)} alt="" fill sizes="36px" className="object-cover" />
+              <span className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0" style={{ backgroundColor: "var(--bg-inset)" }}>
+                <Image src={r.image_url || getPhotoUrl(r.cuisine)} alt="" fill sizes="44px" className="object-cover" />
               </span>
               <span className="flex flex-col min-w-0">
-                <span className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>{r.name}</span>
-                <span className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{r.neighborhood} · {r.cuisine}</span>
+                <span className="text-[15px] font-semibold truncate" style={{ color: "var(--text)" }}>{r.name}</span>
+                <span className="text-[13px] truncate" style={{ color: "var(--text-secondary)" }}>{r.neighborhood} · {r.cuisine}</span>
               </span>
             </button>
           ))}

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import Chip from "./Chip";
+import Icon from "./Icon";
 import {
   BUCKETS,
   TAGS,
@@ -155,10 +157,10 @@ export default function RateRestaurantFlow({
       >
         {step === "bucket" && (
           <>
-            <h2 className="font-display text-xl mb-1" style={{ color: "var(--text)" }}>
+            <h2 className="text-[21px] font-semibold tracking-[-0.015em] text-balance">
               How was {restaurantName}?
             </h2>
-            <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
+            <p className="text-[15px] mt-1 mb-5" style={{ color: "var(--text-secondary)" }}>
               This adds it to your ranked Visited list.
             </p>
             <div className="flex flex-col gap-2">
@@ -166,9 +168,10 @@ export default function RateRestaurantFlow({
                 <button
                   key={b.key}
                   onClick={() => pickBucket(b.key)}
-                  className="cta-btn rounded-xl px-4 py-3 text-sm font-semibold text-left"
+                  className="soft-btn w-full flex items-center justify-between px-5 text-[16px]"
                 >
                   {b.label}
+                  <Icon name="chevron-right" size={16} />
                 </button>
               ))}
             </div>
@@ -176,19 +179,15 @@ export default function RateRestaurantFlow({
         )}
 
         {step === "loading" && (
-          <div className="py-10 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+          <div className="py-10 text-center text-[15px]" style={{ color: "var(--text-secondary)" }} role="status">
             Loading your rankings…
           </div>
         )}
 
         {step === "error" && (
           <div className="py-6 text-center">
-            <p className="text-sm mb-4" style={{ color: "var(--accent)" }}>{errorMsg}</p>
-            <button
-              onClick={() => bucket && pickBucket(bucket)}
-              className="text-sm font-medium underline"
-              style={{ color: "var(--text-muted)" }}
-            >
+            <p role="alert" className="text-[15px] mb-4" style={{ color: "var(--text)" }}>{errorMsg}</p>
+            <button onClick={() => bucket && pickBucket(bucket)} className="soft-btn px-6 text-[15px]">
               Try again
             </button>
           </div>
@@ -196,70 +195,46 @@ export default function RateRestaurantFlow({
 
         {step === "comparison" && compareTarget && (
           <>
-            <h2 className="font-semibold text-lg mb-4 text-center" style={{ color: "var(--text)" }}>
+            <h2 className="text-[21px] font-semibold tracking-[-0.015em] mb-5 text-center">
               Which did you like more?
             </h2>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => answerComparison("better")}
-                className="flex flex-col items-center gap-2 rounded-xl p-3 transition-transform hover:scale-[1.03] active:scale-95"
-                style={{ border: "1px solid var(--border-strong)" }}
-              >
-                <div className="relative w-full h-24 rounded-lg overflow-hidden">
-                  {restaurantPhotoUrl && (
-                    <Image src={restaurantPhotoUrl} alt={restaurantName} fill sizes="150px" className="object-cover" />
-                  )}
-                </div>
-                <span className="text-xs font-medium text-center" style={{ color: "var(--text)" }}>{restaurantName}</span>
-              </button>
-              <button
-                onClick={() => answerComparison("worse")}
-                className="flex flex-col items-center gap-2 rounded-xl p-3 transition-transform hover:scale-[1.03] active:scale-95"
-                style={{ border: "1px solid var(--border-strong)" }}
-              >
-                <div className="relative w-full h-24 rounded-lg overflow-hidden">
-                  {compareTarget.image_url && (
-                    <Image src={compareTarget.image_url} alt={compareTarget.name} fill sizes="150px" className="object-cover" />
-                  )}
-                </div>
-                <span className="text-xs font-medium text-center" style={{ color: "var(--text)" }}>{compareTarget.name}</span>
-              </button>
+            {/* The same this-or-that as Help me pick: no box until hover. */}
+            <div className="grid grid-cols-2 gap-5">
+              {[
+                { side: "better" as const, name: restaurantName, photo: restaurantPhotoUrl },
+                { side: "worse" as const, name: compareTarget.name, photo: compareTarget.image_url },
+              ].map((o) => (
+                <button key={o.side} onClick={() => answerComparison(o.side)} className="pick-choice flex flex-col gap-2">
+                  <span className="pick-photo relative block w-full aspect-square rounded-[18px] overflow-hidden" style={{ backgroundColor: "var(--bg-inset)" }}>
+                    {o.photo && <Image src={o.photo} alt="" fill sizes="160px" className="object-cover" />}
+                  </span>
+                  <span className="text-[15px] font-semibold leading-snug line-clamp-2">{o.name}</span>
+                </button>
+              ))}
             </div>
           </>
         )}
 
         {(step === "tags" || step === "submitting") && bucket && (
           <>
-            <h2 className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>
+            <h2 className="text-[21px] font-semibold tracking-[-0.015em] mb-4">
               {BUCKETS.find((b) => b.key === bucket)!.prompt}
             </h2>
             <div className="flex flex-wrap gap-2 mb-5">
               {TAGS.map((tag) => {
                 const active = selectedTags.includes(tag);
                 return (
-                  <button
-                    key={tag}
-                    onClick={() => toggleTag(tag)}
-                    aria-pressed={active}
-                    className="text-sm font-medium px-3 py-2 rounded-full transition-all hover:opacity-75 active:scale-95"
-                    style={{
-                      backgroundColor: active ? "var(--accent)" : "var(--bg-subtle)",
-                      color: active ? "#ffffff" : "var(--text-secondary)",
-                      border: `1px solid ${active ? "var(--accent)" : "var(--border)"}`,
-                    }}
-                  >
-                    {TAG_LABELS[tag]}
-                  </button>
+                  <Chip key={tag} label={TAG_LABELS[tag]} active={active} onClick={() => toggleTag(tag)} />
                 );
               })}
             </div>
             {errorMsg && (
-              <p className="text-xs mb-3" style={{ color: "var(--accent)" }}>{errorMsg}</p>
+              <p role="alert" className="text-[13px] mb-3" style={{ color: "var(--text)" }}>{errorMsg}</p>
             )}
             <button
               onClick={submit}
               disabled={step === "submitting"}
-              className="cta-btn w-full rounded-full px-4 py-3 text-sm font-semibold disabled:opacity-50"
+              className="cta-btn w-full text-[16px] disabled:opacity-40"
             >
               {step === "submitting" ? "Saving…" : "Save"}
             </button>

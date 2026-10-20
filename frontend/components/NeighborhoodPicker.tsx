@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Chip from "./Chip";
+import Icon from "./Icon";
 
 // The 10 neighborhoods with the most restaurants in the live dataset --
 // one-tap picks for people who don't want to type, computed from
@@ -35,14 +36,13 @@ export default function NeighborhoodPicker({
           {selected.map((n) => (
             <button
               key={n}
+              type="button"
               onClick={() => onToggle(n)}
-              className="flex items-center gap-1.5 text-xs font-medium pl-3 pr-2 min-h-[44px] rounded-full transition-opacity hover:opacity-75"
-              style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent-text)" }}
+              aria-label={`Remove ${n}`}
+              className="filter-pill is-active h-11 pl-4 pr-3 text-[15px] font-medium inline-flex items-center gap-1.5"
             >
               {n}
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <Icon name="x" size={14} />
             </button>
           ))}
         </div>
@@ -60,7 +60,7 @@ export default function NeighborhoodPicker({
 
       {trimmed ? (
         matches.length === 0 ? (
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>No matches.</p>
+          <p className="text-[15px]" style={{ color: "var(--text-secondary)" }}>No matches.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {matches.map((n) => (
@@ -71,7 +71,7 @@ export default function NeighborhoodPicker({
       ) : (
         popular.length > 0 && (
           <>
-            <p className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Popular</p>
+            <p className="text-[13px] font-medium mb-2" style={{ color: "var(--text-secondary)" }}>Popular</p>
             <div className="flex flex-wrap gap-2">
               {popular.map((n) => (
                 <Chip key={n} label={n} active={selected.includes(n)} onClick={() => onToggle(n)} />

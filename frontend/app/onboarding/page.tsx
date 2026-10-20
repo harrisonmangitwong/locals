@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import RestaurantPicker from "@/components/RestaurantPicker";
 import PriceSlider from "@/components/PriceSlider";
@@ -85,7 +85,7 @@ export default function OnboardingPage() {
       setTimeout(() => router.push("/recommendations"), 700);
     } catch {
       setSubmitting(false);
-      setSaveError("Couldn't save your picks, but you can set these anytime from your profile.");
+      setSaveError("Couldn't save your picks. You can set them anytime from your profile.");
     }
   }
 
@@ -105,37 +105,35 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <header
-        className="sticky top-0 z-50 flex items-center justify-between px-6 py-4"
+        className="sticky top-0 z-50 h-14 flex items-center justify-between px-4 sm:px-6"
         style={{ backgroundColor: "var(--bg)", borderBottom: "1px solid var(--border)" }}
       >
-        <span className="font-display text-xl" style={{ color: "var(--text)" }}>Locals</span>
+        <span className="text-[19px] font-bold tracking-[-0.025em]">Locals</span>
         <button
           onClick={handleSkip}
-          className="inline-flex items-center min-h-[44px] px-2 text-sm font-medium transition-opacity hover:opacity-75 active:opacity-60"
-          style={{ color: "var(--text-muted)" }}
+          className="min-h-[44px] px-3 -mr-3 rounded-full text-[15px] font-medium transition-colors hover:bg-[var(--bg-subtle)]"
+          style={{ color: "var(--text-secondary)" }}
         >
           Skip for now
         </button>
       </header>
 
-      <main id="main-content" className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-10">
-        <h1 className="font-display text-3xl mb-2" style={{ color: "var(--text)" }}>
-          A few quick things
-        </h1>
-        <p className="text-base mb-10" style={{ color: "var(--text-muted)" }}>
-          This helps us show you better picks right away, instead of waiting for you to save a bunch of restaurants first. All of it is optional, and changeable anytime from your profile.
+      <main id="main-content" className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 pt-6 md:pt-10 pb-10">
+        <h1 className="font-display text-[34px] md:text-[44px] rise" style={{ "--i": 0 } as CSSProperties}>A few quick things</h1>
+        <p className="text-[17px] leading-relaxed mt-3 max-w-[52ch] rise" style={{ color: "var(--text-secondary)", "--i": 1 } as CSSProperties}>
+          So your first picks fit you, not just whatever&rsquo;s popular. Everything here is optional, and you can change it anytime from your profile.
         </p>
 
         {optionsLoadError && (
-          <p className="text-sm mb-6" style={{ color: "var(--accent)" }}>
-            Couldn&apos;t load cuisine and neighborhood options — try refreshing the page.
+          <p role="alert" className="text-[15px] mt-6" style={{ color: "var(--text)" }}>
+            Couldn&rsquo;t load cuisines and neighborhoods. Try refreshing the page.
           </p>
         )}
 
-        <section className="mb-10">
-          <h2 className="text-sm font-medium mb-3" style={{ color: "var(--text)" }}>Cuisines you like</h2>
+        <section className="mt-10 rise" style={{ "--i": 2 } as CSSProperties} aria-labelledby="ob-cuisines">
+          <h2 id="ob-cuisines" className="text-[17px] font-semibold mb-3">Cuisines you like</h2>
           {loadingOptions ? (
-            <div className="skeleton h-10 w-full rounded-full" />
+            <div className="skeleton h-11 w-full rounded-full" />
           ) : (
             <ExpandableChipGroup
               options={cuisineOrigins}
@@ -147,15 +145,15 @@ export default function OnboardingPage() {
           )}
         </section>
 
-        <section className="mb-10">
-          <h2 className="text-sm font-medium mb-3" style={{ color: "var(--text)" }}>Typical price range</h2>
+        <section className="mt-9 rise" style={{ "--i": 3 } as CSSProperties} aria-labelledby="ob-price">
+          <h2 id="ob-price" className="text-[17px] font-semibold mb-3">Typical price</h2>
           <PriceSlider value={selectedPrice} onChange={setSelectedPrice} />
         </section>
 
-        <section className="mb-10">
-          <h2 className="text-sm font-medium mb-3" style={{ color: "var(--text)" }}>Neighborhood preferences</h2>
+        <section className="mt-9 rise" style={{ "--i": 4 } as CSSProperties} aria-labelledby="ob-hoods">
+          <h2 id="ob-hoods" className="text-[17px] font-semibold mb-3">Neighborhoods</h2>
           {loadingOptions ? (
-            <div className="skeleton h-10 w-full rounded-full" />
+            <div className="skeleton h-11 w-full rounded-full" />
           ) : (
             <NeighborhoodPicker
               options={neighborhoods}
@@ -165,23 +163,28 @@ export default function OnboardingPage() {
           )}
         </section>
 
-        <section className="mb-10">
-          <h2 className="text-sm font-medium mb-1" style={{ color: "var(--text)" }}>Favorite NYC restaurants</h2>
-          <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>Optional — a few places you already love.</p>
+        <section className="mt-9 rise" style={{ "--i": 5 } as CSSProperties} aria-labelledby="ob-favs">
+          <h2 id="ob-favs" className="text-[17px] font-semibold">Places you already love</h2>
+          <p className="text-[15px] mt-1 mb-3" style={{ color: "var(--text-secondary)" }}>A few favorites, so we know your taste.</p>
           <RestaurantPicker selected={favorites} onChange={setFavorites} />
         </section>
-
-        <button
-          onClick={() => finishOnboarding(favorites.map((f) => f.restaurant_id))}
-          disabled={submitting}
-          className="cta-btn px-6 py-3 rounded-full text-sm font-semibold disabled:opacity-50"
-        >
-          {justFinished ? "All set — taking you there…" : submitting ? "Saving…" : "Finish"}
-        </button>
-        {saveError && (
-          <p className="text-sm mt-3" style={{ color: "var(--accent)" }}>{saveError}</p>
-        )}
       </main>
+
+      {/* The one action stays in reach, like the bottom bar in Help me pick. */}
+      <div className="sticky bottom-0 w-full" style={{ backgroundColor: "var(--bg)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-2 pb-3">
+          {saveError && (
+            <p role="alert" className="text-[13px] mb-2 text-center" style={{ color: "var(--text)" }}>{saveError}</p>
+          )}
+          <button
+            onClick={() => finishOnboarding(favorites.map((f) => f.restaurant_id))}
+            disabled={submitting}
+            className="cta-btn w-full md:w-auto md:min-w-[240px] px-8 text-[16px] disabled:opacity-40"
+          >
+            {justFinished ? "All set, taking you there…" : submitting ? "Saving…" : "Finish"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

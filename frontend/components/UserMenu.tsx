@@ -77,20 +77,20 @@ export default function UserMenu() {
         aria-expanded={open}
         aria-label={`Account menu for ${name}`}
         className="relative flex items-center gap-2 transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-full"
-        style={{ ["--tw-ring-color" as string]: "var(--accent)", ["--tw-ring-offset-color" as string]: "var(--bg)" }}
+        style={{ ["--tw-ring-color" as string]: "var(--text)", ["--tw-ring-offset-color" as string]: "var(--bg)" }}
       >
         {avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatar} alt="" aria-hidden="true" className="w-7 h-7 rounded-full" referrerPolicy="no-referrer" />
         ) : (
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold" style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold" style={{ backgroundColor: "var(--bg-inset)", color: "var(--text)" }}>
             {name[0]}
           </div>
         )}
         {requestCount > 0 && (
           <span
             className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: "var(--accent)", border: "1.5px solid var(--bg)" }}
+            style={{ backgroundColor: "var(--cta-bg)", border: "1.5px solid var(--bg)" }}
             aria-hidden="true"
           />
         )}
@@ -115,7 +115,7 @@ export default function UserMenu() {
             ) : (
               <div
                 className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold shrink-0"
-                style={{ backgroundColor: "var(--cta-bg)", color: "var(--cta-text)" }}
+                style={{ backgroundColor: "var(--bg-inset)", color: "var(--text)" }}
               >
                 {name[0]}
               </div>
@@ -165,11 +165,11 @@ export default function UserMenu() {
             <span>Private account</span>
             <span
               className="relative inline-flex items-center rounded-full transition-colors duration-150"
-              style={{ width: 32, height: 18, backgroundColor: isPrivate ? "var(--accent)" : "var(--border-strong)" }}
+              style={{ width: 32, height: 18, backgroundColor: isPrivate ? "var(--cta-bg)" : "var(--border-strong)" }}
             >
               <span
-                className="absolute rounded-full bg-white transition-transform duration-150"
-                style={{ width: 14, height: 14, left: 2, transform: isPrivate ? "translateX(14px)" : "translateX(0)" }}
+                className="absolute rounded-full transition-transform duration-150"
+                style={{ width: 14, height: 14, left: 2, backgroundColor: isPrivate ? "var(--cta-text)" : "var(--bg-card)", transform: isPrivate ? "translateX(14px)" : "translateX(0)" }}
               />
             </span>
           </button>

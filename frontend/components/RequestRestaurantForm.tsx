@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "./Icon";
 import SignInPrompt from "./SignInPrompt";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -40,7 +41,7 @@ export default function RequestRestaurantForm({
       if (!res.ok) throw new Error();
       setSubmitted(true);
     } catch {
-      setError("Something went wrong — try again?");
+      setError("Couldn't send that. Try again?");
     } finally {
       setSubmitting(false);
     }
@@ -48,8 +49,8 @@ export default function RequestRestaurantForm({
 
   if (submitted) {
     return (
-      <p className={`text-sm fade-in ${className}`} style={{ color: "var(--success)" }}>
-        Thanks — we&apos;ll take a look!
+      <p role="status" className={`inline-flex items-center gap-1.5 text-[15px] fade-in ${className}`} style={{ color: "var(--text)" }}>
+        <Icon name="circle-check" size={16} /> Thanks, we&apos;ll take a look.
       </p>
     );
   }
@@ -59,8 +60,8 @@ export default function RequestRestaurantForm({
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="text-sm font-medium transition-opacity hover:opacity-75 min-h-[44px] flex items-center"
-        style={{ color: "var(--accent-text)" }}
+        className="text-[14px] font-medium min-h-[44px] px-3 rounded-full flex items-center transition-colors hover:bg-[var(--bg-subtle)]"
+        style={{ color: "var(--text-secondary)" }}
       >
         {triggerLabel}
       </button>
@@ -76,8 +77,8 @@ export default function RequestRestaurantForm({
               placeholder="Restaurant name or feedback"
               maxLength={200}
               required
-              className="search-input rounded-lg px-3 py-2.5 text-sm min-h-[44px]"
-              style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", outline: "none" }}
+              aria-describedby={error ? "req-error" : undefined}
+              className="search-field h-11 rounded-xl px-4 text-[15px]"
             />
             <label htmlFor="req-note" className="sr-only">More details</label>
             <textarea
@@ -87,16 +88,15 @@ export default function RequestRestaurantForm({
               placeholder="Any more details? (optional)"
               maxLength={500}
               rows={2}
-              className="search-input rounded-lg px-3 py-2.5 text-sm resize-none"
-              style={{ backgroundColor: "var(--bg-subtle)", color: "var(--text)", border: "1px solid var(--border)", outline: "none" }}
+              className="search-field rounded-xl px-4 py-3 text-[15px] resize-none"
             />
             {error && (
-              <p className="text-xs" style={{ color: "var(--accent)" }}>{error}</p>
+              <p id="req-error" role="alert" className="text-[13px]" style={{ color: "var(--text)" }}>{error}</p>
             )}
             <button
               type="submit"
               disabled={submitting || !name.trim()}
-              className="cta-btn self-start px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50"
+              className="soft-btn self-start px-6 text-[15px] disabled:opacity-40"
             >
               {submitting ? "Sending…" : "Send"}
             </button>

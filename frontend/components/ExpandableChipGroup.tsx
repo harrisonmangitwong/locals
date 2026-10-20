@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Chip from "./Chip";
+import Icon from "./Icon";
 
 // Matches .chip-collapse's collapsed max-height in globals.css -- one row of chips.
 const CHIP_COLLAPSE_HEIGHT = 52;
@@ -39,7 +40,7 @@ export default function ExpandableChipGroup({
 
   return (
     <div className="mb-5 last:mb-0">
-      {label && <p className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>{label}</p>}
+      {label && <p className="text-[13px] font-medium mb-2" style={{ color: "var(--text-secondary)" }}>{label}</p>}
       <div ref={containerRef} className={`chip-collapse${expanded ? " open" : ""}`}>
         <div className="flex flex-wrap gap-2">
           {options.map((o) => (
@@ -49,18 +50,14 @@ export default function ExpandableChipGroup({
       </div>
       {overflowing && (
         <button
+          type="button"
           onClick={onToggleExpanded}
-          className="flex items-center gap-1 text-xs font-medium mt-2 transition-opacity hover:opacity-75 active:opacity-60"
+          aria-expanded={expanded}
+          className="inline-flex items-center gap-1 min-h-[44px] -ml-2 px-2 mt-1 rounded-full text-[14px] font-medium transition-colors hover:bg-[var(--bg-subtle)]"
           style={{ color: "var(--text-secondary)" }}
         >
           {expanded ? "Show fewer" : "Show more"}
-          <svg
-            width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-            strokeLinecap="round" strokeLinejoin="round"
-            style={{ transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
+          <Icon name="chevron-down" size={14} className={`transition-transform duration-200${expanded ? " rotate-180" : ""}`} />
         </button>
       )}
     </div>
