@@ -9,7 +9,7 @@ interface LockedStateProps {
 // Signed-out and empty states: a short heading, one line of why, one action.
 export default function LockedState({ heading, body, cta }: LockedStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
+    <div className="flex flex-col items-center justify-center py-20 text-center rise">
       <p className="text-[19px] font-semibold" style={{ color: "var(--text)" }}>
         {heading}
       </p>

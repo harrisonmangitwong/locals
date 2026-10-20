@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useDialog } from "@/lib/useDialog";
+import { useDialog, usePresence } from "@/lib/useDialog";
 import PersonRow from "@/components/PersonRow";
 
 interface Person {
@@ -26,6 +26,7 @@ export default function FindPeopleModal({ open, onClose }: FindPeopleModalProps)
   const [searched, setSearched] = useState(false);
 
   const { panelProps, titleId } = useDialog(open, onClose);
+  const { present, closing } = usePresence(open);
 
   useEffect(() => {
     setMounted(true);
@@ -64,16 +65,16 @@ export default function FindPeopleModal({ open, onClose }: FindPeopleModalProps)
     return () => clearTimeout(timeout);
   }, [query]);
 
-  if (!mounted || !open) return null;
+  if (!mounted || !present) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      className="dialog-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4"
+      data-closing={closing || undefined}
       onClick={onClose}
     >
       <div
-        className="menu-drop w-full max-w-sm rounded-2xl p-6 max-h-[70vh] flex flex-col"
+        className="dialog-panel w-full max-w-sm rounded-2xl p-6 max-h-[70vh] flex flex-col"
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "var(--shadow-lg)" }}
         onClick={(e) => e.stopPropagation()}
         {...panelProps}

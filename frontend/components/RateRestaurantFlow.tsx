@@ -139,16 +139,16 @@ export default function RateRestaurantFlow({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      className="dialog-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="menu-drop w-full max-w-sm rounded-2xl p-6"
+        className="dialog-panel w-full max-w-sm rounded-2xl p-6"
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "var(--shadow-lg)" }}
         onClick={(e) => e.stopPropagation()}
         {...panelProps}
       >
+        <div key={step === "submitting" ? "tags" : step} className="step-in">
         {step === "bucket" && (
           <>
             <h2 id={titleId} className="text-[21px] font-semibold tracking-[-0.015em] text-balance">
@@ -234,6 +234,7 @@ export default function RateRestaurantFlow({
             </button>
           </>
         )}
+        </div>
       </div>
     </div>,
     document.body

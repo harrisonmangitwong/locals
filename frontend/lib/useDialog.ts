@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useBodyScrollLock } from "./useBodyScrollLock";
 
 const FOCUSABLE =
@@ -85,4 +85,31 @@ export function useDialog(active: boolean, onClose: () => void) {
   };
 
   return { panelProps, titleId };
+}
+
+/**
+ * Keeps a dialog mounted for a short exit animation after `open` turns
+ * false. Render while `present`; put `data-closing` on the overlay while
+ * `closing` so CSS can play the exit (see .dialog-backdrop / .dialog-panel).
+ */
+export function usePresence(open: boolean, exitMs = 160) {
+  const [present, setPresent] = useState(open);
+  const [closing, setClosing] = useState(false);
+  useEffect(() => {
+    if (open) {
+      setPresent(true);
+      setClosing(false);
+      return;
+    }
+    if (!present) return;
+    setClosing(true);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const t = window.setTimeout(() => {
+      setPresent(false);
+      setClosing(false);
+    }, reduced ? 0 : exitMs);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+  return { present, closing };
 }

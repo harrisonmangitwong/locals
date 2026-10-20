@@ -277,6 +277,9 @@ Two curves. **Ease Out** (`--ease-out`, cubic-bezier(0.22, 1, 0.36, 1)) for stat
 - **Rise:** a short sequence of siblings (`.rise`, at most about seven) fades up 14px, 60ms apart, via `--i`.
 - **Collage:** photos drop into their tilt one after another (70ms apart), then drift by depth with the pointer and with scroll.
 - **Travel:** the restaurant photo carries its `view-transition-name` (`p-<restaurant_id>`) from shortlist to choice to result cover through the View Transitions API (460ms settle); everything without a partner fades out in 200ms or rises in.
+- **Dialogs:** the backdrop fades in (200ms) while the panel rises 12px and settles from 0.98 (280ms settle), centered; dismissing reverses it at ~60% of the time (160ms) before unmounting (`usePresence`). The account menu keeps its own drop from the corner, since it is a dropdown.
+- **Steps in a flow:** each step of the rating dialog slides in 10px from the right and fades (240ms), so moving forward reads as forward.
+- **Success:** finishing a rating pops the row's check (the same swell-and-settle as saving) and fades in "Your score…"; inline profile editors fade up when opened; empty and signed-out states rise in like every other screen.
 - **Reduced motion:** state changes stay, movement goes: no transforms, view transitions, or staggered arrivals.
 - Animations that share an element with `:hover` or `:active` transforms fill `backwards`, never `both`, so the end state never pins the transform.
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import GoogleSignInButton from "./GoogleSignInButton";
-import { useDialog } from "@/lib/useDialog";
+import { useDialog, usePresence } from "@/lib/useDialog";
 
 interface SignInPromptProps {
   open: boolean;
@@ -15,6 +15,7 @@ export default function SignInPrompt({ open, onClose, reason }: SignInPromptProp
   const [mounted, setMounted] = useState(false);
 
   const { panelProps, titleId } = useDialog(open, onClose);
+  const { present, closing } = usePresence(open);
 
   useEffect(() => {
     // Defers portal mounting until after hydration -- document.body isn't
@@ -25,16 +26,16 @@ export default function SignInPrompt({ open, onClose, reason }: SignInPromptProp
   }, []);
 
 
-  if (!mounted || !open) return null;
+  if (!mounted || !present) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      className="dialog-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4"
+      data-closing={closing || undefined}
       onClick={onClose}
     >
       <div
-        className="menu-drop w-full max-w-sm rounded-2xl p-6 text-center"
+        className="dialog-panel w-full max-w-sm rounded-2xl p-6 text-center"
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "var(--shadow-lg)" }}
         onClick={(e) => e.stopPropagation()}
         {...panelProps}

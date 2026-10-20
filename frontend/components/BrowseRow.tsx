@@ -43,6 +43,7 @@ export default function BrowseRow({
   const [saved, setSaved] = useState(initialSaved);
   const [bucket, setBucket] = useState<Bucket | null>(initialBucket);
   const [pop, setPop] = useState(false);
+  const [ratedPop, setRatedPop] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [rating, setRating] = useState(false);
   const [signInReason, setSignInReason] = useState<string | null>(null);
@@ -100,7 +101,7 @@ export default function BrowseRow({
       <Link href={`/restaurant/${c.restaurant_id}`} className="block min-w-0 rounded-xl" aria-label={`${c.name}, ${c.neighborhood}`}>
         <PlaceRow c={c} tag={isOpenNow ? "Open now" : undefined} />
         {(yours || social || saveError) && (
-          <span className="block text-[13px] mt-1.5 pl-[90px]" style={{ color: yours || followedSaveCount ? "var(--text)" : "var(--text-muted)" }}>
+          <span key={yours ? `y-${bucket}` : "s"} className={`block text-[13px] mt-1.5 pl-[90px]${ratedPop ? " fade-up" : ""}`} style={{ color: yours || followedSaveCount ? "var(--text)" : "var(--text-muted)" }}>
             {saveError ? "Couldn’t save. Try again?" : yours ?? social}
           </span>
         )}
@@ -124,7 +125,9 @@ export default function BrowseRow({
           aria-label={bucket ? `Edit your rating of ${c.name}` : `Been to ${c.name}? Rate it`}
           className={`row-action${bucket ? " is-on" : ""}`}
         >
-          <Icon name="circle-check" size={18} />
+          <span className={ratedPop ? "heart-pop" : undefined}>
+            <Icon name="circle-check" size={18} />
+          </span>
         </button>
       </div>
 
@@ -140,6 +143,8 @@ export default function BrowseRow({
             setRating(false);
             setBucket(b);
             setSaved(false);
+            setRatedPop(true);
+            setTimeout(() => setRatedPop(false), 600);
             onRated?.(c.restaurant_id, b);
           }}
         />

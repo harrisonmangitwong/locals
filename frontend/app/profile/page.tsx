@@ -386,7 +386,7 @@ export default function ProfilePage() {
                 action={!editing && <TextAction onClick={() => setEditing(true)}>{profile.username ? "Change" : "Choose one"}</TextAction>}
               >
                 {editing && (
-                  <form onSubmit={handleSaveUsername} className="flex flex-col gap-2 mt-3">
+                  <form onSubmit={handleSaveUsername} className="fade-up flex flex-col gap-2 mt-3">
                     <label htmlFor="username-input" className="sr-only">Username</label>
                     <input
                       id="username-input"
@@ -420,7 +420,7 @@ export default function ProfilePage() {
                 action={!editingBio && <TextAction onClick={startEditingBio}>{profile.bio ? "Change" : "Add"}</TextAction>}
               >
                 {editingBio && (
-                  <form onSubmit={handleSaveBio} className="flex flex-col gap-2 mt-3">
+                  <form onSubmit={handleSaveBio} className="fade-up flex flex-col gap-2 mt-3">
                     <label htmlFor="bio-input" className="sr-only">Bio</label>
                     <textarea
                       id="bio-input"
@@ -453,7 +453,7 @@ export default function ProfilePage() {
                 action={!editingPrefs && <TextAction onClick={startEditingPrefs}>{hasPrefs ? "Change" : "Add"}</TextAction>}
               >
                 {editingPrefs && (
-                  <div className="flex flex-col gap-6 mt-3">
+                  <div className="fade-up flex flex-col gap-6 mt-3">
                     <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>Used to start your recommendations. Change it anytime.</p>
                     <div>
                       <h3 className="text-[15px] font-semibold mb-2">Cuisines</h3>
