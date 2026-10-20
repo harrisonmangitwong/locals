@@ -275,6 +275,23 @@ a, button, [role="button"] {
 .google-signin-btn:hover { background-color: var(--bg-inset) !important; }
 .google-signin-btn:active { transform: scale(0.98); }
 
+/* Phones in landscape (or any very short window): tighten the homepage
+   hero so the headline and both buttons fit above the fold. */
+@media (max-height: 500px) {
+  .short-hero { padding-top: 12px; }
+  .short-hero .collage { max-height: 32svh; --tile-base: 15svh; }
+  .short-hero h1 { font-size: 44px; margin-top: 8px; }
+  .short-hero h1 + p { margin-top: 6px; }
+  .short-hero .rise.mt-7 { margin-top: 16px; }
+}
+
+/* Header nav: compact pills for a mouse, full 44px targets wherever the
+   pointer is a finger (tablets and phones in landscape get this nav too). */
+.nav-pill { display: inline-flex; align-items: center; min-height: 32px; }
+@media (pointer: coarse) {
+  .nav-pill { min-height: 44px; }
+}
+
 /* Dialog panels take focus only so Tab starts inside them; no ring. */
 [role="dialog"]:focus { outline: none; }
 
@@ -293,10 +310,20 @@ a, button, [role="button"] {
 }
 
 /* ── Price slider ── */
+/* The input is a full 44px touch row; the 6px track is drawn inside it,
+   so dragging works anywhere along the row, not only on the thin line. */
 .price-slider {
   -webkit-appearance: none;
   appearance: none;
+  display: block;
   width: 100%;
+  height: 44px;
+  margin: -19px 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.price-slider::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 9999px;
   background: linear-gradient(
@@ -306,11 +333,11 @@ a, button, [role="button"] {
     var(--bg-inset) var(--slider-pct),
     var(--bg-inset) 100%
   );
-  cursor: pointer;
 }
 .price-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
+  margin-top: -7px;
   width: 20px;
   height: 20px;
   border-radius: 50%;

@@ -387,8 +387,8 @@ export default function PickPage() {
                     value={distIdx}
                     onChange={(e) => setDistIdx(Number(e.target.value))}
                     aria-valuetext={`Within ${fmtMiles(DIST_STEPS[distIdx])}`}
-                    className="price-slider my-2.5"
-                    style={{ "--slider-pct": `${(distIdx / (DIST_STEPS.length - 1)) * 100}%` } as CSSProperties}
+                    className="price-slider"
+                    style={{ "--slider-pct": `${(distIdx / (DIST_STEPS.length - 1)) * 100}%`, margin: "-9px 0" } as CSSProperties}
                   />
                 </section>
               )}
@@ -504,7 +504,7 @@ export default function PickPage() {
           </div>
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4 md:pt-10 pb-12 grid md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-6 md:gap-12 items-start" key={result.restaurant_id}>
             <div className="relative rounded-[22px] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.45)] md:sticky md:top-[88px]" style={{ viewTransitionName: `p-${result.restaurant_id}` }}>
-              <PickPhoto c={result} sizes="(max-width: 768px) 100vw, 520px" priority className="relative block aspect-[4/3] md:aspect-[4/5]" />
+              <PickPhoto c={result} sizes="(max-width: 768px) 100vw, 520px" priority className="relative block aspect-[4/3] md:aspect-[4/5] md:max-h-[calc(100svh-112px)]" />
             </div>
             <div className="min-w-0">
               <h1 className="font-display text-[34px] md:text-[44px] text-balance [overflow-wrap:anywhere] rise" style={{ "--i": 0 } as CSSProperties}>{result.name}</h1>

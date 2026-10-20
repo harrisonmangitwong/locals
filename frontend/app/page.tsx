@@ -31,7 +31,7 @@ export default async function Home() {
     <main className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader />
 
-      <section id="main-content" className="w-full px-4 sm:px-6 pt-6 md:pt-10 pb-12 text-center overflow-x-clip">
+      <section id="main-content" className="short-hero w-full px-4 sm:px-6 pt-6 md:pt-10 pb-12 text-center overflow-x-clip">
         <Collage places={places} />
 
         <h1 className="font-display text-[46px] sm:text-[58px] md:text-[66px] mt-4 rise" style={{ "--i": 4 } as CSSProperties}>Let&rsquo;s eat.</h1>
@@ -57,7 +57,7 @@ export default async function Home() {
         <section className="w-full max-w-3xl mx-auto px-4 sm:px-6 pb-14" aria-labelledby="open-now">
           <div className="flex items-baseline justify-between mb-5">
             <h2 id="open-now" className="text-[21px] font-semibold tracking-[-0.015em]">Open right now</h2>
-            <Link href="/recommendations" className="inline-flex items-center gap-0.5 text-[15px] font-medium transition-opacity hover:opacity-70" style={{ color: "var(--text-secondary)" }}>
+            <Link href="/recommendations" className="inline-flex items-center gap-0.5 min-h-[44px] -mr-2 px-2 rounded-full text-[15px] font-medium transition-colors hover:bg-[var(--bg-subtle)]" style={{ color: "var(--text-secondary)" }}>
               See all <Icon name="chevron-right" size={15} />
             </Link>
           </div>
@@ -80,10 +80,10 @@ export default async function Home() {
         style={{ borderTop: "1px solid var(--border)", color: "var(--text-secondary)" }}
       >
         <span className="text-[17px] font-bold tracking-[-0.025em]" style={{ color: "var(--text)" }}>Locals</span>
-        <nav className="flex items-center gap-5">
-          <Link href="/pick" className="transition-opacity hover:opacity-70">Pick</Link>
-          <Link href="/recommendations" className="transition-opacity hover:opacity-70">Browse</Link>
-          <Link href="/about" className="transition-opacity hover:opacity-70">About</Link>
+        <nav className="flex items-center gap-1 -mx-2">
+          <Link href="/pick" className="inline-flex items-center min-h-[44px] px-2 rounded-full transition-colors hover:bg-[var(--bg-subtle)]">Pick</Link>
+          <Link href="/recommendations" className="inline-flex items-center min-h-[44px] px-2 rounded-full transition-colors hover:bg-[var(--bg-subtle)]">Browse</Link>
+          <Link href="/about" className="inline-flex items-center min-h-[44px] px-2 rounded-full transition-colors hover:bg-[var(--bg-subtle)]">About</Link>
         </nav>
         <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>&copy; {new Date().getFullYear()} Locals</p>
       </footer>

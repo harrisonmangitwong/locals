@@ -358,7 +358,7 @@ export default function RestaurantPage() {
 
           <div className="grid md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-6 md:gap-12 items-start mt-2">
             {/* Cover: the one sharp photo on the page. */}
-            <div className="cover-in relative rounded-[22px] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.3)] md:sticky md:top-[88px] aspect-[4/3] md:aspect-[4/5]" style={{ backgroundColor: "var(--bg-inset)" }}>
+            <div className="cover-in relative rounded-[22px] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.3)] md:sticky md:top-[88px] aspect-[4/3] md:aspect-[4/5] md:max-h-[calc(100svh-112px)]" style={{ backgroundColor: "var(--bg-inset)" }}>
               <div className="absolute inset-0">
                 <Image
                   src={heroUrl}

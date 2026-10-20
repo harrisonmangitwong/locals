@@ -209,6 +209,8 @@ Mobile first, single column on phones, with content rails of 48rem (homepage row
 
 Help me pick on desktop is a two-column grid: preferences on the left, a sticky 380px shortlist on the right. The this-or-that is two photos with a centered "or" between; the result is cover photo left (sticky), facts and actions right. On phones the primary action lives in a sticky bottom bar on the page ground; flows that own the bottom of the screen hide the tab bar.
 
+Short screens (a phone in landscape, under 500px tall) get the same layout tightened rather than a different one: the homepage collage caps at a third of the screen with smaller photos so the headline and both pills stay above the fold, and sticky covers cap at the screen height minus the header. Where the pointer is coarse, the desktop nav pills grow to 44px; with a mouse they stay compact. Range sliders are a full 44px touch row with the 6px track drawn inside.
+
 Rhythm: 4px base. Tags gap 4px, chips and pills 8 to 10px apart, rows use a 14px photo-to-text gap and 20 to 24px between rows, sections 32 to 36px apart. Touch targets are at least 44px; primary and secondary pills are 50px tall.
 
 ## Elevation & Depth

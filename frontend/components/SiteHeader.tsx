@@ -70,7 +70,7 @@ export default function SiteHeader({ current, tabBar = true }: SiteHeaderProps) 
         className="sticky top-0 z-50 flex items-center justify-between gap-4 px-4 sm:px-6 h-14"
         style={{ backgroundColor: "var(--bg)", borderBottom: "1px solid var(--border)" }}
       >
-        <Link href="/" className="text-[19px] font-bold tracking-[-0.025em]" style={{ color: "var(--text)" }}>
+        <Link href="/" className="inline-flex items-center min-h-[44px] -ml-1 px-1 text-[19px] font-bold tracking-[-0.025em]" style={{ color: "var(--text)" }}>
           Locals
         </Link>
         <nav className="flex items-center gap-2">
@@ -82,7 +82,7 @@ export default function SiteHeader({ current, tabBar = true }: SiteHeaderProps) 
                   key={item.key}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className="text-[14px] px-3 py-1.5 rounded-full transition-colors hover:bg-[var(--bg-subtle)]"
+                  className="nav-pill text-[14px] px-3 rounded-full transition-colors hover:bg-[var(--bg-subtle)]"
                   style={{
                     color: active ? "var(--text)" : "var(--text-secondary)",
                     backgroundColor: active ? "var(--bg-subtle)" : undefined,

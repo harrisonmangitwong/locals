@@ -77,7 +77,7 @@ export default function Collage({ places }: { places: Candidate[] }) {
   if (places.length < TILES.length) return null;
 
   return (
-    <div ref={ref} className="collage relative mx-auto max-w-5xl h-[230px] sm:h-[320px] md:h-[400px] lg:h-[440px]">
+    <div ref={ref} className="collage relative mx-auto max-w-5xl h-[230px] sm:h-[320px] md:h-[400px] lg:h-[440px] max-h-[50svh]">
       {TILES.map((t, i) => {
         const c = places[i];
         return (
@@ -89,7 +89,10 @@ export default function Collage({ places }: { places: Candidate[] }) {
             style={{
               left: `${t.left}%`,
               top: `${t.top}%`,
-              width: `calc(clamp(82px, 17vw, 210px) * ${t.size})`,
+              // Also bounded by screen height, so a phone in landscape keeps the
+              // headline and buttons above the fold. --tile-base lets CSS shrink
+              // the photos further on very short screens.
+              width: `calc(var(--tile-base, clamp(82px, min(17vw, 30svh), 210px)) * ${t.size})`,
               "--rot": `${t.rot}deg`,
               "--d": t.depth,
               "--i": i,
