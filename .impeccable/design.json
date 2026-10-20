@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-19T00:00:00Z",
+  "generatedAt": "2026-10-20T00:51:36Z",
   "title": "Design System: Locals",
   "extensions": {
     "colorMeta": {
@@ -280,17 +280,17 @@
         "name": "lift",
         "value": "0 12px 36px rgba(0,0,0,0.12)",
         "dark": "0 12px 36px rgba(0,0,0,0.5)",
-        "purpose": "Choice photo on hover; under the chosen ink ring."
+        "purpose": "Place row or this-or-that choice lifted into a white card on hover (or at mid-screen while scrolling on phones); under the chosen ring. CSS var --shadow-lg."
       },
       {
         "name": "chosen-ring",
-        "value": "0 0 0 3px var(--text), 0 12px 36px rgba(0,0,0,0.12)",
-        "purpose": "The chosen this-or-that photo."
+        "value": "0 0 0 2px var(--text), 0 12px 36px rgba(0,0,0,0.12)",
+        "purpose": "The chosen this-or-that choice card."
       },
       {
         "name": "cover",
         "value": "0 24px 60px rgba(0,0,0,0.45)",
-        "purpose": "Result cover photo over the dark scene."
+        "purpose": "Result cover photo over the scene."
       }
     ],
     "motion": [
@@ -300,19 +300,39 @@
         "purpose": "All system state transitions, fades and lifts."
       },
       {
-        "name": "state",
-        "value": "150ms",
-        "purpose": "Fill changes on pills, chips, tiles, tabs."
+        "name": "ease-settle",
+        "value": "cubic-bezier(0.2, 0.9, 0.25, 1)",
+        "purpose": "Arrivals and lifts: fast start, long soft settle, no overshoot."
       },
       {
         "name": "press",
-        "value": "120ms, scale(0.98) / tiles scale(0.97)",
-        "purpose": "Press feedback."
+        "value": "scale 0.98 pills / 0.985 rows and choices / 0.97 tiles / 0.95 chips / 0.92 tabs",
+        "purpose": "Press feedback on everything tappable."
       },
       {
-        "name": "choice",
-        "value": "220-260ms",
-        "purpose": "Choice photo lift, chosen/passed transitions."
+        "name": "lift",
+        "value": "320ms ease-settle, translateY(-3px); photo zoom 1.05-1.07 over 420-520ms",
+        "purpose": "Row and choice hover, and the phone scroll spotlight."
+      },
+      {
+        "name": "rise",
+        "value": "560ms ease-settle, translateY(14px) to 0, 60ms stagger via --i",
+        "purpose": "Staged arrival for short sibling sequences (max ~7)."
+      },
+      {
+        "name": "view-transition",
+        "value": "460ms ease-settle; view-transition-name p-<restaurant_id>",
+        "purpose": "The restaurant photo travels between shortlist, choice and result."
+      },
+      {
+        "name": "collage-scroll",
+        "value": "--sy 0-600px; rise -0.28px per px x depth; tilt straightens over 700px",
+        "purpose": "Homepage collage on scroll (all devices); pointer parallax on fine pointers."
+      },
+      {
+        "name": "state",
+        "value": "150ms",
+        "purpose": "Fill changes on pills, chips, tiles, tabs."
       },
       {
         "name": "fade-up",
@@ -345,7 +365,7 @@
         "value": "1024px"
       }
     ],
-    "scopeLimits": "Homepage and Help me pick fully express the system. Browse, restaurant, saved, visited and profile pages inherit tokens, buttons and the tab bar but still carry older component layouts, which are not part of the system."
+    "scopeLimits": "Today the system is fully expressed on the homepage and Help me pick. Browse, restaurant detail, saved, visited and profile pages inherit the tokens, the buttons and the tab bar but still carry older component layouts; those layouts are not part of this system and should be brought onto it rather than copied."
   },
   "components": [
     {
@@ -392,9 +412,17 @@
       "name": "Place Row",
       "kind": "card",
       "refersTo": "place-row-photo",
-      "description": "Rounded square photo with a tag on its edge, name, icon meta lines; no container.",
+      "description": "Rounded square photo with a tag on its edge, name, icon meta lines; no container until hover lifts it into a white card.",
       "html": "<a class=\"ds-row\" href=\"#\"><span class=\"ds-row-photo\"><span class=\"ds-row-img\"></span><span class=\"ds-tag-edge\">Open now</span></span><span class=\"ds-row-text\"><span class=\"ds-row-name\">Thai Diner</span><span class=\"ds-meta\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg>Nolita · 0.8 mi</span><span class=\"ds-meta\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\"/><path d=\"M7 2v20\"/><path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\"/></svg>Thai · $$</span><span class=\"ds-meta\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\"/></svg>Locals rate it 4.6</span></span></a>",
-      "css": ".ds-row { font-family: -apple-system, BlinkMacSystemFont, \"SF Pro Text\", system-ui, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; display: grid; grid-template-columns: 76px minmax(0,1fr); gap: 14px; align-items: start; padding: 8px; margin: -8px; border-radius: 16px; text-decoration: none; max-width: 340px; transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-row:hover { background: var(--bg-subtle, #eeeae2); } .ds-row:focus-visible { outline: 2px solid var(--accent, #131517); outline-offset: 2px; } .ds-row-photo { position: relative; display: block; } .ds-row-img { display: block; width: 76px; height: 76px; border-radius: 12px; background: linear-gradient(135deg, #c98a52, #6e3b1f); } .ds-tag-edge { position: absolute; bottom: -8px; left: 6px; padding: 2px 7px; border-radius: 6px; font-size: 11.5px; font-weight: 600; line-height: 1.45; background: var(--tag-open-bg, #e3f6e9); color: var(--tag-open-text, #11703a); white-space: nowrap; } .ds-row-text { display: flex; flex-direction: column; gap: 2px; padding-top: 2px; min-width: 0; } .ds-row-name { font-size: 16px; font-weight: 600; color: var(--text, #131517); } .ds-meta { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary, #66625b); font-variant-numeric: tabular-nums; }"
+      "css": ".ds-row { font-family: -apple-system, BlinkMacSystemFont, \"SF Pro Text\", system-ui, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; display: grid; grid-template-columns: 76px minmax(0,1fr); gap: 14px; align-items: start; padding: 8px; margin: -8px; border-radius: 16px; text-decoration: none; max-width: 340px; transition: background-color 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 320ms cubic-bezier(0.2, 0.9, 0.25, 1), transform 320ms cubic-bezier(0.2, 0.9, 0.25, 1); } .ds-row:hover { background: var(--bg-card, #fff); box-shadow: var(--shadow-lg, 0 12px 36px rgba(0,0,0,0.12)); transform: translateY(-3px); } .ds-row:active { transform: scale(0.985); } .ds-row:focus-visible { outline: 2px solid var(--text, #131517); outline-offset: 2px; } .ds-row-photo { position: relative; display: block; } .ds-row-img { display: block; width: 76px; height: 76px; border-radius: 12px; background: linear-gradient(135deg, #c98a52, #6e3b1f); } .ds-tag-edge { position: absolute; bottom: -8px; left: 6px; padding: 2px 7px; border-radius: 6px; font-size: 11.5px; font-weight: 600; line-height: 1.45; background: var(--tag-open-bg, #e3f6e9); color: var(--tag-open-text, #11703a); white-space: nowrap; } .ds-row-text { display: flex; flex-direction: column; gap: 2px; padding-top: 2px; min-width: 0; } .ds-row-name { font-size: 16px; font-weight: 600; color: var(--text, #131517); } .ds-meta { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary, #66625b); font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "This-or-That Choice",
+      "kind": "card",
+      "refersTo": "choice-card-hover",
+      "description": "A whole choice is one button: big rounded photo, facts beneath; no box at rest, lifts into a white card on hover.",
+      "html": "<button class=\"ds-choice\"><span class=\"ds-choice-photo\"><span class=\"ds-choice-img\"></span><span class=\"ds-choice-tag\">Still in</span></span><span class=\"ds-choice-name\">Fish Cheeks</span><span class=\"ds-choice-meta\">SoHo · 0.4 mi</span><span class=\"ds-choice-meta\">Thai · $$$$</span><span class=\"ds-choice-known\"><b>Known for:</b> Coconut crab curry · Zabb wings</span></button>",
+      "css": ".ds-choice { font-family: -apple-system, BlinkMacSystemFont, \"SF Pro Text\", system-ui, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; display: flex; flex-direction: column; gap: 2px; width: 320px; padding: 10px 10px 14px; border: none; border-radius: 28px; background: transparent; text-align: left; cursor: pointer; transition: background-color 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 320ms cubic-bezier(0.2, 0.9, 0.25, 1), transform 320ms cubic-bezier(0.2, 0.9, 0.25, 1); } .ds-choice:hover { background: var(--bg-card, #fff); box-shadow: var(--shadow-lg, 0 12px 36px rgba(0,0,0,0.12)); transform: translateY(-3px); } .ds-choice:active { transform: scale(0.985); } .ds-choice:focus-visible { outline: 2px solid var(--text, #131517); outline-offset: 4px; } .ds-choice-photo { position: relative; display: block; height: 200px; border-radius: 18px; overflow: hidden; margin-bottom: 10px; } .ds-choice-img { display: block; height: 100%; background: linear-gradient(135deg, #3a6fd8, #f2c94c); transition: transform 520ms cubic-bezier(0.2, 0.9, 0.25, 1); } .ds-choice:hover .ds-choice-img { transform: scale(1.05); } .ds-choice-tag { position: absolute; top: 10px; left: 10px; padding: 2px 7px; border-radius: 6px; font-size: 11.5px; font-weight: 600; line-height: 1.45; background: var(--tag-pick-bg, #efe9ff); color: var(--tag-pick-text, #6b3fd4); } .ds-choice-name { font-size: 19px; font-weight: 600; color: var(--text, #131517); } .ds-choice-meta { font-size: 13px; color: var(--text-secondary, #66625b); } .ds-choice-known { margin-top: 6px; font-size: 13px; line-height: 1.375; color: var(--text-secondary, #66625b); } .ds-choice-known b { color: var(--text, #131517); font-weight: 600; }"
     },
     {
       "name": "Floating Tab Bar",
@@ -408,20 +436,20 @@
       "name": "Result Scene",
       "kind": "custom",
       "refersTo": "scene-ground",
-      "description": "Signature: dark scene tinted by the pick's blurred photo, white pill, soft tiles.",
+      "description": "Signature: the pick's blurred photo tints the page, following the theme (light wash in light mode, dimmed dark scene in dark mode). Snippet shows the dark variant.",
       "html": "<div class=\"ds-scene\"><div class=\"ds-scene-bg\"></div><div class=\"ds-scene-scrim\"></div><div class=\"ds-scene-body\"><h3 class=\"ds-scene-name\">Thai Diner</h3><div class=\"ds-scene-tags\"><span class=\"ds-stag ds-stag-pick\">Your pick</span><span class=\"ds-stag ds-stag-open\">Open now</span></div><button class=\"ds-scene-go\">Let’s go</button></div></div>",
       "css": ".ds-scene { font-family: -apple-system, BlinkMacSystemFont, \"SF Pro Text\", system-ui, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; position: relative; overflow: hidden; border-radius: 18px; background: #0d0e0f; color: #fff; max-width: 360px; } .ds-scene-bg { position: absolute; inset: -80px; background: radial-gradient(circle at 30% 30%, #c98a52, #6e3b1f 60%, #2a1a10); filter: blur(60px) saturate(1.7) brightness(0.32); transform: scale(1.1); } .ds-scene-scrim { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.6)); } .ds-scene-body { position: relative; padding: 24px; } .ds-scene-name { margin: 0; font-size: 34px; font-weight: 700; line-height: 1.08; letter-spacing: -0.022em; } .ds-scene-tags { display: flex; gap: 6px; margin-top: 14px; } .ds-stag { padding: 2px 7px; border-radius: 6px; font-size: 11.5px; font-weight: 600; line-height: 1.45; } .ds-stag-pick { background: rgba(34,22,64,0.62); color: #ddd0ff; } .ds-stag-open { background: rgba(10,40,22,0.62); color: #8ff0b2; } .ds-scene-go { font-family: inherit; display: block; width: 100%; margin-top: 24px; min-height: 50px; border: none; border-radius: 9999px; background: #fff; color: #131517; font-size: 16px; font-weight: 600; cursor: pointer; transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), transform 120ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-scene-go:hover { background: #e4e4e7; } .ds-scene-go:active { transform: scale(0.98); } .ds-scene-go:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }"
     }
   ],
   "narrative": {
     "northStar": "The Photo Is the Only Color",
-    "overview": "Locals reads as a native iOS app that happens to live on the web, after the user-pinned reference of Luma's iOS app. The interface itself is monochrome: a white ground with near-black ink in light mode, a near-black ground with white actions in dark mode. Everything that carries color has earned it. Food photographs supply nearly all of it; the rest comes from two small status tags, each of which means exactly one thing.\n\nHierarchy is built from weight and gray in the platform's own system face, never from a second typeface, caps labels, or decorative chrome. Places appear as rows: a rounded square photo with a tag on its edge, a name, and short icon meta lines, with no card box or border around them. Actions are pills: one black primary, soft-gray secondaries. Shadows exist only on things that float (the collage photos, the tab bar, a lifted photo on hover).\n\nThe signature moment is the result of Help me pick: the page turns dark and is tinted by the chosen restaurant's own blurred photo, with a white pill to go and a row of soft action tiles. Motion follows iOS: ease-out fades and small lifts (200 to 280ms), nothing bouncy.",
+    "overview": "Locals reads as a native iOS app that happens to live on the web, after the user-pinned reference of Luma's iOS app. The interface itself is monochrome: a warm paper ground (softer than pure white next to food photos) with near-black ink in light mode, a near-black ground with white actions in dark mode. Everything that carries color has earned it. Food photographs supply nearly all of it; the rest comes from two small status tags, each of which means exactly one thing.\n\nHierarchy is built from weight and gray in the platform's own system face, never from a second typeface, caps labels, or decorative chrome. Places appear as rows: a rounded square photo with a tag on its edge, a name, and short icon meta lines, with no card box or border around them. Actions are pills: one black primary, soft-gray secondaries. Shadows exist only on things that float (the collage photos, the tab bar, a row or choice lifted into a card on hover).\n\nThe signature moment is the result of Help me pick: the page takes on the chosen restaurant's colors from its own blurred photo (a light wash in light mode, a dimmed dark scene in dark mode), with one pill to go and a row of soft action tiles. Motion follows iOS: things respond under the finger and the pointer, photos travel between screens, arrivals settle softly, and nothing bounces. On phones, scrolling does the work hover does on desktop.",
     "keyCharacteristics": [
       "Monochrome UI; color comes only from photos and meaning-bearing tags.",
       "System font (SF on Apple), hierarchy by weight and gray, sentence case throughout.",
       "Black primary pill, soft-gray secondary pill, soft-gray chips that flip to ink when selected.",
       "Place rows and choice cards without containers or borders.",
-      "A dark, photo-tinted result scene.",
+      "A photo-tinted result scene that follows the theme (light wash in light mode, dimmed dark in dark mode).",
       "A floating frosted tab bar on phones."
     ],
     "rules": [
@@ -437,7 +465,7 @@
       },
       {
         "name": "The Inverted Action Rule",
-        "body": "The primary action is ink on light grounds and white on dark grounds (dark mode and the result scene alike); it is never a hue.",
+        "body": "The primary action is ink on light grounds and white on dark grounds (including the result scene in dark mode); it is never a hue.",
         "section": "colors"
       },
       {
@@ -462,22 +490,22 @@
       }
     ],
     "dos": [
-      "Do let photographs carry the color; keep every control ink, white, or soft gray.",
-      "Do use exactly one black (or, on dark grounds, white) primary pill per screen, 50px tall.",
-      "Do use the green tag only for \"Open now\" and the purple tag only for \"Still in\" / \"Your pick\".",
-      "Do show places as rows: 76px rounded photo, name, icon meta lines, no container.",
-      "Do build hierarchy with the system face at 400 / 600 / 700 and ink versus secondary gray.",
-      "Do use iOS-style ease-out (cubic-bezier(0.22, 1, 0.36, 1)) at 150 to 280ms for fades, lifts and presses, and drop them under reduced motion.",
-      "Do keep touch targets at least 44px."
+      "**Do** let photographs carry the color; keep every control ink, white, or soft gray.",
+      "**Do** use exactly one black (or, on dark grounds, white) primary pill per screen, 50px tall.",
+      "**Do** use the green tag only for \"Open now\" and the purple tag only for \"Still in\" / \"Your pick\".",
+      "**Do** show places as rows: 76px rounded photo, name, icon meta lines, no container.",
+      "**Do** build hierarchy with the system face at 400 / 600 / 700 and ink versus secondary gray.",
+      "**Do** use iOS-style ease-out (cubic-bezier(0.22, 1, 0.36, 1)) at 150 to 280ms for fades, lifts and presses, and drop them under reduced motion.",
+      "**Do** keep touch targets at least 44px."
     ],
     "donts": [
-      "Don't load a web font or introduce a second typeface; the system face is the brand.",
-      "Don't put card boxes, borders, or resting shadows around rows or choices.",
-      "Don't add an accent hue for links, emphasis, or decoration.",
-      "Don't write uppercase labels, kickers, or eyebrows above headings.",
-      "Don't use glass or blur anywhere except the phone tab bar and the result scene's photo backdrop.",
-      "Don't use emoji or mixed icon sets; icons are the Lucide-shaped set at a shared stroke.",
-      "Don't use bouncy or overshooting motion."
+      "**Don't** load a web font or introduce a second typeface; the system face is the brand.",
+      "**Don't** put card boxes, borders, or resting shadows around rows or choices.",
+      "**Don't** add an accent hue for links, emphasis, or decoration.",
+      "**Don't** write uppercase labels, kickers, or eyebrows above headings.",
+      "**Don't** use glass or blur anywhere except the phone tab bar and the result scene's photo backdrop.",
+      "**Don't** use emoji or mixed icon sets; icons are the Lucide-shaped set at a shared stroke.",
+      "**Don't** use bouncy or overshooting motion."
     ]
   }
 }

@@ -6,7 +6,11 @@
    photos; cards stay white) and near-black ink; actions are black (white in
    dark mode), secondary actions soft gray fills with no borders. Color
    comes from the food photos and from small status tags, each of which
-   means one thing: green = open now, purple = still in / your pick. */
+   means one thing: green = open now, purple = still in / your pick.
+   DESIGN.md (repo root) is the spec; these variables are its source of
+   truth in code. Use --cta-bg / --cta-text for anything filled with ink.
+   --accent*, --warm*, --star-* and --success* are legacy aliases kept for
+   older pages; don't reach for them in new work. */
 :root {
   --bg: #f7f4ee;
   --bg-card: #ffffff;
@@ -534,6 +538,11 @@ a, button, [role="button"] {
   .chip-collapse,
   .google-signin-btn,
   .pick-choice,
+  .pick-choice .pick-photo img,
+  .row-link,
+  .row-thumb img,
+  .filter-pill,
+  .tab-item,
   .fade-up,
   .tile-btn,
   .soft-btn,

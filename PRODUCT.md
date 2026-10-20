@@ -8,7 +8,7 @@ web
 
 ## Users
 
-**Primary — NYC residents** deciding where to eat, especially somewhere unfamiliar: a part of their own city they haven't explored, not just a new city. They don't need to be told Google Maps and Yelp exist; they need a reason to trust a rating from a stranger with no track record and no stake in being right.
+**Primary — young, food-curious New Yorkers, roughly 0–5 years in the city** (e.g. recent NYU grads). They have some friends here and use Beli, but they don't like repeating restaurants, their friends haven't been everywhere and fall for TikTok hype too, and they're worn out from scrolling recs, friend lists, and forgotten bookmarks. The job: "help me land on one place I haven't tried that's actually worth it, so I can stop deciding and go." The pain is hype and value for money ("overhyped," "too expensive for what it was"), and the decision moment is urgent: hungry now, or planning tonight.
 
 **Secondary — visitors to NYC** who want to eat where locals eat, not where a generic "best of" list sends them. The same underlying need (unfamiliar territory, no personal trust network there) as the primary user, just triggered by travel instead of an unexplored neighborhood.
 
@@ -16,11 +16,13 @@ web
 
 ## Product Purpose
 
+**Value prop:** "Most food apps give you endless recs. Locals tells you where to go tonight." Help me pick is the core experience; the ranking model is the engine that chooses its shortlist, not something users are asked to read.
+
 Locals re-scores NYC restaurants by whether the people reviewing them are actually local residents or one-time visitors, instead of taking Google/Yelp star ratings at face value. It re-weights the same public review data everyone already has — no new data source — using signals about each reviewer (geographic concentration, review stability over time, Local Guide status) to produce a local-weighted rating, a tourist-weighted rating, and a trained classifier score that drives the main ranking order.
 
 The problem this solves has two halves, and only one is built:
 1. **Trust** — you can't tell if a reviewer is a real local with something at stake, and even a real reviewer's "4 stars" doesn't mean the same thing yours would. Locals vets the data itself against this. Shipped.
-2. **Decision paralysis** — even good data still gets handed back as a list of dozens of options to work through yourself. Locals doesn't yet narrow the decision or replace browsing with an answer. Not built.
+2. **Decision paralysis** — even good data still gets handed back as a list of dozens of options to work through yourself. Shipped as **Help me pick**: a few preferences (cuisine, price, distance, only places new to you) narrow the open-now pool to a model-ranked shortlist, a five-round this-or-that narrows it to one, and the result hands off to directions.
 
 Success today means both halves eventually working, on a real (if still small) and growing user base, while the codebase itself continues to demonstrate real product and engineering judgment to the recruiter audience.
 
@@ -40,11 +42,10 @@ The claim a neighboring product can't truthfully copy: Google, Yelp, and TripAdv
 
 ## Capabilities and Constraints
 
-**Confirmed and shipped:** reviewer localness scoring; local/tourist rating split; Random Forest ranking; three quantile-based archetype tags; a personalization toggle (needs 5+ combined saves/ratings before it appears); a follow graph with save-count surfacing on cards; a comparison-based (binary-search) personal ranking flow that replaced an earlier simple three-way reaction system; public shareable saved lists; a restaurant-request intake form; signed-out browsing with action-level sign-in gating.
+**Confirmed and shipped:** Help me pick (open-now filter, distance/price relaxation with a notice, per-cuisine spread, popular dishes and vibe from review themes, this-or-that rounds, a result with directions/share/pick again); reviewer localness scoring; local/tourist rating split; Random Forest ranking; three quantile-based archetype tags; a personalization toggle (needs 5+ combined saves/ratings before it appears); a follow graph with save-count surfacing on cards; a comparison-based (binary-search) personal ranking flow that replaced an earlier simple three-way reaction system; public shareable saved lists; a restaurant-request intake form; signed-out browsing with action-level sign-in gating.
 
 **Explicitly not yet built, not to be assumed:**
 - Trip Mode (the travel-occasion mode) — zero code exists. Scoped in the roadmap as the top-priority next differentiator.
-- The decision-paralysis mechanism itself (a conversational/constraint-based query, or anything that narrows to one answer instead of a browsable list) — today's product is still a ranked, filterable list.
 - A second city — the scoring methodology is city-agnostic in principle, but the code has NYC-only hardcoding (a Manhattan zip-to-neighborhood map, a single hardcoded tourist-landmark distance feature, NYC timezone for open-now logic) that isn't generalized yet.
 - Monetization (booking-link affiliate revenue, a restaurant-facing locals-vs-tourists data product) — parked pending real traffic volume.
 - Real-time or self-serve data updates — the batch pipeline is a deliberate choice at this scale (407 rows), not a gap to close soon.
@@ -55,7 +56,7 @@ The claim a neighboring product can't truthfully copy: Google, Yelp, and TripAdv
 
 Name: **Locals**. Live at locals-nyc.com. The name itself carries the product's core thesis, not just a label.
 
-Tone commitment: warm, neighborhood, editorial authority (references: The Infatuation, Eater) — explicitly not corporate-sleek, not gamified, not in the visual or tonal mold of Yelp or TripAdvisor. Full visual-world detail (palette, type, component conventions) lives in `frontend/CLAUDE.md`'s Design Context, not duplicated here.
+Voice commitment: warm, trustworthy, local, like a knowledgeable friend who lives in the neighborhood; not gamified, not in the mold of Yelp or TripAdvisor. Visual commitment: a native-feeling iOS app on the web after Luma's iOS app (monochrome, system font, photos carry the color). Full visual-world detail (tokens, type, components, motion) lives in `DESIGN.md`, not duplicated here.
 
 ## Evidence on Hand
 
@@ -75,4 +76,4 @@ Tone commitment: warm, neighborhood, editorial authority (references: The Infatu
 
 ## Accessibility & Inclusion
 
-44px minimum touch targets, visible focus rings, a skip-to-content link, and `prefers-reduced-motion` disabling custom animation/transition/transform effects app-wide. No additional formal accessibility standard (e.g., a specific WCAG level) has been established as a requirement.
+44px minimum touch targets, visible focus rings, a skip-to-content link, keyboard arrows in the this-or-that, and `prefers-reduced-motion` disabling custom animation/transition/transform effects and view transitions app-wide. No additional formal accessibility standard (e.g., a specific WCAG level) has been established as a requirement.

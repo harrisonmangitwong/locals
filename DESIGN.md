@@ -125,6 +125,10 @@ components:
   place-row-photo:
     rounded: "{rounded.thumb}"
     size: "76px"
+  choice-card-hover:
+    backgroundColor: "{colors.white}"
+    rounded: "28px"
+    padding: "10px 10px 14px"
 ---
 
 # Design System: Locals
@@ -135,9 +139,9 @@ components:
 
 Locals reads as a native iOS app that happens to live on the web, after the user-pinned reference of Luma's iOS app. The interface itself is monochrome: a warm paper ground (softer than pure white next to food photos) with near-black ink in light mode, a near-black ground with white actions in dark mode. Everything that carries color has earned it. Food photographs supply nearly all of it; the rest comes from two small status tags, each of which means exactly one thing.
 
-Hierarchy is built from weight and gray in the platform's own system face, never from a second typeface, caps labels, or decorative chrome. Places appear as rows: a rounded square photo with a tag on its edge, a name, and short icon meta lines, with no card box or border around them. Actions are pills: one black primary, soft-gray secondaries. Shadows exist only on things that float (the collage photos, the tab bar, a lifted photo on hover).
+Hierarchy is built from weight and gray in the platform's own system face, never from a second typeface, caps labels, or decorative chrome. Places appear as rows: a rounded square photo with a tag on its edge, a name, and short icon meta lines, with no card box or border around them. Actions are pills: one black primary, soft-gray secondaries. Shadows exist only on things that float (the collage photos, the tab bar, a row or choice lifted into a card on hover).
 
-The signature moment is the result of Help me pick: the page turns dark and is tinted by the chosen restaurant's own blurred photo, with a white pill to go and a row of soft action tiles. Motion follows iOS: ease-out fades and small lifts (200 to 280ms), nothing bouncy.
+The signature moment is the result of Help me pick: the page takes on the chosen restaurant's colors from its own blurred photo (a light wash in light mode, a dimmed dark scene in dark mode), with one pill to go and a row of soft action tiles. Motion follows iOS: things respond under the finger and the pointer, photos travel between screens, arrivals settle softly, and nothing bounces. On phones, scrolling does the work hover does on desktop.
 
 **Key Characteristics:**
 - Monochrome UI; color comes only from photos and meaning-bearing tags.
@@ -214,7 +218,7 @@ Flat by default. Depth is reserved for things that float above the page; rows, c
 ### Shadow Vocabulary
 - **Collage float** (`box-shadow: 0 16px 38px rgba(0,0,0,0.16)`; dark adds `0 0 0 1px rgba(255,255,255,0.08)` at 0.45 opacity): homepage photo tiles.
 - **Tab bar float** (`box-shadow: 0 10px 34px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.06)`): the floating tab bar.
-- **Lift** (`box-shadow: 0 12px 36px rgba(0,0,0,0.12)`): a choice photo on hover (with a 3px rise), and under the chosen ring.
+- **Lift** (`box-shadow: 0 12px 36px rgba(0,0,0,0.12)`, `--shadow-lg`; dark 0.5 opacity): a place row or this-or-that choice lifted into a white card on hover (or, on phones, at the middle of the screen while scrolling), with a 3px rise; also under the chosen choice's ring.
 - **Cover** (`box-shadow: 0 24px 60px rgba(0,0,0,0.45)`): the result's cover photo over the scene.
 
 ### Named Rules
@@ -261,6 +265,16 @@ A whole choice is one button: a large 18px-radius photo (144px / 224px / 288px t
 
 ### Result Scene (signature)
 The pick is revealed on a scene tinted by the restaurant's own photo, and the scene follows the theme rather than switching it. Light mode: the photo, blurred 60px, saturated 1.5x and brightened slightly at 70% opacity, sits behind a paper scrim (55% to 90% #f7f4ee, top to bottom), so ink text holds contrast and the page takes on the place's colors; soft grays become frosted white (62% / 86%). Dark mode: the photo is blurred 60px, saturated 1.7x and dimmed to 32% brightness behind a scrim from 25% to 60% black, and tokens re-map (ink becomes white, soft grays white at 12 to 18%). Over it in both: the 22px-radius cover photo, the name in Headline, icon meta lines, the purple and green tags, the Let's go pill, the three action tiles, then What to order, The vibe, Heads up, and a Close second row.
+
+### Motion
+Two curves. **Ease Out** (`--ease-out`, cubic-bezier(0.22, 1, 0.36, 1)) for state changes at 150 to 280ms: color fills, fades, presses. **Ease Settle** (`--ease-settle`, cubic-bezier(0.2, 0.9, 0.25, 1), fast start and a long soft settle with no overshoot) for arrivals and lifts at 320 to 900ms.
+- **Press:** everything tappable gives under the finger: pills and rows 0.985 to 0.98, chips 0.95, action tiles 0.97, tabs 0.92.
+- **Lift:** rows and choices rise 3px into a white card with the Lift shadow (320ms settle) while the photo slowly zooms (1.05 to 1.07 over 420 to 520ms).
+- **Rise:** a short sequence of siblings (`.rise`, at most about seven) fades up 14px, 60ms apart, via `--i`.
+- **Collage:** photos drop into their tilt one after another (70ms apart), then drift by depth with the pointer and with scroll.
+- **Travel:** the restaurant photo carries its `view-transition-name` (`p-<restaurant_id>`) from shortlist to choice to result cover through the View Transitions API (460ms settle); everything without a partner fades out in 200ms or rises in.
+- **Reduced motion:** state changes stay, movement goes: no transforms, view transitions, or staggered arrivals.
+- Animations that share an element with `:hover` or `:active` transforms fill `backwards`, never `both`, so the end state never pins the transform.
 
 ### Touch: scroll stands in for hover
 Phones have no hover, so scrolling drives the same responses. The homepage collage moves with page scroll by depth (nearer photos rise faster, the pile straightens over the first 600px). In row lists (Open right now, Your shortlist), the single row whose center is nearest the middle of the screen (within 22% of the viewport height) gets the hover treatment (white card, large soft shadow, 3px lift, photo zoom) via `.is-focus`, one row at a time.
