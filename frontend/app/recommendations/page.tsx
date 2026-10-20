@@ -3,10 +3,9 @@
 import { type CSSProperties, type ReactNode, useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import BrowseRow from "@/components/BrowseRow";
+import BrowseRow, { RowsSkeleton, rowCandidate } from "@/components/BrowseRow";
 import Icon from "@/components/Icon";
 import ScrollSpotlight from "@/components/ScrollSpotlight";
-import type { Candidate } from "@/components/PickCard";
 import SiteHeader from "@/components/SiteHeader";
 import RequestRestaurantForm from "@/components/RequestRestaurantForm";
 import type { Bucket } from "@/lib/ranking";
@@ -33,25 +32,6 @@ interface Restaurant {
   local_weighted_rating?: number;
   tourist_weighted_rating?: number;
   [key: string]: unknown;
-}
-
-function toCandidate(r: Restaurant): Candidate {
-  return {
-    restaurant_id: r.restaurant_id,
-    name: r.name,
-    neighborhood: r.neighborhood,
-    cuisine: r.cuisine,
-    price_midpoint: r.price_midpoint ?? null,
-    image_url: r.image_url || null,
-    lat: 0,
-    lng: 0,
-    local_weighted_rating: r.local_weighted_rating ?? r.total_score,
-    tourist_weighted_rating: r.tourist_weighted_rating ?? r.total_score,
-    distance_mi: null,
-    dishes: [],
-    vibe: null,
-    wait_note: null,
-  };
 }
 
 // A filter that has many values (neighborhood, cuisine, price) as a chip:
@@ -370,18 +350,7 @@ function RecommendationsContent() {
         {/* First load only: row skeletons. A later filter change keeps the
             current rows up, dimmed, so refining reads as "updating." */}
         {loading && !data && (
-          <ul className="grid md:grid-cols-2 gap-x-10 gap-y-6 mt-5" aria-busy="true" aria-label="Loading restaurants">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <li key={i} className="grid grid-cols-[76px_minmax(0,1fr)] gap-3.5">
-                <div className="skeleton w-[76px] h-[76px] rounded-xl" />
-                <div className="space-y-2 pt-1">
-                  <div className="skeleton h-4 w-3/5 rounded" />
-                  <div className="skeleton h-3 w-2/5 rounded" />
-                  <div className="skeleton h-3 w-1/3 rounded" />
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-5"><RowsSkeleton count={8} /></div>
         )}
 
         {error && !loading && (
@@ -401,7 +370,7 @@ function RecommendationsContent() {
               {restaurants.map((r, i) => (
                 <li key={r.restaurant_id} className="rise" style={{ "--i": Math.min(i, 7) } as CSSProperties}>
                   <BrowseRow
-                    c={toCandidate(r)}
+                    c={rowCandidate(r)}
                     isOpenNow={r.is_open_now}
                     initialSaved={savedIds.has(r.restaurant_id)}
                     initialBucket={ratings[r.restaurant_id] ?? null}

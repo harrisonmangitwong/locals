@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import Link from "next/link";
-import RestaurantCard from "@/components/RestaurantCard";
+import BrowseRow, { RowsSkeleton, rowCandidate } from "@/components/BrowseRow";
+import Icon from "@/components/Icon";
+import ScrollSpotlight from "@/components/ScrollSpotlight";
 import SiteHeader from "@/components/SiteHeader";
 import LockedState from "@/components/LockedState";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
@@ -113,145 +115,73 @@ export default function FavoritesPage() {
   const visibleRestaurants = restaurants.filter((r) => !ratings[r.restaurant_id]);
   const showEmptyState = !loading && !fetchError && (empty || visibleRestaurants.length === 0);
 
+  const hasList = !loading && !fetchError && !showEmptyState && visibleRestaurants.length > 0;
+
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
-    >
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader current="saved" />
 
-      <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div className="mb-6 flex items-start justify-between gap-4">
-          <div>
-            <h1
-              className="font-display text-3xl mb-1"
-              style={{ color: "var(--text)" }}
-            >
-              Saved
-            </h1>
-            {user && !loading && !showEmptyState && (
-              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                {visibleRestaurants.length} saved spot{visibleRestaurants.length !== 1 ? "s" : ""}
+      <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 md:pt-10 pb-14">
+        <div className="flex items-end justify-between gap-4 mb-7">
+          <div className="min-w-0">
+            <h1 className="font-display text-[34px] md:text-[44px]">Saved</h1>
+            {user && hasList && (
+              <p className="text-[15px] mt-1.5" style={{ color: "var(--text-secondary)" }}>
+                Places you want to try
               </p>
             )}
           </div>
-          {!loading && !showEmptyState && user && (
-            <button
-              onClick={handleShareList}
-              className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-75 active:opacity-60 min-h-[44px]"
-              style={{ border: "1px solid var(--border-strong)", color: "var(--text-secondary)", backgroundColor: "var(--bg-subtle)" }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-              </svg>
-              {copied ? "Link copied!" : "Share my list"}
+          {user && hasList && (
+            <button onClick={handleShareList} className="soft-btn inline-flex items-center justify-center gap-2 px-5 text-[15px] shrink-0">
+              <Icon name="share" size={16} />
+              {copied ? "Link copied" : "Share list"}
             </button>
           )}
         </div>
 
-        {/* Signed out */}
         {!authLoading && !user && (
           <LockedState
-            heading="Sign in to see your saved spots"
-            body="Save restaurants as you browse and they'll show up here. Create an account to start your list."
+            heading="Sign in to see your saved places"
+            body="Save places as you browse and they'll wait here until you're ready."
             cta={<GoogleSignInButton />}
           />
         )}
 
-        {/* Loading */}
-        {(authLoading || user) && loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl overflow-hidden"
-                style={{
-                  backgroundColor: "var(--bg-subtle)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <div className="skeleton h-52 sm:h-48" />
-                <div className="p-4 space-y-3">
-                  <div className="skeleton h-4 w-3/4 rounded" />
-                  <div className="skeleton h-3 w-1/2 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {(authLoading || user) && loading && <RowsSkeleton count={4} />}
 
-        {/* Error state */}
         {user && !loading && fetchError && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
-              Couldn&apos;t load your saved spots
-            </p>
-            <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
-              Something went wrong fetching your list. Try refreshing.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-            >
-              Refresh
-            </button>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {user && showEmptyState && (
           <LockedState
-            heading="Nothing saved yet"
-            body="When a spot catches your eye, hit the bookmark. It'll be waiting here when you're ready."
-            cta={
-              <Link
-                href="/recommendations"
-                className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-              >
-                Browse restaurants
-              </Link>
-            }
+            heading="Couldn't load your saved places"
+            body="Check your connection and try again."
+            cta={<button onClick={() => window.location.reload()} className="soft-btn px-6 text-[15px]">Try again</button>}
           />
         )}
 
-        {/* Favorites grid */}
-        {!fetchError && !showEmptyState && visibleRestaurants.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {visibleRestaurants.map((r, i) => (
-              <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
-              <RestaurantCard
-                restaurantId={r.restaurant_id}
-                rank={r.rank}
-                name={r.name}
-                neighborhood={r.neighborhood}
-                cuisine={r.cuisine}
-                reviews={r.review_count ?? r.num_reviews ?? 0}
-                rating={r.total_score ?? 0}
-                mapsUrl={r.url}
-                photoUrl={r.image_url}
-                price={
-                  r.price_midpoint
-                    ? r.price_midpoint <= 15
-                      ? "$"
-                      : r.price_midpoint <= 30
-                        ? "$$"
-                        : r.price_midpoint <= 60
-                          ? "$$$"
-                          : "$$$$"
-                    : undefined
-                }
-                initialSaved={true}
-                initialBucket={ratings[r.restaurant_id] ?? null}
-                followedSaveCount={followedSaveCounts[r.restaurant_id]}
-                onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: bucket }))}
-                onUnsave={(id) =>
-                  setRestaurants((prev) => prev.filter((x) => x.restaurant_id !== id))
-                }
-              />
-              </div>
-            ))}
-          </div>
+        {user && showEmptyState && (
+          <LockedState
+            heading="Nothing saved yet"
+            body="When a place catches your eye, tap the bookmark. It'll be waiting here."
+            cta={<Link href="/recommendations" className="cta-btn inline-flex items-center justify-center px-7 text-[15px]">Browse all places</Link>}
+          />
+        )}
+
+        {hasList && (
+          <ScrollSpotlight watch={visibleRestaurants.map((r) => r.restaurant_id).join(",")}>
+            <ul className="grid md:grid-cols-2 gap-x-10 gap-y-6">
+              {visibleRestaurants.map((r, i) => (
+                <li key={r.restaurant_id} className="rise" style={{ "--i": Math.min(i, 7) } as CSSProperties}>
+                  <BrowseRow
+                    c={rowCandidate(r)}
+                    initialSaved
+                    initialBucket={ratings[r.restaurant_id] ?? null}
+                    followedSaveCount={followedSaveCounts[r.restaurant_id]}
+                    onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: bucket }))}
+                    onUnsave={(id) => setRestaurants((prev) => prev.filter((x) => x.restaurant_id !== id))}
+                  />
+                </li>
+              ))}
+            </ul>
+          </ScrollSpotlight>
         )}
       </main>
     </div>

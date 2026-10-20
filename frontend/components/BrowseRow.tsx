@@ -7,13 +7,14 @@ import Icon from "@/components/Icon";
 import RateRestaurantFlow from "@/components/RateRestaurantFlow";
 import SignInPrompt from "@/components/SignInPrompt";
 import { type Candidate, PlaceRow } from "@/components/PickCard";
-import { BUCKETS, type Bucket } from "@/lib/ranking";
+import { BUCKETS, TAG_LABELS, type Bucket, type Tag } from "@/lib/ranking";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 const BUCKET_LABELS = Object.fromEntries(BUCKETS.map((b) => [b.key, b.label])) as Record<Bucket, string>;
 
-// A place in Browse: the homepage row, plus save and "been here" on the
-// right. The whole row lifts on hover (or at mid-screen on phones, via
+// A place in a list you act on (Browse, Saved, Visited): the homepage row,
+// plus save and "been here" on the right. Visited adds your rank as a
+// leading numeral and your score under the row. The whole row lifts on hover (or at mid-screen on phones, via
 // ScrollSpotlight); the link and the buttons are siblings, never nested.
 export default function BrowseRow({
   c,
@@ -23,6 +24,10 @@ export default function BrowseRow({
   saveCount,
   followedSaveCount,
   onRated,
+  onUnsave,
+  rank,
+  ratingScore,
+  ratingTags,
 }: {
   c: Candidate;
   isOpenNow?: boolean | null;
@@ -31,6 +36,10 @@ export default function BrowseRow({
   saveCount?: number;
   followedSaveCount?: number;
   onRated?: (id: string, bucket: Bucket) => void;
+  onUnsave?: (id: string) => void;
+  rank?: number;
+  ratingScore?: number;
+  ratingTags?: Tag[];
 }) {
   const [saved, setSaved] = useState(initialSaved);
   const [bucket, setBucket] = useState<Bucket | null>(initialBucket);
@@ -52,6 +61,7 @@ export default function BrowseRow({
     setSaved(!was);
     setSaveError(false);
     if (!was) { setPop(true); setTimeout(() => setPop(false), 400); }
+    if (was) onUnsave?.(c.restaurant_id);
     fetch("/api/saved", {
       method: was ? "DELETE" : "POST",
       headers: { "Content-Type": "application/json" },
@@ -61,6 +71,11 @@ export default function BrowseRow({
     }).catch(() => { setSaved(was); setSaveError(true); });
   }
 
+  const yours = bucket && ratingScore != null
+    ? [`Your score ${ratingScore.toFixed(1)}`, ...(ratingTags ?? []).map((t) => TAG_LABELS[t])].join(" · ")
+    : bucket
+      ? `You've been: ${BUCKET_LABELS[bucket]}`
+      : null;
   const social = followedSaveCount
     ? `${followedSaveCount === 1 ? "1 person" : `${followedSaveCount} people`} you follow saved this`
     : saveCount
@@ -68,12 +83,15 @@ export default function BrowseRow({
       : null;
 
   return (
-    <div className="row-link relative grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 rounded-2xl p-2.5 -m-2.5">
+    <div className={`row-link relative grid ${rank != null ? "grid-cols-[22px_minmax(0,1fr)_auto]" : "grid-cols-[minmax(0,1fr)_auto]"} items-start gap-2 rounded-2xl p-2.5 -m-2.5`}>
+      {rank != null && (
+        <span className="text-[15px] font-semibold tabular-nums pt-1 text-center" style={{ color: "var(--text-muted)" }}>{rank}</span>
+      )}
       <Link href={`/restaurant/${c.restaurant_id}`} className="block min-w-0 rounded-xl" aria-label={`${c.name}, ${c.neighborhood}`}>
         <PlaceRow c={c} tag={isOpenNow ? "Open now" : undefined} />
-        {(bucket || social || saveError) && (
-          <span className="block text-[13px] mt-1.5 pl-[90px]" style={{ color: bucket || followedSaveCount ? "var(--text)" : "var(--text-muted)" }}>
-            {saveError ? "Couldn't save, try again" : bucket ? `You've been: ${BUCKET_LABELS[bucket]}` : social}
+        {(yours || social || saveError) && (
+          <span className="block text-[13px] mt-1.5 pl-[90px]" style={{ color: yours || followedSaveCount ? "var(--text)" : "var(--text-muted)" }}>
+            {saveError ? "Couldn't save, try again" : yours ?? social}
           </span>
         )}
       </Link>
@@ -122,5 +140,55 @@ export default function BrowseRow({
         document.body,
       )}
     </div>
+  );
+}
+
+// A restaurant as the list APIs return it, shaped for the row.
+export interface ListRestaurant {
+  restaurant_id: string;
+  name: string;
+  neighborhood: string;
+  cuisine: string;
+  total_score: number;
+  image_url: string;
+  price_midpoint?: number | null;
+  local_weighted_rating?: number;
+  tourist_weighted_rating?: number;
+}
+
+export function rowCandidate(r: ListRestaurant): Candidate {
+  return {
+    restaurant_id: r.restaurant_id,
+    name: r.name,
+    neighborhood: r.neighborhood,
+    cuisine: r.cuisine,
+    price_midpoint: r.price_midpoint ?? null,
+    image_url: r.image_url || null,
+    lat: 0,
+    lng: 0,
+    local_weighted_rating: r.local_weighted_rating ?? r.total_score,
+    tourist_weighted_rating: r.tourist_weighted_rating ?? r.total_score,
+    distance_mi: null,
+    dishes: [],
+    vibe: null,
+    wait_note: null,
+  };
+}
+
+// First-load placeholder in the rows' own shape.
+export function RowsSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <ul className="grid md:grid-cols-2 gap-x-10 gap-y-6" aria-busy="true" aria-label="Loading">
+      {Array.from({ length: count }).map((_, i) => (
+        <li key={i} className="grid grid-cols-[76px_minmax(0,1fr)] gap-3.5">
+          <div className="skeleton w-[76px] h-[76px] rounded-xl" />
+          <div className="space-y-2 pt-1">
+            <div className="skeleton h-4 w-3/5 rounded" />
+            <div className="skeleton h-3 w-2/5 rounded" />
+            <div className="skeleton h-3 w-1/3 rounded" />
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }

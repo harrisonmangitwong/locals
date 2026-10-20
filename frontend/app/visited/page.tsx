@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import Link from "next/link";
-import RestaurantCard from "@/components/RestaurantCard";
+import BrowseRow, { RowsSkeleton, rowCandidate } from "@/components/BrowseRow";
+import ScrollSpotlight from "@/components/ScrollSpotlight";
 import SiteHeader from "@/components/SiteHeader";
 import LockedState from "@/components/LockedState";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
@@ -97,147 +98,81 @@ export default function VisitedPage() {
       .sort((a, b) => ratings[a.restaurant_id].rank_position - ratings[b.restaurant_id].rank_position);
   }
 
+  const hasList = !loading && !fetchError && !empty && restaurants.length > 0;
+
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
-    >
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader current="visited" />
 
-      <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div className="mb-6">
-          <h1
-            className="font-display text-3xl mb-1"
-            style={{ color: "var(--text)" }}
-          >
-            Visited
-          </h1>
-          {user && !loading && !empty && (
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              {restaurants.length} place{restaurants.length !== 1 ? "s" : ""} you&apos;ve ranked
+      <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 md:pt-10 pb-14">
+        <div className="mb-7">
+          <h1 className="font-display text-[34px] md:text-[44px]">Visited</h1>
+          {user && hasList && (
+            <p className="text-[15px] mt-1.5" style={{ color: "var(--text-secondary)" }}>
+              Your places, ranked by you
             </p>
           )}
         </div>
 
-        {/* Signed out */}
         {!authLoading && !user && (
           <LockedState
-            heading="Sign in to see your visited spots"
-            body="Rate the places you've been and build your own ranked list. Create an account to start tracking."
+            heading="Sign in to see where you've been"
+            body="Rate the places you've been and build your own ranked list."
             cta={<GoogleSignInButton />}
           />
         )}
 
-        {/* Loading */}
-        {(authLoading || user) && loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl overflow-hidden"
-                style={{
-                  backgroundColor: "var(--bg-subtle)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <div className="skeleton h-52 sm:h-48" />
-                <div className="p-4 space-y-3">
-                  <div className="skeleton h-4 w-3/4 rounded" />
-                  <div className="skeleton h-3 w-1/2 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {(authLoading || user) && loading && <RowsSkeleton count={4} />}
 
-        {/* Error state */}
         {user && !loading && fetchError && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="font-display text-xl mb-2" style={{ color: "var(--text)" }}>
-              Couldn&apos;t load your visited spots
-            </p>
-            <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
-              Something went wrong fetching your list. Try refreshing.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-            >
-              Refresh
-            </button>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {user && !loading && !fetchError && empty && (
           <LockedState
-            heading="Nothing visited yet"
-            body="After you've been somewhere, tap the heart on the restaurant to rank it. We'll keep track."
-            cta={
-              <Link
-                href="/recommendations"
-                className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-              >
-                Browse restaurants
-              </Link>
-            }
+            heading="Couldn't load your places"
+            body="Check your connection and try again."
+            cta={<button onClick={() => window.location.reload()} className="soft-btn px-6 text-[15px]">Try again</button>}
           />
         )}
 
-        {/* Ranked sections, grouped by bucket */}
-        {!loading && !fetchError && !empty && restaurants.length > 0 && (
-          <div className="space-y-10">
+        {user && !loading && !fetchError && empty && (
+          <LockedState
+            heading="Nowhere yet"
+            body="After you've been somewhere, tap the check on it to rate it. Your list builds itself from there."
+            cta={<Link href="/recommendations" className="cta-btn inline-flex items-center justify-center px-7 text-[15px]">Browse all places</Link>}
+          />
+        )}
+
+        {/* One section per verdict, best first; inside each, your own order. */}
+        {hasList && (
+          <ScrollSpotlight watch={restaurants.map((r) => `${r.restaurant_id}:${ratings[r.restaurant_id]?.bucket}`).join(",")} className="flex flex-col gap-10">
             {BUCKETS.map(({ key, label }) => {
               const group = bucketGroup(key);
               if (group.length === 0) return null;
               return (
-                <section key={key}>
-                  <h2 className="font-semibold text-lg mb-4" style={{ color: "var(--text)" }}>
-                    {label} <span style={{ color: "var(--text-muted)" }}>({group.length})</span>
+                <section key={key} aria-labelledby={`bucket-${key}`}>
+                  <h2 id={`bucket-${key}`} className="text-[21px] font-semibold tracking-[-0.015em] mb-4">
+                    {label} <span className="font-normal tabular-nums" style={{ color: "var(--text-muted)" }}>{group.length}</span>
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <ul className="grid md:grid-cols-2 gap-x-10 gap-y-6">
                     {group.map((r, i) => {
                       const rating = ratings[r.restaurant_id];
                       return (
-                        <div key={r.restaurant_id} className="card-enter" style={{ animationDelay: `${i * 50}ms` }}>
-                          <RestaurantCard
-                            restaurantId={r.restaurant_id}
-                            rank={r.rank}
-                            rankOverride={rating.rank_position}
-                            name={r.name}
-                            neighborhood={r.neighborhood}
-                            cuisine={r.cuisine}
-                            reviews={r.review_count ?? r.num_reviews ?? 0}
-                            rating={r.total_score ?? 0}
-                            mapsUrl={r.url}
-                            photoUrl={r.image_url}
-                            price={
-                              r.price_midpoint
-                                ? r.price_midpoint <= 15
-                                  ? "$"
-                                  : r.price_midpoint <= 30
-                                    ? "$$"
-                                    : r.price_midpoint <= 60
-                                      ? "$$$"
-                                      : "$$$$"
-                                : undefined
-                            }
+                        <li key={r.restaurant_id} className="rise" style={{ "--i": Math.min(i, 7) } as CSSProperties}>
+                          <BrowseRow
+                            c={rowCandidate(r)}
+                            rank={rating.rank_position}
                             initialBucket={rating.bucket}
                             ratingScore={rating.score}
                             ratingTags={rating.tags}
                             followedSaveCount={followedSaveCounts[r.restaurant_id]}
-                            onRated={(id, bucket) =>
-                              setRatings((prev) => ({ ...prev, [id]: { ...prev[id], bucket } }))
-                            }
+                            onRated={(id, bucket) => setRatings((prev) => ({ ...prev, [id]: { ...prev[id], bucket } }))}
                           />
-                        </div>
+                        </li>
                       );
                     })}
-                  </div>
+                  </ul>
                 </section>
               );
             })}
-          </div>
+          </ScrollSpotlight>
         )}
       </main>
     </div>

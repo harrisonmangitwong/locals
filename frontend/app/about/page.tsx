@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import ProofCard from "@/components/ProofCard";
@@ -24,14 +25,32 @@ async function getRestaurantCount(): Promise<number | null> {
 
 export default async function AboutPage() {
   const restaurantCount = await getRestaurantCount();
+  const factors = [
+    {
+      weight: "Most",
+      title: "Geographic concentration",
+      body: "What share of their reviews are for NYC restaurants? Someone who's reviewed 200 spots worldwide but only 1 in NYC is probably a tourist.",
+    },
+    {
+      weight: "Some",
+      title: "Review stability",
+      body: "Have they been reviewing NYC spots consistently over time, or just in one burst during a trip?",
+    },
+    {
+      weight: "A little",
+      title: "Local Guide status",
+      body: "Google-verified Local Guides get a small boost.",
+    },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader current="about" />
 
-      <main id="main-content" className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-12">
-        <h1 className="font-display text-3xl sm:text-4xl leading-tight mb-10">About</h1>
+      <main id="main-content" className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 pt-6 md:pt-10 pb-14">
+        <h1 className="font-display text-[34px] md:text-[44px] rise" style={{ "--i": 0 } as CSSProperties}>About</h1>
 
-        <div className="space-y-5 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+        <div className="flex flex-col gap-4 mt-6 text-[17px] leading-relaxed max-w-[60ch] rise" style={{ color: "var(--text-secondary)", "--i": 1 } as CSSProperties}>
           <p>
             A few months ago I was traveling through Asia, trying to find good places to eat.
             Google, Yelp, Instagram, TikTok. Didn&apos;t matter which app, every restaurant
@@ -50,62 +69,43 @@ export default async function AboutPage() {
             Manhattan, Brooklyn, Queens, and the Bronx, with new spots added regularly.
           </p>
           <p>Hope it helps you find somewhere good.</p>
-          <p style={{ color: "var(--text-muted)" }}>- Harrison</p>
+          <p style={{ color: "var(--text)" }}>Harrison</p>
         </div>
 
-        {/* How the score works — for the curious */}
-        <div className="mt-10 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
-          <h2 className="font-semibold text-lg mb-1" style={{ color: "var(--text)" }}>How the score works</h2>
-          <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>Here&apos;s how the ratings work, for the curious.</p>
-          <div className="space-y-4 rounded-xl p-5 mb-6" style={{ backgroundColor: "var(--bg-subtle)", border: "1px solid var(--border)" }}>
-            <div className="flex items-start gap-4">
-              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--text)" }}>Most</span>
-              <div>
-                <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Geographic concentration</div>
-                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>What share of their reviews are for NYC restaurants? Someone who&apos;s reviewed 200 spots worldwide but only 1 in NYC is probably a tourist.</div>
+        <section className="mt-12 rise" style={{ "--i": 2 } as CSSProperties} aria-labelledby="how-it-works">
+          <h2 id="how-it-works" className="text-[21px] font-semibold tracking-[-0.015em]">How the score works</h2>
+          <p className="text-[15px] mt-1.5 max-w-[60ch]" style={{ color: "var(--text-secondary)" }}>
+            Every review counts, but reviews from people who actually live here count more. Three things decide how local a reviewer is:
+          </p>
+          <dl className="mt-4">
+            {factors.map((f, i) => (
+              <div key={f.title} className="grid grid-cols-[72px_minmax(0,1fr)] gap-4 py-3.5" style={{ borderTop: i ? "1px solid var(--border)" : undefined }}>
+                <dt className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>{f.weight}</dt>
+                <dd>
+                  <span className="block text-[15px] font-semibold" style={{ color: "var(--text)" }}>{f.title}</span>
+                  <span className="block text-[15px] leading-relaxed mt-0.5" style={{ color: "var(--text-secondary)" }}>{f.body}</span>
+                </dd>
               </div>
-            </div>
-            <div style={{ borderTop: "1px solid var(--border)" }} />
-            <div className="flex items-start gap-4">
-              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--text)" }}>Some</span>
-              <div>
-                <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Review stability</div>
-                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Have they been reviewing NYC spots consistently over time, or just in one burst during a trip?</div>
-              </div>
-            </div>
-            <div style={{ borderTop: "1px solid var(--border)" }} />
-            <div className="flex items-start gap-4">
-              <span className="font-bold text-lg leading-none shrink-0 w-14" style={{ color: "var(--text)" }}>Minor</span>
-              <div>
-                <div className="text-sm font-medium mb-0.5" style={{ color: "var(--text)" }}>Local Guide status</div>
-                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Google-verified Local Guides get a small boost.</div>
-              </div>
-            </div>
-          </div>
-          <p className="text-sm leading-relaxed mb-8" style={{ color: "var(--text-muted)" }}>
+            ))}
+          </dl>
+          <p className="text-[15px] leading-relaxed mt-3 max-w-[60ch]" style={{ color: "var(--text-secondary)" }}>
             The full ranking also weighs review text and location, and refreshes as new data comes in.
           </p>
 
-          <p className="text-sm font-medium mb-3" style={{ color: "var(--text)" }}>What that looks like on a real restaurant:</p>
+          <h3 className="text-[17px] font-semibold mt-8 mb-3">What that looks like on a real restaurant</h3>
           <ProofCard item={PROOF_EXAMPLES[0]} />
-        </div>
+        </section>
 
-        {/* CTA */}
-        <div className="pt-10">
-          <Link
-            href="/recommendations"
-            className="cta-btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
-          >
-            Browse recommendations
-          </Link>
-          <p className="text-sm mt-4" style={{ color: "var(--text-muted)" }}>
-            Missing a spot, found a bug, or have feedback?{" "}
-            <Link href="/recommendations#request-restaurant" className="font-medium transition-opacity hover:opacity-75 active:opacity-60" style={{ color: "var(--accent-text)" }}>
-              Tell us
-            </Link>
-            .
-          </p>
+        <div className="flex flex-col sm:flex-row gap-2.5 mt-12 rise" style={{ "--i": 3 } as CSSProperties}>
+          <Link href="/pick" className="cta-btn inline-flex items-center justify-center px-8 text-[16px]">Help me pick</Link>
+          <Link href="/recommendations" className="soft-btn inline-flex items-center justify-center px-8 text-[16px]">Browse all places</Link>
         </div>
+        <p className="text-[14px] mt-5" style={{ color: "var(--text-secondary)" }}>
+          Missing a spot, found a bug, or have feedback?{" "}
+          <Link href="/recommendations#request-restaurant" className="font-medium underline underline-offset-4 transition-opacity hover:opacity-70" style={{ color: "var(--text)" }}>
+            Tell us
+          </Link>
+        </p>
       </main>
     </div>
   );
