@@ -47,7 +47,9 @@ export default async function Home() {
           </Link>
         </div>
         <p className="text-[13px] mt-5" style={{ color: "var(--text-muted)" }}>
-          Ranked from {REVIEW_COUNT_LABEL} reviews of {RESTAURANT_POOL_LABEL} NYC restaurants
+          <Link href="/about" className="underline-offset-4 decoration-[var(--border-strong)] hover:underline transition-colors hover:text-[var(--text-secondary)]">
+            Ranked from {REVIEW_COUNT_LABEL} reviews of {RESTAURANT_POOL_LABEL} NYC restaurants
+          </Link>
         </p>
       </section>
 

@@ -8,7 +8,7 @@ import GoogleSignInButton from "./GoogleSignInButton";
 import Icon, { type IconName } from "./Icon";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-type NavKey = "pick" | "recs" | "saved" | "visited" | "about";
+type NavKey = "pick" | "recs" | "saved" | "visited";
 
 interface SiteHeaderProps {
   /** Which nav item to render as the current page, if any. */
@@ -23,7 +23,6 @@ const NAV_ITEMS: { key: NavKey; href: string; label: string }[] = [
   { key: "recs", href: "/recommendations", label: "Browse" },
   { key: "saved", href: "/favorites", label: "Saved" },
   { key: "visited", href: "/visited", label: "Visited" },
-  { key: "about", href: "/about", label: "About" },
 ];
 
 const TABS: { href: string; label: string; icon: IconName }[] = [
