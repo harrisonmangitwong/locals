@@ -267,7 +267,11 @@ function RecommendationsContent() {
           <div className="min-w-0">
             <h1 className="font-display text-[34px] md:text-[44px]">All places</h1>
             <p className="text-[15px] mt-1.5" style={{ color: "var(--text-secondary)" }}>
-              {data ? `${total.toLocaleString()} ${total === 1 ? "place" : "places"}, best first` : "Ranked by what locals think"}
+              {data
+                ? hasAnyFilter
+                  ? `${total.toLocaleString()} ${total === 1 ? "match" : "matches"}`
+                  : `${total.toLocaleString()} restaurants across the city`
+                : "\u00a0"}
             </p>
           </div>
           <Link href="/pick" className="cta-btn hidden sm:inline-flex items-center justify-center px-7 text-[15px] shrink-0">
