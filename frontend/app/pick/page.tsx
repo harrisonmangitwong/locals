@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect, useLayoutEffect, useState } from "react";
+import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
@@ -9,6 +9,8 @@ import ScrollSpotlight from "@/components/ScrollSpotlight";
 import { type Candidate, ChoiceBody, PickPhoto, PlaceRow, fmtDistance, priceLabel } from "@/components/PickCard";
 import { NEIGHBORHOOD_COORDS } from "@/lib/neighborhoods";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { newPickId, rememberPick, track } from "@/lib/track";
+import DidYouGo from "@/components/DidYouGo";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -73,6 +75,8 @@ export default function PickPage() {
   // choice registers visually before the next pair slides in.
   const [picked, setPicked] = useState<boolean | null>(null);
   const [copied, setCopied] = useState(false);
+  // One id per run through Help me pick, so its events can be tied together.
+  const pickId = useRef<string>("");
 
   // Location: asked once on arrival; neighborhood picker if declined or if
   // they're planning for somewhere other than where they're standing.
@@ -177,15 +181,42 @@ export default function PickPage() {
     window.scrollTo({ top: 0 });
   }, [screen]);
 
-  function finish(winner: Candidate, second: Candidate | null) {
+  function finish(winner: Candidate, second: Candidate | null, method: "compared" | "just_pick", roundsPlayed: number) {
     setResult(winner);
     setRunnerUp(second);
     setScreen("result");
+    track("pick_completed", pickId.current, {
+      restaurantId: winner.restaurant_id,
+      props: { runner_up: second?.restaurant_id ?? null, rounds: roundsPlayed, method },
+    });
+    rememberPick({
+      pickId: pickId.current,
+      restaurantId: winner.restaurant_id,
+      name: winner.name,
+      neighborhood: winner.neighborhood,
+      cuisine: winner.cuisine,
+      imageUrl: winner.image_url,
+    });
+  }
+
+  function resultAction(action: "lets_go" | "details" | "share" | "pick_again" | "swap") {
+    if (result) track("result_action", pickId.current, { restaurantId: result.restaurant_id, props: { action } });
   }
 
   function start() {
+    pickId.current = newPickId();
+    track("pick_started", pickId.current, {
+      props: {
+        cuisines: [...cuisines],
+        prices: [...prices],
+        max_miles: location ? DIST_STEPS[distIdx] : null,
+        only_new: onlyNew,
+        shortlist_size: shortlist.length,
+        location: !location ? "none" : location === deviceLocation ? "device" : "chosen",
+      },
+    });
     go(() => {
-      if (shortlist.length === 1) return finish(shortlist[0], null);
+      if (shortlist.length === 1) return finish(shortlist[0], null, "compared", 0);
       setChamp(shortlist[0]);
       setQueue(shortlist.slice(1));
       setRound(1);
@@ -209,7 +240,7 @@ export default function PickPage() {
     const [challenger, ...rest] = queue;
     const winner = keepChamp ? champ : challenger;
     const loser = keepChamp ? challenger : champ;
-    if (!rest.length) return finish(winner, loser);
+    if (!rest.length) return finish(winner, loser, "compared", rounds);
     setChamp(winner);
     setQueue(rest);
     setRound((r) => r + 1);
@@ -273,6 +304,7 @@ export default function PickPage() {
         <>
           <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-7 md:pt-12 pb-10 grid md:grid-cols-[minmax(0,1fr)_380px] gap-10 md:gap-14 items-start">
             <div className="min-w-0">
+              <DidYouGo className="mb-7" />
               <h1 className="font-display text-[32px] sm:text-[40px]">What sounds good?</h1>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] mt-2" style={{ color: "var(--text-secondary)" }}>
                 {locStatus === "asking" && <span>Finding your location...</span>}
@@ -486,7 +518,7 @@ export default function PickPage() {
                 <kbd className="inline-flex items-center justify-center w-6 h-6 rounded-md" style={{ backgroundColor: "var(--bg-subtle)" }}><Icon name="arrow-right" size={12} /></kbd>
                 <span className="ml-1">to choose</span>
               </p>
-              <button onClick={() => go(() => finish(champ, queue[0]))} className="soft-btn w-full md:w-auto md:min-w-[220px] px-6 text-[15px]">
+              <button onClick={() => go(() => finish(champ, queue[0], "just_pick", round - 1))} className="soft-btn w-full md:w-auto md:min-w-[220px] px-6 text-[15px]">
                 Just pick for me
               </button>
             </div>
@@ -518,13 +550,13 @@ export default function PickPage() {
                 <span className="tag tag-open">Open now</span>
               </div>
 
-              <a href={directions} target="_blank" rel="noopener noreferrer" className="cta-btn flex items-center justify-center gap-2 w-full mt-6 text-[16px] rise" style={{ "--i": 3 } as CSSProperties}>
+              <a href={directions} target="_blank" rel="noopener noreferrer" onClick={() => resultAction("lets_go")} className="cta-btn flex items-center justify-center gap-2 w-full mt-6 text-[16px] rise" style={{ "--i": 3 } as CSSProperties}>
                 <Icon name="navigation" size={16} /> Let&rsquo;s go
               </a>
               <div className="grid grid-cols-3 gap-2 mt-2.5 rise" style={{ "--i": 4 } as CSSProperties}>
-                <Link href={`/restaurant/${result.restaurant_id}`} className="tile-btn"><Icon name="info" size={19} />Details</Link>
-                <button onClick={() => share(result)} className="tile-btn"><Icon name="share" size={19} />{copied ? "Copied" : "Share"}</button>
-                <button onClick={() => go(() => setScreen("prefs"))} className="tile-btn"><Icon name="rotate-ccw" size={19} />Pick again</button>
+                <Link href={`/restaurant/${result.restaurant_id}`} onClick={() => resultAction("details")} className="tile-btn"><Icon name="info" size={19} />Details</Link>
+                <button onClick={() => { resultAction("share"); share(result); }} className="tile-btn"><Icon name="share" size={19} />{copied ? "Copied" : "Share"}</button>
+                <button onClick={() => { resultAction("pick_again"); go(() => setScreen("prefs")); }} className="tile-btn"><Icon name="rotate-ccw" size={19} />Pick again</button>
               </div>
 
               {result.dishes.length > 0 && (
@@ -556,7 +588,12 @@ export default function PickPage() {
                 <section className="mt-9 rise" style={{ "--i": 8 } as CSSProperties}>
                   <h2 className="text-[17px] font-semibold mb-3">Close second</h2>
                   <button
-                    onClick={() => go(() => { setResult(runnerUp); setRunnerUp(result); })}
+                    onClick={() => {
+                      resultAction("swap");
+                      // The close second becomes the pick, so it's what "Did you go?" asks about.
+                      rememberPick({ pickId: pickId.current, restaurantId: runnerUp.restaurant_id, name: runnerUp.name, neighborhood: runnerUp.neighborhood, cuisine: runnerUp.cuisine, imageUrl: runnerUp.image_url });
+                      go(() => { setResult(runnerUp); setRunnerUp(result); });
+                    }}
                     className="w-full text-left rounded-2xl p-2.5 -m-2.5 transition-colors hover:bg-[var(--bg-card)]"
                     aria-label={`Switch to ${runnerUp.name}`}
                   >

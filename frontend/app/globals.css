@@ -134,6 +134,14 @@ a, button, [role="button"] {
 .soft-btn:hover {
   background-color: var(--bg-inset);
 }
+/* Controls sitting on a soft-gray surface (the "Did you go?" tile) step up
+   to the card fill at rest, so they still read as pills, and to the pressed
+   gray on hover. */
+.on-subtle .filter-pill:not(.is-active),
+.on-subtle .soft-btn { background-color: var(--bg-card); }
+.on-subtle .filter-pill:not(.is-active):hover,
+.on-subtle .soft-btn:hover { background-color: var(--bg-inset); }
+
 /* Inside list rows (e.g. Accept on a follow request): still a 44px target,
    one step quieter than the 50px page-level pill. */
 .soft-btn.is-compact,

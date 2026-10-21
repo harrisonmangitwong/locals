@@ -283,6 +283,9 @@ Two curves. **Ease Out** (`--ease-out`, cubic-bezier(0.22, 1, 0.36, 1)) for stat
 - **Reduced motion:** state changes stay, movement goes: no transforms, view transitions, or staggered arrivals.
 - Animations that share an element with `:hover` or `:active` transforms fill `backwards`, never `both`, so the end state never pins the transform.
 
+### Did you go? (follow-up)
+A soft-gray tile (20px radius, 16px padding), never a pop-up: the pick's 56px photo, "Did you end up going to {name}?" in 16px/600 with a quiet line under it, three chips (Went / Not yet / Went elsewhere) and a dismiss icon. Controls on a soft-gray surface use `.on-subtle`, which lifts chips and soft pills to the card fill so they still read as controls. After "Went", signed-in users get a compact Rate it pill into the rating flow. It rises in like other content and leaves after a short thanks.
+
 ### Touch: scroll stands in for hover
 Phones have no hover, so scrolling drives the same responses. The homepage collage moves with page scroll by depth (nearer photos rise faster, the pile straightens over the first 600px). In row lists (Open right now, Your shortlist), the single row whose center is nearest the middle of the screen (within 22% of the viewport height) gets the hover treatment (white card, large soft shadow, 3px lift, photo zoom) via `.is-focus`, one row at a time.
 

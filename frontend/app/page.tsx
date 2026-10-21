@@ -3,6 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import Icon from "@/components/Icon";
 import { type CSSProperties } from "react";
 import Collage from "@/components/Collage";
+import DidYouGo from "@/components/DidYouGo";
 import ScrollSpotlight from "@/components/ScrollSpotlight";
 import { type Candidate, PlaceRow } from "@/components/PickCard";
 import { REVIEW_COUNT_LABEL, RESTAURANT_POOL_LABEL } from "@/lib/stats";
@@ -52,6 +53,11 @@ export default async function Home() {
           </Link>
         </p>
       </section>
+
+      {/* Shows only on a return visit 2 to 72 hours after a pick. */}
+      <div className="w-full max-w-xl mx-auto px-4 sm:px-6 empty:hidden">
+        <DidYouGo className="mb-12" />
+      </div>
 
       {places.length > 0 && (
         <section className="w-full max-w-3xl mx-auto px-4 sm:px-6 pb-14" aria-labelledby="open-now">
