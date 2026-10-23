@@ -42,7 +42,9 @@ Using those scores, every restaurant gets two separate ratings: a local-weighted
 
 **3. Run a classifier**
 
-I hand-labeled 200 restaurants as "local-approved" or not to create training data, then trained a Random Forest on 21 features — review statistics, NLP signals from review text (quality language, local vs. tourist patterns), and location data (distance from tourist centers, price range, rating distribution).
+I hand-labeled 205 restaurants as "local-approved" or not to create training data, then trained a Random Forest on 20 features — review statistics, NLP signals from review text (quality language, local vs. tourist patterns), price range, and rating distribution.
+
+It's graded only on restaurants it didn't train on (5-fold cross-validation, repeated 10 times with different shuffles). It ranks a local-approved place above one that isn't about 70% of the time (AUC ~0.70), against 60% for sorting by Google stars.
 
 The model outputs a confidence score for each restaurant. That score drives the final ranking.
 
@@ -57,6 +59,7 @@ The app lets you filter by neighborhood, cuisine, price range, and whether a pla
 - **Didn't surface the raw localness score to users.** It's too abstract and would require explanation at the wrong moment. The job-to-be-done is "find a good restaurant," not "understand the methodology." The verdict sentence does that job better.
 - **Accounts backed by Supabase** rather than browser storage — so you can save restaurants while planning on your laptop and pull them up on your phone when you're out.
 - **NYC-only launch.** Highest signal density in the US, most pronounced local/tourist gap, and every neighborhood has its own distinct food culture. The methodology is city-agnostic — Chicago, New Orleans, Tokyo all produce the same reviewable signal — but NYC is the right proof of concept.
+- **Tested an LLM as a second opinion, and didn't ship it.** Claude read each labeled restaurant's reviews and rated it, three runs each, under two prompt wordings. It was consistent, but it matched my labels no better than chance and added nothing to the model: review text says whether reviewers enjoyed a meal, while the model learns whose reviews to trust. The LLM writes the "what to order" summaries instead.
 - **Built the frontend with AI tooling (Claude Code).** Deliberate choice: the core algorithm, feature engineering, and hand-labeling are where the proprietary value is. Offloading the UI was the right trade-off.
 
 ---
@@ -76,12 +79,12 @@ The app lets you filter by neighborhood, cuisine, price range, and whether a pla
 | Frontend | Next.js 16, TypeScript, Tailwind CSS |
 | Backend | FastAPI, Python |
 | Database | Supabase (PostgreSQL) |
-| Auth | NextAuth v5 (Google OAuth) |
+| Auth | Supabase Auth (Google OAuth) |
 | ML | scikit-learn (Random Forest), pandas, numpy |
 | Data collection | Apify (Google Maps scraper) |
 | Deployment | Vercel (frontend), Railway (backend) |
 
-**Dataset:** 48,000+ reviews · 1,000+ restaurants · 200 hand-labeled training examples · 21 classifier features
+**Dataset:** 78,000+ reviews · 2,100+ restaurants scraped · 414 on the live list · 205 hand-labeled training examples · 20 classifier features
 
 ---
 

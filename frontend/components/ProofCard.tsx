@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { getPhotoUrl } from "@/lib/photoFallback";
+import NoPhoto from "@/components/NoPhoto";
 
 export interface ProofCardItem {
   name: string;
@@ -18,19 +18,23 @@ export interface ProofCardItem {
 // item comes from a fixed module-level array, so the photo state only needs
 // to initialize from it once.
 export default function ProofCard({ item }: { item: ProofCardItem }) {
-  const [photoUrl, setPhotoUrl] = useState(item.imageUrl);
+  const [failed, setFailed] = useState(false);
 
   return (
     <div className="grid grid-cols-[76px_minmax(0,1fr)] gap-3.5 items-center">
       <div className="relative w-[76px] h-[76px] rounded-xl overflow-hidden" style={{ backgroundColor: "var(--bg-inset)" }}>
-        <Image
-          src={photoUrl}
-          alt={`${item.name} in ${item.neighborhood}`}
-          fill
-          sizes="76px"
-          className="object-cover"
-          onError={() => setPhotoUrl(getPhotoUrl(item.cuisine))}
-        />
+        {failed ? (
+          <NoPhoto />
+        ) : (
+          <Image
+            src={item.imageUrl}
+            alt={`${item.name} in ${item.neighborhood}`}
+            fill
+            sizes="76px"
+            className="object-cover"
+            onError={() => setFailed(true)}
+          />
+        )}
       </div>
       <div className="min-w-0">
         <p className="text-[16px] font-semibold leading-snug" style={{ color: "var(--text)" }}>{item.name}</p>

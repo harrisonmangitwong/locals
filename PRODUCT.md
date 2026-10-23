@@ -28,13 +28,13 @@ Success today means both halves eventually working, on a real (if still small) a
 
 ## Positioning
 
-The mechanism: a per-reviewer localness score (0–1), combining geographic concentration of their reviews (60%), review stability over time vs. a single-trip burst (25%), and Google-verified Local Guide status (15%). This re-weights the same review pool into local-weighted and tourist-weighted ratings per restaurant, and a Random Forest classifier trained on 200 hand-labeled restaurants outputs the probability (`p_safe_pick`) that drives ranking, plus three quantile-based archetype tags (Hidden Gem, Universally Loved, Local Favorite).
+The mechanism: a per-reviewer localness score (0–1), combining geographic concentration of their reviews (60%), review stability over time vs. a single-trip burst (25%), and Google-verified Local Guide status (15%). This re-weights the same review pool into local-weighted and tourist-weighted ratings per restaurant, and a Random Forest classifier trained on 205 hand-labeled restaurants outputs the probability (`p_safe_pick`) that drives ranking, plus three quantile-based archetype tags (Hidden Gem, Universally Loved, Local Favorite).
 
 The claim a neighboring product can't truthfully copy: Google, Yelp, and TripAdvisor have no incentive to build residency-inference into their own ranking — it would demote inventory they currently rank highly. Beli's friend-graph model solves trust well for the home occasion, but it structurally degrades the moment you're somewhere your friends aren't local to — which is exactly the away/travel occasion. Locals' residency-inference doesn't depend on a personal social graph, so it's the one asset that transfers cleanly from the home occasion to the away occasion. That transfer is the reason the roadmap treats the travel mode ("Trip Mode") as the actual differentiator against Beli, not a nice-to-have extension.
 
 ## Operating Context
 
-- Single city today: NYC, 407 live restaurants across ~90 neighborhoods, drawn from a larger scraped pool (~2,055 restaurants) filtered by a review-count threshold and the classifier's confidence.
+- Single city today: NYC, 414 live restaurants across 87 neighborhoods, drawn from a larger scraped pool (~2,155 restaurants) filtered by a review-count threshold and the classifier's confidence.
 - Offline batch pipeline, not real-time: Apify scrape → Python scoring pipeline → CSV → manual copy into `backend/data.csv` → manual git push to deploy. A monthly automated job now discovers new restaurants, deliberately scoped to stop at the data files — it does not run the scoring pipeline or touch the live site automatically, and it's hard-budget-capped ($5/month Apify plan).
 - Small, early live user base (roughly 8 signed-up users at last count). Growth is manual and organic at this stage (personal outreach, organic content posts), not paid.
 - Auth: Google OAuth via Supabase. Core browsing (recommendations feed, restaurant detail pages, public shared lists, the saved/visited pages) is open to signed-out visitors; only actions tied to a personal identity (save, rate/visit, follow, submit a restaurant request) require an account, gated at the point of the action rather than the page.
@@ -46,9 +46,9 @@ The claim a neighboring product can't truthfully copy: Google, Yelp, and TripAdv
 
 **Explicitly not yet built, not to be assumed:**
 - Trip Mode (the travel-occasion mode) — zero code exists. Scoped in the roadmap as the top-priority next differentiator.
-- A second city — the scoring methodology is city-agnostic in principle, but the code has NYC-only hardcoding (a Manhattan zip-to-neighborhood map, a single hardcoded tourist-landmark distance feature, NYC timezone for open-now logic) that isn't generalized yet.
+- A second city — the scoring methodology is city-agnostic in principle, but the code has NYC-only hardcoding (a Manhattan zip-to-neighborhood map and the NYC timezone for open-now logic; the Times Square distance feature was dropped from the model on 2026-10-23) that isn't generalized yet.
 - Monetization (booking-link affiliate revenue, a restaurant-facing locals-vs-tourists data product) — parked pending real traffic volume.
-- Real-time or self-serve data updates — the batch pipeline is a deliberate choice at this scale (407 rows), not a gap to close soon.
+- Real-time or self-serve data updates — the batch pipeline is a deliberate choice at this scale (414 rows), not a gap to close soon.
 
 **Terminology:** "localness score" (per reviewer, 0–1); "local-weighted rating" / "tourist-weighted rating" / "tourist_penalty" (per restaurant); "p_safe_pick" (the classifier's output, drives rank order); "archetype" (one of the three earned badges, or none — most restaurants earn no badge).
 
@@ -60,10 +60,11 @@ Voice commitment: warm, trustworthy, local, like a knowledgeable friend who live
 
 ## Evidence on Hand
 
-- Live dataset: `backend/data.csv`, 407 NYC restaurants, real Google Maps/Places data.
-- Larger raw pool: `data/reviews.csv` (73,000+ scraped reviews), `data/restaurants.csv` (~2,055 scraped restaurants) behind the 407 that clear the pipeline's gates.
-- 200 hand-labeled restaurants (`data/labels.csv`) used to train the Random Forest classifier.
-- **Absence to not fabricate:** no usage analytics have actually been pulled at time of writing. Vercel Analytics is installed but unqueried. Do not invent engagement numbers, retention figures, or conversion rates — state "not yet measured" rather than a plausible-sounding guess.
+- Live dataset: `backend/data.csv`, 414 NYC restaurants, real Google Maps/Places data, each with a permanently hosted photo.
+- Larger raw pool: `data/reviews.csv` (78,000+ scraped reviews), `data/restaurants.csv` (~2,155 scraped restaurants) behind the 414 that clear the pipeline's gates.
+- 205 hand-labeled restaurants (`data/labels.csv`) used to train the Random Forest classifier (20 features). Repeated 5-fold cross-validation (10 repeats) puts it at AUC ~0.70, against 0.60 for Google stars alone.
+- An LLM-as-judge experiment (Claude Sonnet reading each labeled place's reviews, run under two prompt wordings, 3 runs each) was consistent but matched the labels at AUC ~0.51 and added +0.005 as a feature, so it was not shipped. The LLM is used for review summaries only.
+- **Absence to not fabricate:** Help me pick tracking (picks, "Did you go?" answers, the `/metrics` funnel) shipped on 2026-10-21, but no meaningful volume exists yet. Vercel Analytics is installed but unqueried. Do not invent engagement numbers, retention figures, or conversion rates — state "not yet measured" rather than a plausible-sounding guess.
 - **Absence to not fabricate:** no completed user interviews yet. A short interview email was drafted this session for the existing signed-up users; sending and results are not yet confirmed.
 
 ## Product Principles

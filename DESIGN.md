@@ -230,7 +230,7 @@ Flat by default. Depth is reserved for things that float above the page; rows, c
 
 ## Shapes
 
-Soft, continuous corners keyed to object size: 6px on tags, 12px on row thumbnails, 14px on action tiles, 18px on choice photos and collage tiles, 22px on the result cover. Every action, chip, and the tab bar is a full pill. Borders are almost absent: only the header and footer hairlines, the tab bar's edge, and list dividers. Photos are always clipped to their radius with a soft-gray placeholder behind them.
+Soft, continuous corners keyed to object size: 6px on tags, 12px on row thumbnails, 14px on action tiles, 18px on choice photos and collage tiles, 22px on the result cover. Every action, chip, and the tab bar is a full pill. Borders are almost absent: only the header and footer hairlines, the tab bar's edge, and list dividers. Photos are always clipped to their radius with a soft-gray placeholder behind them. A missing or broken photo stays that placeholder with a muted utensils mark (`NoPhoto`), never a stock photo of food that isn't the restaurant's; a restaurant page without a photo drops the tinted scene and keeps the plain theme.
 
 ## Components
 

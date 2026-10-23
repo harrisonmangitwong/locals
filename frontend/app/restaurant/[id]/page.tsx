@@ -9,7 +9,7 @@ import SignInPrompt from "@/components/SignInPrompt";
 import Icon, { type IconName } from "@/components/Icon";
 import ScrollSpotlight from "@/components/ScrollSpotlight";
 import { type Candidate, PlaceRow } from "@/components/PickCard";
-import { getPhotoUrl } from "@/lib/photoFallback";
+import NoPhoto from "@/components/NoPhoto";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { getVerdict } from "@/lib/verdict";
 import type { Bucket } from "@/lib/ranking";
@@ -171,7 +171,7 @@ export default function RestaurantPage() {
   const [similar, setSimilar] = useState<SimilarRestaurant[]>([]);
   const { user } = useCurrentUser();
   const [signInReason, setSignInReason] = useState<string | null>(null);
-  const [heroTier, setHeroTier] = useState(0);
+  const [heroFailed, setHeroFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const savingRef = useRef(false);
 
@@ -182,7 +182,7 @@ export default function RestaurantPage() {
         if (!res.ok) throw new Error(`${res.status}`);
         const data = await res.json();
         setRestaurant(data);
-        setHeroTier(0);
+        setHeroFailed(false);
 
         // The neighborhood's other top places, in ranked order.
         try {
@@ -274,11 +274,10 @@ export default function RestaurantPage() {
   }
 
   const r = restaurant;
-  // The mirrored photo first, then the cuisine stock photo if it fails.
+  // The mirrored photo, or the gray placeholder if there's none or it fails.
   // (The scraped full-resolution Google links in extra_image_urls are signed
   // URLs that have expired; every one returns 403, so they're skipped.)
-  const heroCandidates = [r.image_url, getPhotoUrl(r.cuisine, 1200, 80)].filter((u): u is string => !!u);
-  const heroUrl = heroCandidates[Math.min(heroTier, heroCandidates.length - 1)];
+  const heroUrl = heroFailed ? null : r.image_url || null;
 
   const price = priceLabel(r.price_midpoint);
   const whatLine = [r.cuisine !== "Restaurant" ? r.cuisine : null, price].filter(Boolean).join(" · ");
@@ -334,19 +333,23 @@ export default function RestaurantPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col scene" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
+    // Without a photo there's nothing to tint the scene, so the page keeps
+    // the plain theme and the cover is an ordinary gray tile.
+    <div className={`min-h-screen flex flex-col ${heroUrl ? "scene" : ""}`} style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <SiteHeader />
 
       <main id="main-content" className="relative flex-1">
         {/* The page takes on the restaurant's own colors: its photo,
             blurred behind a scrim that follows the theme (see .scene). */}
-        <div className="scene-layer" aria-hidden="true">
-          <div className="scene-backdrop">
-            {/* Blurred 60px, so a thumbnail is plenty; the 640px copy was waste. */}
-            <Image src={heroUrl} alt="" fill sizes="32px" className="object-cover" />
+        {heroUrl && (
+          <div className="scene-layer" aria-hidden="true">
+            <div className="scene-backdrop">
+              {/* Blurred 60px, so a thumbnail is plenty; the 640px copy was waste. */}
+              <Image src={heroUrl} alt="" fill sizes="32px" className="object-cover" />
+            </div>
+            <div className="scene-scrim" />
           </div>
-          <div className="scene-scrim" />
-        </div>
+        )}
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-3 md:pt-6 pb-14">
           <button onClick={back} className="inline-flex items-center gap-1.5 min-h-[44px] -ml-1 px-1 text-[15px] font-medium transition-opacity hover:opacity-70">
@@ -357,15 +360,19 @@ export default function RestaurantPage() {
             {/* Cover: the one sharp photo on the page. */}
             <div className="cover-in relative rounded-[22px] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.3)] md:sticky md:top-[88px] aspect-[4/3] md:aspect-[4/5] md:max-h-[calc(100svh-112px)]" style={{ backgroundColor: "var(--bg-inset)" }}>
               <div className="absolute inset-0">
-                <Image
-                  src={heroUrl}
-                  alt={`${r.name} in ${r.neighborhood}`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 520px"
-                  className="object-cover"
-                  priority
-                  onError={() => setHeroTier((t) => Math.min(t + 1, heroCandidates.length - 1))}
-                />
+                {heroUrl ? (
+                  <Image
+                    src={heroUrl}
+                    alt={`${r.name} in ${r.neighborhood}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 520px"
+                    className="object-cover"
+                    priority
+                    onError={() => setHeroFailed(true)}
+                  />
+                ) : (
+                  <NoPhoto size={44} />
+                )}
               </div>
             </div>
 

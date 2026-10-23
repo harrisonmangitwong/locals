@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Icon from "@/components/Icon";
-import { getPhotoUrl } from "@/lib/photoFallback";
+import NoPhoto from "@/components/NoPhoto";
 
 // One place as /api/pick returns it. Shared by Help me pick and the
 // homepage so both show the exact same place.
@@ -45,18 +45,22 @@ function whatLine(c: Candidate) {
 // The caller owns size and positioning (the image fills it), e.g.
 // "absolute inset-0" or "relative w-[76px] h-[76px] rounded-xl".
 export function PickPhoto({ c, sizes, className, priority }: { c: Candidate; sizes: string; className: string; priority?: boolean }) {
-  const [src, setSrc] = useState(c.image_url || getPhotoUrl(c.cuisine));
+  const [failed, setFailed] = useState(!c.image_url);
   return (
     <div className={`overflow-hidden ${className}`} style={{ backgroundColor: "var(--bg-inset)" }}>
-      <Image
-        src={src}
-        alt={`${c.name} in ${c.neighborhood}`}
-        fill
-        sizes={sizes}
-        priority={priority}
-        className="object-cover"
-        onError={() => setSrc(getPhotoUrl(c.cuisine))}
-      />
+      {failed || !c.image_url ? (
+        <NoPhoto />
+      ) : (
+        <Image
+          src={c.image_url}
+          alt={`${c.name} in ${c.neighborhood}`}
+          fill
+          sizes={sizes}
+          priority={priority}
+          className="object-cover"
+          onError={() => setFailed(true)}
+        />
+      )}
     </div>
   );
 }

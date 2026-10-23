@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Icon from "@/components/Icon";
-import { getPhotoUrl } from "@/lib/photoFallback";
+import NoPhoto from "@/components/NoPhoto";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -69,7 +69,7 @@ export default function RestaurantPicker({ selected, onChange }: RestaurantPicke
               className="filter-pill is-active h-11 pl-1.5 pr-3 text-[15px] font-medium inline-flex items-center gap-2"
             >
               <span className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
-                <Image src={r.image_url || getPhotoUrl(r.cuisine)} alt="" fill sizes="32px" className="object-cover" />
+                {r.image_url ? <Image src={r.image_url} alt="" fill sizes="32px" className="object-cover" /> : <NoPhoto size={14} />}
               </span>
               {r.name}
               <Icon name="x" size={14} />
@@ -104,7 +104,7 @@ export default function RestaurantPicker({ selected, onChange }: RestaurantPicke
               className="w-full flex items-center gap-3 px-2 py-2 -mx-0 rounded-xl text-left transition-colors hover:bg-[var(--bg-subtle)]"
             >
               <span className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0" style={{ backgroundColor: "var(--bg-inset)" }}>
-                <Image src={r.image_url || getPhotoUrl(r.cuisine)} alt="" fill sizes="44px" className="object-cover" />
+                {r.image_url ? <Image src={r.image_url} alt="" fill sizes="44px" className="object-cover" /> : <NoPhoto size={18} />}
               </span>
               <span className="flex flex-col min-w-0">
                 <span className="text-[15px] font-semibold truncate" style={{ color: "var(--text)" }}>{r.name}</span>
