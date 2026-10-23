@@ -361,6 +361,11 @@ function RecommendationsContent() {
           </div>
         )}
 
+        {/* Screen readers hear the result of a search or filter once it lands. */}
+        <p className="sr-only" role="status">
+          {!loading && !error && data ? (total === 0 ? "No places match." : `Showing ${total.toLocaleString()} ${total === 1 ? "place" : "places"}.`) : ""}
+        </p>
+
         {!error && restaurants.length > 0 && (
           <ScrollSpotlight watch={ids}>
             <ul

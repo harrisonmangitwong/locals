@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import ProofCard from "@/components/ProofCard";
 import { REVIEW_COUNT_LABEL } from "@/lib/stats";
 import { PROOF_EXAMPLES } from "@/lib/proofExamples";
+
+export const metadata: Metadata = { title: "About" };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 

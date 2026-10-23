@@ -77,6 +77,10 @@ export default function PickPage() {
   const [copied, setCopied] = useState(false);
   // One id per run through Help me pick, so its events can be tied together.
   const pickId = useRef<string>("");
+  // Each screen's heading takes focus when the screen changes, so keyboard
+  // and screen-reader users land on (and hear) the new screen.
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const firstScreen = useRef(true);
 
   // Location: asked once on arrival; neighborhood picker if declined or if
   // they're planning for somewhere other than where they're standing.
@@ -179,6 +183,12 @@ export default function PickPage() {
   // transition takes its "after" snapshot.
   useLayoutEffect(() => {
     window.scrollTo({ top: 0 });
+    // Not on arrival: only when moving between screens.
+    if (firstScreen.current) {
+      firstScreen.current = false;
+      return;
+    }
+    headingRef.current?.focus({ preventScroll: true });
   }, [screen]);
 
   function finish(winner: Candidate, second: Candidate | null, method: "compared" | "just_pick", roundsPlayed: number) {
@@ -305,7 +315,7 @@ export default function PickPage() {
           <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-7 md:pt-12 pb-10 grid md:grid-cols-[minmax(0,1fr)_380px] gap-10 md:gap-14 items-start">
             <div className="min-w-0">
               <DidYouGo className="mb-7" />
-              <h1 className="font-display text-[32px] sm:text-[40px]">What sounds good?</h1>
+              <h1 ref={headingRef} tabIndex={-1} className="focus-target font-display text-[32px] sm:text-[40px]">What sounds good?</h1>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] mt-2" style={{ color: "var(--text-secondary)" }}>
                 {locStatus === "asking" && <span>Finding your location...</span>}
                 {location && (
@@ -490,14 +500,14 @@ export default function PickPage() {
               <button onClick={() => go(() => setScreen("prefs"))} className="inline-flex items-center gap-1.5 text-[15px] font-medium min-h-[44px] transition-opacity hover:opacity-70">
                 <Icon name="arrow-left" size={17} /> Change answers
               </button>
-              <span className="text-[14px] tabular-nums" style={{ color: "var(--text-secondary)" }}>Round {round} of {rounds}</span>
+              <span className="text-[14px] tabular-nums" style={{ color: "var(--text-secondary)" }} aria-live="polite">Round {round} of {rounds}</span>
             </div>
             <div className="flex gap-1 mt-1" aria-hidden="true">
               {Array.from({ length: rounds }, (_, i) => (
                 <span key={i} className="flex-1 h-1 rounded-full transition-colors" style={{ backgroundColor: i < round ? "var(--text)" : "var(--bg-inset)" }} />
               ))}
             </div>
-            <h1 className="font-display text-[26px] sm:text-[34px] mt-4 md:mt-6">Which sounds better tonight?</h1>
+            <h1 ref={headingRef} tabIndex={-1} className="focus-target font-display text-[26px] sm:text-[34px] mt-4 md:mt-6">Which sounds better tonight?</h1>
             {notice && round === 1 && (
               <p className="text-[14px] mt-1.5" style={{ color: "var(--text-secondary)" }}>{notice}</p>
             )}
@@ -539,7 +549,7 @@ export default function PickPage() {
               <PickPhoto c={result} sizes="(max-width: 768px) 100vw, 520px" priority className="relative block aspect-[4/3] md:aspect-[4/5] md:max-h-[calc(100svh-112px)]" />
             </div>
             <div className="min-w-0">
-              <h1 className="font-display text-[34px] md:text-[44px] text-balance [overflow-wrap:anywhere] rise" style={{ "--i": 0 } as CSSProperties}>{result.name}</h1>
+              <h1 ref={headingRef} tabIndex={-1} className="focus-target font-display text-[34px] md:text-[44px] text-balance [overflow-wrap:anywhere] rise" style={{ "--i": 0 } as CSSProperties}>{result.name}</h1>
               <div className="flex flex-col gap-1 mt-3 text-[15px] rise" style={{ color: "var(--text-secondary)", "--i": 1 } as CSSProperties}>
                 <span className="flex items-center gap-2"><Icon name="map-pin" size={15} />{[result.neighborhood, result.distance_mi != null ? `${fmtDistance(result.distance_mi)} away` : null].filter(Boolean).join(" · ")}</span>
                 <span className="flex items-center gap-2"><Icon name="utensils" size={15} />{[result.cuisine !== "Restaurant" ? result.cuisine : null, priceLabel(result.price_midpoint)].filter(Boolean).join(" · ")}</span>

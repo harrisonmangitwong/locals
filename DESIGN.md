@@ -261,7 +261,7 @@ A whole choice is one button: a large 18px-radius photo (144px / 224px / 288px t
 - **Search:** a soft-gray full pill, 44px, no border, a search icon inside on the left and a clear button on the right; focus deepens the fill one step.
 - **Select:** soft-gray fill, no border, 12px radius, 15px text, 12px by 16px padding.
 - **Slider:** 6px pill track in soft-gray-pressed with an ink fill, 20px ink thumb ringed in the ground color.
-- **Focus:** a 2px ink outline offset 2px everywhere (4px on choice cards).
+- **Focus:** a 2px ink outline offset 2px everywhere (4px on choice cards); slider thumbs get a ground-colored gap then a 2px ink ring. When a flow changes screens (Help me pick), focus moves to the new screen's heading (`.focus-target`, no ring) so screen readers announce it.
 
 ### Navigation
 - **Header:** sticky, 56px, page ground with a hairline bottom rule. Wordmark "Locals" in 19px/700 system type. On desktop, text links in 14px pills: active is soft-gray with ink 600, inactive is secondary gray 500. Sign in is a quiet gray pill.

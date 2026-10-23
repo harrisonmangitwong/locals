@@ -329,7 +329,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingAvatar}
-                className="min-h-[36px] px-3 mt-1 rounded-full text-[14px] font-medium transition-colors hover:bg-[var(--bg-subtle)]"
+                className="min-h-[44px] px-3 mt-1 rounded-full text-[14px] font-medium transition-colors hover:bg-[var(--bg-subtle)]"
                 style={{ color: "var(--text-secondary)" }}
               >
                 {uploadingAvatar ? "Uploading…" : "Change photo"}

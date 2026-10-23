@@ -6,7 +6,8 @@ import "./globals.css";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export const metadata: Metadata = {
-  title: "Locals | Where to eat in NYC tonight",
+  // Each page names itself ("Browse · Locals"); the homepage keeps the full line.
+  title: { default: "Locals | Where to eat in NYC tonight", template: "%s · Locals" },
   description:
     "Most food apps give you endless recs. Locals tells you where to go tonight: a few quick questions, a this-or-that, and one NYC restaurant worth it.",
   openGraph: {

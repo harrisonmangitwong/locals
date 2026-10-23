@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+
+export const metadata: Metadata = { title: "Sign in" };
 
 export default function SignInPage() {
   return (

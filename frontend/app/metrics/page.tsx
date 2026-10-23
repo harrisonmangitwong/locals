@@ -9,7 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // listed in METRICS_USER_IDS (comma-separated Supabase user ids) can see it;
 // everyone else gets a 404, so the page doesn't advertise that it exists.
 
-export const metadata: Metadata = { title: "Metrics · Locals", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Metrics", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
