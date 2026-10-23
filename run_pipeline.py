@@ -73,7 +73,9 @@ def main():
         "num_reviews",
         # Enriched features from Apify
         "price_midpoint",
-        "distance_to_times_sq_km",
+        # distance_to_times_sq_km was removed (2026-10-23): it added no
+        # predictive value (-0.003 AUC, within noise) and quietly scored
+        # restaurants near Times Square lower for their address alone.
         "polarization",
         "rating_skew",
         "one_star_pct",
@@ -127,7 +129,7 @@ def main():
 
     # B) Train model
     model, auc, report = train_random_forest_model(labeled, feature_cols)
-    print("\nModel AUC:", round(auc, 3))
+    print("\nModel AUC (cross-validated):", round(auc, 3))
     print("\nClassification report:\n", report)
 
     # C) Score each restaurant
