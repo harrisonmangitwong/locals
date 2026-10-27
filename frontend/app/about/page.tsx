@@ -38,7 +38,7 @@ const STEPS = [
   },
   {
     title: "Checked against the hype",
-    body: "A model trained on 200 restaurants I rated by hand learns which places hold up and which are coasting on a reputation, and ranks the shortlist with it.",
+    body: "A model trained on 205 restaurants I rated by hand learns which places hold up and which are coasting on a reputation, and ranks the shortlist with it.",
   },
   {
     title: "Then you choose",

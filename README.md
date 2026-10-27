@@ -84,7 +84,7 @@ The app lets you filter by neighborhood, cuisine, price range, and whether a pla
 | Data collection | Apify (Google Maps scraper) |
 | Deployment | Vercel (frontend), Railway (backend) |
 
-**Dataset:** 78,000+ reviews · 2,100+ restaurants scraped · 414 on the live list · 205 hand-labeled training examples · 20 classifier features
+**Dataset:** 78,000+ reviews · 2,100+ restaurants scraped · 384 on the live list · 205 hand-labeled training examples · 20 classifier features
 
 ---
 

@@ -25,12 +25,4 @@ export const PROOF_EXAMPLES: ProofCardItem[] = [
     localRating: 4.7,
     touristRating: 4.4,
   },
-  {
-    name: "Veselka Williamsburg",
-    neighborhood: "Williamsburg",
-    cuisine: "Ukrainian",
-    imageUrl: "https://komriwzkkknrsirifgqg.supabase.co/storage/v1/object/public/restaurant-photos/r_742cf1.jpg",
-    localRating: 4.6,
-    touristRating: 4.3,
-  },
 ];

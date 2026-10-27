@@ -34,7 +34,7 @@ The claim a neighboring product can't truthfully copy: Google, Yelp, and TripAdv
 
 ## Operating Context
 
-- Single city today: NYC, 414 live restaurants across 87 neighborhoods, drawn from a larger scraped pool (~2,155 restaurants) filtered by a review-count threshold and the classifier's confidence.
+- Single city today: NYC, 384 live restaurants (414 pass the model; Staten Island isn't served), drawn from a larger scraped pool (~2,155 restaurants) filtered by a review-count threshold and the classifier's confidence.
 - Offline batch pipeline, not real-time: Apify scrape → Python scoring pipeline → CSV → manual copy into `backend/data.csv` → manual git push to deploy. A monthly automated job now discovers new restaurants, deliberately scoped to stop at the data files — it does not run the scoring pipeline or touch the live site automatically, and it's hard-budget-capped ($5/month Apify plan).
 - Small, early live user base (roughly 8 signed-up users at last count). Growth is manual and organic at this stage (personal outreach, organic content posts), not paid.
 - Auth: Google OAuth via Supabase. Core browsing (recommendations feed, restaurant detail pages, public shared lists, the saved/visited pages) is open to signed-out visitors; only actions tied to a personal identity (save, rate/visit, follow, submit a restaurant request) require an account, gated at the point of the action rather than the page.

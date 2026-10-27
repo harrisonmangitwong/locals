@@ -104,7 +104,7 @@ Every reviewer gets a localness score from 0 to 1, based on their last three yea
 
 ### 6.2 Scoring each restaurant
 
-Each place gets a local-weighted rating and a tourist-weighted rating from the same reviews, plus text signals (quality language, local versus tourist wording, "meh" language), the star spread, price, and review volume: 20 features in all. A random forest trained on **205 hand-labeled restaurants** turns those into a probability that a place is a safe pick for a local. Places at 0.5 or higher (414 of them) make the live list, ordered by that probability.
+Each place gets a local-weighted rating and a tourist-weighted rating from the same reviews, plus text signals (quality language, local versus tourist wording, "meh" language), the star spread, price, and review volume: 20 features in all. A random forest trained on **205 hand-labeled restaurants** turns those into a probability that a place is a safe pick for a local. Places at 0.5 or higher make the list (414 of them; the 384 outside Staten Island are served), ordered by that probability.
 
 ### 6.3 How it's evaluated
 
@@ -125,14 +125,14 @@ Each place gets a local-weighted rating and a tourist-weighted rating from the s
 | Layer | Technology | Notes |
 |---|---|---|
 | Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind v4 | Vercel |
-| Restaurant API | FastAPI, pandas | Railway; serves `backend/data.csv` from memory. At 414 rows a database isn't needed. |
+| Restaurant API | FastAPI, pandas | Railway; serves `backend/data.csv` from memory. At a few hundred rows a database isn't needed. |
 | User data | Supabase Postgres | Saves, visits, ratings, follows, profiles, `pick_events`. Written only from server routes. |
 | Auth | Supabase Auth | Google sign-in |
 | Photos | Supabase Storage | One permanently hosted photo per place |
 | Model | scikit-learn, pandas | Trained offline; re-scoring is a manual pipeline run |
 | Review summaries | Claude API | "What to order", vibe, and heads-up lines per place |
 
-**Data:** public Google Maps listings and reviews, collected with Apify: about 78,000 reviews across about 2,100 New York restaurants, narrowed to the 414 on the live list.
+**Data:** public Google Maps listings and reviews, collected with Apify: about 78,000 reviews across about 2,100 New York restaurants, narrowed to the 384 on the live list.
 
 ## 9. Risks and open questions
 
