@@ -104,7 +104,7 @@ Every reviewer gets a localness score from 0 to 1, based on their last three yea
 
 ### 6.2 Scoring each restaurant
 
-Each place gets a local-weighted rating and a tourist-weighted rating from the same reviews, plus text signals (quality language, local versus tourist wording, "meh" language), the star spread, price, and review volume: 20 features in all. A random forest trained on **205 hand-labeled restaurants** turns those into a probability that a place is a safe pick for a local. Places at 0.5 or higher make the list (414 of them; the 384 outside Staten Island are served), ordered by that probability.
+Each place gets a local-weighted rating and a tourist-weighted rating from the same reviews, plus text signals (quality language, local versus tourist wording, "meh" language), the star spread, price, and review volume: 20 features in all. A random forest trained on **205 hand-labeled restaurants** turns those into a probability that a place is a safe pick for a local. Places at 0.5 or higher make the list (413 of them; the 383 outside Staten Island are served), ordered by that probability.
 
 ### 6.3 How it's evaluated
 
@@ -132,7 +132,7 @@ Each place gets a local-weighted rating and a tourist-weighted rating from the s
 | Model | scikit-learn, pandas | Trained offline; re-scoring is a manual pipeline run |
 | Review summaries | Claude API | "What to order", vibe, and heads-up lines per place |
 
-**Data:** public Google Maps listings and reviews, collected with Apify: about 78,000 reviews across about 2,100 New York restaurants, narrowed to the 384 on the live list.
+**Data:** public Google Maps listings and reviews, collected with Apify: about 78,000 reviews across about 2,100 New York restaurants, narrowed to the 383 on the live list.
 
 ## 9. Risks and open questions
 

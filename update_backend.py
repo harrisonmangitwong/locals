@@ -12,6 +12,10 @@ backend/data.csv for every restaurant that stays on the list:
 New restaurants still need host_images.py (photos) and
 backend/enrich_reviews.py (summaries); the script lists them at the end.
 
+Places listed in data/closed_restaurants.csv are dropped, so a re-run
+can't bring back a restaurant that has closed. Their labels stay in
+data/labels.csv for training.
+
 Run after run_pipeline.py:
     python update_backend.py
 """
@@ -25,6 +29,7 @@ import pandas as pd
 SRC = "outputs/locals_recommendations.csv"
 DST = "backend/data.csv"
 CARRY_OVER = ["image_url", "review_themes"]
+CLOSED = "data/closed_restaurants.csv"
 
 if not os.path.exists(SRC):
     print(f"❌ {SRC} not found — run python run_pipeline.py first")
@@ -54,5 +59,12 @@ if previous is not None:
     print(f"\nCarried over hosted photos and summaries for restaurants that stayed.")
     print(f"  still need a hosted photo: {needs_photo} → run python host_images.py")
     print(f"  still need summaries:      {needs_themes} → run python backend/enrich_reviews.py")
+
+if os.path.exists(CLOSED):
+    closed = set(pd.read_csv(CLOSED)["restaurant_id"])
+    df = pd.read_csv(DST)
+    dropped = df["restaurant_id"].isin(closed)
+    df[~dropped].to_csv(DST, index=False)
+    print(f"\nDropped {int(dropped.sum())} closed restaurant(s) listed in {CLOSED}")
 
 print("\n✅ Done. Commit and push backend/data.csv to deploy.")

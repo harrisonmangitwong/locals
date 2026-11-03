@@ -34,7 +34,7 @@ The claim a neighboring product can't truthfully copy: Google, Yelp, and TripAdv
 
 ## Operating Context
 
-- Single city today: NYC, 384 live restaurants (414 pass the model; Staten Island isn't served), drawn from a larger scraped pool (~2,155 restaurants) filtered by a review-count threshold and the classifier's confidence.
+- Single city today: NYC, 383 live restaurants (413 pass the model; Staten Island isn't served), drawn from a larger scraped pool (~2,155 restaurants) filtered by a review-count threshold and the classifier's confidence.
 - Offline batch pipeline, not real-time: Apify scrape → Python scoring pipeline → CSV → manual copy into `backend/data.csv` → manual git push to deploy. A monthly automated job now discovers new restaurants, deliberately scoped to stop at the data files — it does not run the scoring pipeline or touch the live site automatically, and it's hard-budget-capped ($5/month Apify plan).
 - Small, early live user base (roughly 8 signed-up users at last count). Growth is manual and organic at this stage (personal outreach, organic content posts), not paid.
 - Auth: Google OAuth via Supabase. Core browsing (recommendations feed, restaurant detail pages, public shared lists, the saved/visited pages) is open to signed-out visitors; only actions tied to a personal identity (save, rate/visit, follow, submit a restaurant request) require an account, gated at the point of the action rather than the page.
@@ -48,7 +48,7 @@ The claim a neighboring product can't truthfully copy: Google, Yelp, and TripAdv
 - Trip Mode (the travel-occasion mode) — zero code exists. Scoped in the roadmap as the top-priority next differentiator.
 - A second city — the scoring methodology is city-agnostic in principle, but the code has NYC-only hardcoding (a Manhattan zip-to-neighborhood map and the NYC timezone for open-now logic; the Times Square distance feature was dropped from the model on 2026-10-23) that isn't generalized yet.
 - Monetization (booking-link affiliate revenue, a restaurant-facing locals-vs-tourists data product) — parked pending real traffic volume.
-- Real-time or self-serve data updates — the batch pipeline is a deliberate choice at this scale (414 rows), not a gap to close soon.
+- Real-time or self-serve data updates — the batch pipeline is a deliberate choice at this scale (413 rows), not a gap to close soon.
 
 **Terminology:** "localness score" (per reviewer, 0–1); "local-weighted rating" / "tourist-weighted rating" / "tourist_penalty" (per restaurant); "p_safe_pick" (the classifier's output, drives rank order); "archetype" (one of the three earned badges, or none — most restaurants earn no badge).
 
@@ -60,8 +60,8 @@ Voice commitment: warm, trustworthy, local, like a knowledgeable friend who live
 
 ## Evidence on Hand
 
-- Live dataset: `backend/data.csv`, 414 NYC restaurants, real Google Maps/Places data, each with a permanently hosted photo.
-- Larger raw pool: `data/reviews.csv` (78,000+ scraped reviews), `data/restaurants.csv` (~2,155 scraped restaurants) behind the 414 that clear the pipeline's gates.
+- Live dataset: `backend/data.csv`, 413 NYC restaurants, real Google Maps/Places data, each with a permanently hosted photo.
+- Larger raw pool: `data/reviews.csv` (78,000+ scraped reviews), `data/restaurants.csv` (~2,155 scraped restaurants) behind the 413 that clear the pipeline's gates.
 - 205 hand-labeled restaurants (`data/labels.csv`) used to train the Random Forest classifier (20 features). Repeated 5-fold cross-validation (10 repeats) puts it at AUC ~0.70, against 0.60 for Google stars alone.
 - An LLM-as-judge experiment (Claude Sonnet reading each labeled place's reviews, run under two prompt wordings, 3 runs each) was consistent but matched the labels at AUC ~0.51 and added +0.005 as a feature, so it was not shipped. The LLM is used for review summaries only.
 - **Absence to not fabricate:** Help me pick tracking (picks, "Did you go?" answers, the `/metrics` funnel) shipped on 2026-10-21, but no meaningful volume exists yet. Vercel Analytics is installed but unqueried. Do not invent engagement numbers, retention figures, or conversion rates — state "not yet measured" rather than a plausible-sounding guess.

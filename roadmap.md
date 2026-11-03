@@ -13,7 +13,7 @@
   - Trained on all 205 labels with 2,000 trees, so a retrain reshuffles about 11 places instead of about 60.
   - Repeated cross-validation AUC is about 0.70, against 0.60 for Google stars.
 - **LLM second opinion: tested, not shipped.** It was consistent across runs but matched the labels at about 0.51 and added +0.005 to the forest. The LLM stays on review summaries.
-- **Photos.** All 414 places have permanently hosted photos. `update_backend.py` carries them (and summaries) over on every re-score. A missing photo now shows a gray placeholder, never a stock photo.
+- **Photos.** All 413 places have permanently hosted photos. `update_backend.py` carries them (and summaries) over on every re-score. A missing photo now shows a gray placeholder, never a stock photo.
 
 ## Now: first 10–20 real users
 
@@ -39,5 +39,5 @@
 
 - Weekly digest email, push notifications, referral loop: retention tools that only matter once there are users to retain.
 - Monetization (booking links, a restaurant-facing data product): parked until there's real traffic.
-- Moving `backend/data.csv` into Postgres: not needed at 414 rows.
+- Moving `backend/data.csv` into Postgres: not needed at 413 rows.
 - Agents that choose for the user: rejected. People want some agency in where they eat.
