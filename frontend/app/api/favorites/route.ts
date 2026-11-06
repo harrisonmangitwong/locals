@@ -28,7 +28,8 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { restaurant_id } = await req.json();
-  await adminSupabase().from("favorites").upsert({ user_id: user.id, restaurant_id });
+  const { error } = await adminSupabase().from("favorites").upsert({ user_id: user.id, restaurant_id });
+  if (error) return NextResponse.json({ error: "Failed to save" }, { status: 500 });
 
   return NextResponse.json({ ok: true });
 }
@@ -39,11 +40,12 @@ export async function DELETE(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { restaurant_id } = await req.json();
-  await adminSupabase()
+  const { error } = await adminSupabase()
     .from("favorites")
     .delete()
     .eq("user_id", user.id)
     .eq("restaurant_id", restaurant_id);
+  if (error) return NextResponse.json({ error: "Failed to remove" }, { status: 500 });
 
   return NextResponse.json({ ok: true });
 }

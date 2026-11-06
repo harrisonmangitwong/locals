@@ -142,11 +142,12 @@ export default function PublicProfile({ userId: userIdProp, username }: PublicPr
     const prev = followStatus;
     setFollowStatus("none");
     try {
-      await fetch("/api/follow", {
+      const res = await fetch("/api/follow", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ target_user_id: resolvedUserId }),
       });
+      if (!res.ok) throw new Error();
     } catch {
       setFollowStatus(prev);
     } finally {

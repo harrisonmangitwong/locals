@@ -22,7 +22,10 @@ export async function POST(req: NextRequest) {
 
   if (ids.length > 0) {
     const rows = ids.map((restaurant_id) => ({ user_id: user.id, restaurant_id }));
-    await admin.from("saved").upsert(rows);
+    const { error: savedError } = await admin.from("saved").upsert(rows);
+    if (savedError) {
+      return NextResponse.json({ error: "Failed to save your picks" }, { status: 500 });
+    }
   }
 
   const { error } = await admin

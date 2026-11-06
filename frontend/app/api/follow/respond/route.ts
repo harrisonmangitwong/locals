@@ -35,12 +35,13 @@ export async function POST(req: NextRequest) {
       .eq("status", "pending");
     if (error) return NextResponse.json({ error: "Failed to accept" }, { status: 500 });
   } else {
-    await admin
+    const { error } = await admin
       .from("follows")
       .delete()
       .eq("follower_id", requester_id)
       .eq("following_id", user.id)
       .eq("status", "pending");
+    if (error) return NextResponse.json({ error: "Failed to decline" }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

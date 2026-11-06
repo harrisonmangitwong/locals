@@ -33,9 +33,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "is_private must be a boolean" }, { status: 400 });
   }
 
-  await adminSupabase()
+  const { error } = await adminSupabase()
     .from("profiles")
     .upsert({ user_id: user.id, is_private, updated_at: new Date().toISOString() });
+  if (error) return NextResponse.json({ error: "Failed to update privacy" }, { status: 500 });
 
   return NextResponse.json({ ok: true });
 }

@@ -71,11 +71,12 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "target_user_id is required" }, { status: 400 });
   }
 
-  await adminSupabase()
+  const { error } = await adminSupabase()
     .from("follows")
     .delete()
     .eq("follower_id", user.id)
     .eq("following_id", target_user_id);
+  if (error) return NextResponse.json({ error: "Failed to unfollow" }, { status: 500 });
 
   return NextResponse.json({ ok: true });
 }

@@ -30,11 +30,12 @@ export default function RequestsPage() {
   async function respond(userId: string, action: "accept" | "decline") {
     setRespondingTo(userId);
     try {
-      await fetch("/api/follow/respond", {
+      const res = await fetch("/api/follow/respond", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requester_id: userId, action }),
       });
+      if (!res.ok) throw new Error();
       setRequests((prev) => prev.filter((r) => r.userId !== userId));
     } catch {
       // leave it in the list so the user can retry

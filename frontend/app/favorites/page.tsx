@@ -13,14 +13,12 @@ import type { Bucket } from "@/lib/ranking";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+// Throws on failure so the page shows its error state, not "nothing saved".
 async function getSaved(): Promise<string[]> {
-  try {
-    const res = await fetch("/api/saved");
-    const data = await res.json();
-    return data.ids ?? [];
-  } catch {
-    return [];
-  }
+  const res = await fetch("/api/saved");
+  if (!res.ok) throw new Error("Failed to load saved places");
+  const data = await res.json();
+  return data.ids ?? [];
 }
 
 interface Restaurant {
@@ -83,7 +81,14 @@ export default function FavoritesPage() {
       return;
     }
     async function load() {
-      const ids = await getSaved();
+      let ids: string[];
+      try {
+        ids = await getSaved();
+      } catch {
+        setFetchError(true);
+        setLoading(false);
+        return;
+      }
       if (ids.length === 0) {
         setEmpty(true);
         setLoading(false);

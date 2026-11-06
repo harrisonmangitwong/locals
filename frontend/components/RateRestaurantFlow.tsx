@@ -67,6 +67,7 @@ export default function RateRestaurantFlow({
     setErrorMsg(null);
     try {
       const res = await fetch(`/api/ratings?bucket=${b}&exclude=${restaurantId}`);
+      if (!res.ok) throw new Error();
       const data = await res.json();
       const list: RatingRow[] = data.ratings ?? [];
       setBucketList(list);

@@ -31,7 +31,10 @@ export async function GET(req: NextRequest) {
   if (exclude) query = query.neq("restaurant_id", exclude);
   if (restaurantId) query = query.eq("restaurant_id", restaurantId);
 
-  const { data } = await query.order("rank_position", { ascending: true });
+  const { data, error } = await query.order("rank_position", { ascending: true });
+  // An empty list here would make the rating flow skip comparisons and
+  // rank the new place first, so a failed read must not look like "none".
+  if (error) return NextResponse.json({ error: "Failed to load ratings" }, { status: 500 });
 
   return NextResponse.json({ ratings: data ?? [] });
 }

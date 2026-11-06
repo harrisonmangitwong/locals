@@ -63,11 +63,12 @@ export default function UserMenu() {
     const next = !isPrivate;
     setIsPrivate(next);
     try {
-      await fetch("/api/profile/privacy", {
+      const res = await fetch("/api/profile/privacy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_private: next }),
       });
+      if (!res.ok) throw new Error();
     } catch {
       setIsPrivate(!next);
     }

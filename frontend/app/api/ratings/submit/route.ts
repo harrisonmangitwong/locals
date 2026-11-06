@@ -44,7 +44,13 @@ export async function POST(req: NextRequest) {
 
   // Saved and visited/rated are mutually exclusive -- marking something
   // visited always clears any existing bookmark for it.
-  await adminSupabase().from("saved").delete().eq("user_id", user.id).eq("restaurant_id", restaurant_id);
+  // TODO: move this into submit_rating so both happen in one transaction.
+  const { error: unsaveError } = await adminSupabase()
+    .from("saved")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("restaurant_id", restaurant_id);
+  if (unsaveError) console.error("ratings/submit: rating saved but bookmark not cleared", unsaveError);
 
   return NextResponse.json({ ok: true });
 }
